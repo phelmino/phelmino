@@ -111,11 +111,11 @@ reduire le nombre d'operations necessaire lorsqu'on execute une boucle, par exem
         * `rD = rs1 << shamt` (logique)
     * `FUNC3 = 010`
         * `slti rD, rs1, imm`
-        * `rD = 1 ssi (rs1 < Sext(imm)), sinon rd = 0`
+        * `rD = (rs1 < Sext(imm)) ? -1 : 0`
         * Les valeurs sont traites comme des unsignees
     * `FUNC3 = 011`
         * `stliu rD, rs1, imm`
-        * `rD = 1 ssi (rs1 < Sext(imm)), sinon rd = 0`
+        * `rD = (rs1 < Sext(imm)) ? -1 : 0`
         * Les valeurs sont traites comme des signees
     * `FUNC3 = 100`
         * `xori rD, rs1, imm`
@@ -151,11 +151,11 @@ reduire le nombre d'operations necessaire lorsqu'on execute une boucle, par exem
         * `rD = rs1 << rs2[4:0]` (logique)
     * `FUNC3 = 010`
         * `slt rD, rs1, rs2`
-        * `rD = 1 ssi (rs1 < rs2), sinon rd = 0`
+        * `rD = (rs1 < rs2) ? -1 : 0`
         * Les valeurs sont traites comme des unsignees
     * `FUNC3 = 011`
         * `stlu rD, rs1, rs2`
-        * `rD = 1 ssi (rs1 < rs2), sinon rd = 0`
+        * `rD = (rs1 < rs2) ? -1 : 0`
         * Les valeurs sont traites comme des signees
     * `FUNC3 = 100`
         * `xor rD, rs1, rs2`
@@ -174,3 +174,39 @@ reduire le nombre d'operations necessaire lorsqu'on execute une boucle, par exem
     * `FUNC3 = 111`
         * `and rD, rs1, rs2`
         * `rD = rs1 AND rs2`
+
+### PULP ALU Extensions ###
+
+* `OPCODE = 011 0011`
+    * `FUNC7 = 000 0010`
+        * `FUNC3 = 000`
+            * `p.avg rD, rs1, rs2`
+            * `rD = (rs1 + rs2) >> 1` (arithmetic)
+        * `FUNC3 = 001`
+            * `p.avgu rD, rs1, rs2`
+            * `rD = (rs1 + rs2) >> 1` (logique)
+        * `FUNC3 = 010`
+            * `p.slet rD, rs1, rs2`
+            * `rD = (rs1 <= rs2) ? -1 : 0`
+            * Les valeurs sont traitees comme des signes
+        * `FUNC3 = 011`
+            * `p.sletu rD, rs1, rs2`
+            * `rD = (rs1 <= rs2) ? -1 : 0`
+            * Les valeurs sont traitees comme des unsignes
+        * `FUNC3 = 100`
+            * `p.min rD, rs1, rs2`
+            * `rD = (rs1 < rs2) ? rs1 : rs2`
+            * Les valeurs sont traitees comme des signes
+        * `FUNC3 = 101`
+            * `p.minu rD, rs1, rs2`
+            * `rD = (rs1 < rs2) ? rs1 : rs2`
+            * Les valeurs sont traitees comme des unsignes
+        * `FUNC3 = 110`
+            * `p.max rD, rs1, rs2`
+            * `rD = (rs1 > rs2) ? rs1 : rs2`
+            * Les valeurs sont traitees comme des signes
+        * `FUNC3 = 111`
+            * `p.maxu rD, rs1, rs2`
+            * `rD = (rs1 > rs2) ? rs1 : rs2`
+            * Les valeurs sont traitees comme des unsignes
+                
