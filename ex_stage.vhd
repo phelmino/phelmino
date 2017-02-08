@@ -1,5 +1,5 @@
 library ieee;
-use ieee.numeric_std.all;
+use ieee.std_logic_1164.all;
 
 entity ex_stage is
 
@@ -16,6 +16,6 @@ entity ex_stage is
     -- Pipeline propagation control signals
     ex_enable_o       : out std_logic;
     ex_ready_o        : out std_logic;
-    wb_enable_i       : in  std_logic)
+    wb_enable_i       : in  std_logic);
     
 end entity ex_stage;
