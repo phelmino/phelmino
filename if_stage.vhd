@@ -1,5 +1,5 @@
 library ieee;
-use ieee.numeric_std.all;
+use ieee.std_logic_1164.all;
 
 entity if_stage is
 
@@ -17,7 +17,7 @@ entity if_stage is
 
     -- Data output to ID stage
     instr_rvalid_id_o : out std_logic;
-    instr_rdata_id_o  : out std_logic_vector(31 downto 0)
+    instr_rdata_id_o  : out std_logic_vector(31 downto 0);
 
     -- Pipeline propagation control signals
     if_enable_o : out std_logic;
