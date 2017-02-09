@@ -1,6 +1,8 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
+library lib_VHDL;
+
 entity if_stage is
 
   port (
