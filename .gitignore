@@ -1,7 +1,9 @@
-*~
+ *~
 *.toc
 *.out
 *.aux
 *.log
 auto/
 modelsim.ini
+#*
+.#*
