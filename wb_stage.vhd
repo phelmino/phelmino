@@ -11,13 +11,7 @@ entity wb_stage is
     rst_n : in std_logic;
 
     -- Data interface signals 
-    data_req_o	  : out std_logic;
-    data_gnt_i	  : in	std_logic;
     data_rvalid_i : in	std_logic;
-    data_addr_o	  : out std_logic_vector(31 downto 0);
-    data_we_o	  : out std_logic;
-    data_be_o	  : out std_logic_vector(3 downto 0);
-    data_wdata_o  : out std_logic_vector(31 downto 0);
     data_rdata_i  : in	std_logic_vector(31 downto 0);
 
     -- Pipeline propagation control signals
