@@ -19,6 +19,10 @@ entity if_stage is
     instr_rvalid_id_o : out std_logic;
     instr_rdata_id_o  : out std_logic_vector(31 downto 0);
 
+    -- Branch destination
+    instr_jump_destination_id_i   : in std_logic_vector(31 downto 0);
+    instr_branch_destination_ex_i : in std_logic_vector(31 downto 0);
+
     -- Pipeline propagation control signals
     if_enable_o : out std_logic;
     id_enable_i : in  std_logic;

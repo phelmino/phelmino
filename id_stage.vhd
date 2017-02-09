@@ -16,9 +16,16 @@ entity id_stage is
     alu_input_a_ex_o  : out std_logic_vector(31 downto 0);
     alu_input_b_ex_o  : out std_logic_vector(31 downto 0);
     alu_operator_ex_o : out std_logic_vector(5 downto 0);  -- TODO: How many bits?
+
+    -- Jump destination
+    instr_jump_destination_id_o : out std_logic_vector(31 downto 0);
+
+    -- Program Counter (PC)
+    pc_id_i : in std_logic_vector(31 downto 0);
+
     -- Pipeline propagation control signals
-    id_enable_o       : out std_logic;
-    id_valid_o        : out std_logic;
-    ex_enable_i       : in  std_logic);
+    id_enable_o : out std_logic;
+    id_valid_o  : out std_logic;
+    ex_enable_i : in  std_logic);
 
 end entity id_stage;
