@@ -44,17 +44,22 @@ begin  -- architecture behav
   -- outputs: read_data_a_o, read_data_b_o
   seq_process : process (clk, rst_n) is
   begin  -- process seq_process
-    -- Clears outputs
-    read_data_a_o  <= (others => '0');
-    read_data_b_o  <= (others => '0');
-    write_data_gnt <= '0';
 
     if rst_n = '0' then                 -- asynchronous reset (active low)
+      -- Clears outputs
+      read_data_a_o  <= (others => '0');
+      read_data_b_o  <= (others => '0');
+      write_data_gnt <= '0';
+
       -- Clears register bank
       for i in 0 to 2**N-1 loop
         gpr(i) <= (others => '0');
       end loop;
     elsif clk'event and clk = '1' then  -- rising clock edge
+      -- Clears outputs
+      read_data_a_o  <= (others => '0');
+      read_data_b_o  <= (others => '0');
+      write_data_gnt <= '0';
 
       -- Refreshes outputs
       if (read_addr_a_en = '1') then
@@ -70,6 +75,7 @@ begin  -- architecture behav
       if (write_addr_a_en = '1' and next_write_data_gnt = '1') then
         gpr(to_integer(unsigned(write_addr_a_i))) <= write_data_a_i;
       end if;
+
     end if;
   end process seq_process;
 
