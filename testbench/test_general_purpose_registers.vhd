@@ -13,7 +13,7 @@ architecture behav of test_general_purpose_registers is
   component general_purpose_registers is
     generic (
       W : natural;
-      N : natural); 
+      N : natural);
     port (
       clk             : in  std_logic;
       rst_n           : in  std_logic;
@@ -26,11 +26,11 @@ architecture behav of test_general_purpose_registers is
       write_addr_a_en : in  std_logic;
       write_addr_a_i  : in  std_logic_vector(N-1 downto 0);
       write_data_a_i  : in  std_logic_vector(W-1 downto 0);
-      write_data_gnt  : out std_logic); 
+      write_data_gnt  : out std_logic);
   end component general_purpose_registers;
-  
-  signal clk             : std_logic;
-  signal rst_n           : std_logic;
+
+  signal clk             : std_logic := '0';
+  signal rst_n           : std_logic := '0';
   signal read_addr_a_en  : std_logic;
   signal read_addr_a_i   : std_logic_vector(4 downto 0);
   signal read_data_a_o   : std_logic_vector(31 downto 0);
@@ -62,5 +62,16 @@ begin  -- architecture behav
       write_addr_a_i  => write_addr_a_i,
       write_data_a_i  => write_data_a_i,
       write_data_gnt  => write_data_gnt);
+
+  clk   <= not clk after 10 ns;
+  rst_n <= '1'     after 15 ns;
+
+  stimulus : process is
+  begin  -- process stimulus
+    write_addr_a_en <= '1';
+    write_addr_a_i  <= "01010";
+    write_data_a_i  <= (others => '1');
+    wait;
+  end process stimulus;
 
 end architecture behav;
