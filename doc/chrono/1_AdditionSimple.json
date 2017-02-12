@@ -1,6 +1,6 @@
 {signal: [
-  {name: 'clk', wave: 'p.........'},
-  {name: 'rst_n', wave: '01........'},
+  {name: 'clk', wave: 'p......'},
+  {name: 'rst_n', wave: '01.....'},
 
   {name: 'IF_curr_pc', wave: 'x=.=...', data: ["0000", "0001"]},                 
   {name: 'IF_next_pc', wave: 'x=.=...', data: ["0001", "0010"]},                         
@@ -14,7 +14,9 @@
   {name: 'IF_valid_o', wave: '0..10..'},
   
   {name: 'DI_curr_instr', wave: 'x=.==..', data: ["NOP", "ADD r3 r1 r2", "NOP"]},
+  {name: 'DI_reg_read_a', wave: '0..10..'},
   {name: 'DI_reg_addr_a', wave: 'x..=x..', data: ["1"]},
+  {name: 'DI_reg_read_b', wave: '0..10..'},
   {name: 'DI_reg_addr_b', wave: 'x..=x..', data: ["2"]},
   {name: 'DI_next_reg_addr_D', wave:'x..=x..', data: ["3"]},
   {name: 'DI_next_alu_op', wave: 'x..=x..', data: ["+"]},
@@ -25,9 +27,12 @@
   {name: 'DI_curr_alu_in_b_o', wave: 'x...=x.', data: ["1"]},
   {name: 'DI_curr_alu_op_o', wave: 'x...=x.', data: ["+"]},
   
-  {name: 'EX_curr_reg_addr_D_i', wave:'x...=x.', data: ["3"]},
-  {name: 'EX_curr_alu_in_a_i', wave: 'x...=x.', data: ["1"]},
-  {name: 'EX_curr_alu_in_b_i', wave: 'x...=x.', data: ["1"]},
-  {name: 'EX_curr_alu_op_i', wave: 'x...=x.', data: ["+"]},
-  {name: 'EX_alu_res', wave: 'x...=x.', data: ["2"]}
-]}
+  {name: 'EX_alu_in_a_i', wave: 'x...=x.', data: ["1"]},
+  {name: 'EX_alu_in_b_i', wave: 'x...=x.', data: ["1"]},
+  {name: 'EX_alu_op_i', wave: 'x...=x.', data: ["+"]},
+  {name: 'EX_reg_addr_D_i', wave:'x...=x.', data: ["3"]},
+  {name: 'EX_alu_res', wave: 'x...=x.', data: ["2"]},
+  {name: 'EX_addr_reg_A', wave: 'x...=x.', data: '3'},
+  {name: 'EX_mux_reg_A', wave: 'x...=x.', data: ["de l'ALU"]},
+  {name: 'EX_reg_write_A', wave: '0...10.'},
+ ]}
