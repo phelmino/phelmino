@@ -86,13 +86,22 @@ begin  -- architecture behav
   comb_proc : process (read_addr_a_en, read_addr_a_i, read_addr_b_en,
                        read_addr_b_i, write_addr_a_en, write_addr_a_i) is
   begin  -- process comb_proc
-    next_write_data_gnt <= '1';
+    -- Default value
+    next_write_data_gnt <= '0';
+
     if (write_addr_a_en = '1') then
-      if (read_addr_a_en = '1' and read_addr_a_i = write_addr_a_i) then
+      next_write_data_gnt <= '1';
+      
+      if (write_addr_a_i = "00000") then 
+        next_write_data_gnt <= '1'; -- If trying to write over r0, then writing
+                                    -- is accepted, even though the register
+                                    -- will not be rewritten.
+      elsif (read_addr_a_en = '1' and read_addr_a_i = write_addr_a_i) then
         next_write_data_gnt <= '0';
       elsif (read_addr_b_en = '1' and read_addr_b_i = write_addr_a_i) then
         next_write_data_gnt <= '0';
       end if;
+      
     end if;
   end process comb_proc;
 
