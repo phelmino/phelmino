@@ -14,7 +14,7 @@ architecture behav of test_general_purpose_registers is
   component general_purpose_registers is
     generic (
       W : natural;
-      N : natural);
+      N : natural); 
     port (
       clk              : in  std_logic;
       rst_n            : in  std_logic;
@@ -26,8 +26,7 @@ architecture behav of test_general_purpose_registers is
       read_data_b_o    : out std_logic_vector(W-1 downto 0);
       write_enable_a_i : in  std_logic;
       write_addr_a_i   : in  std_logic_vector(N-1 downto 0);
-      write_data_a_i   : in  std_logic_vector(W-1 downto 0);
-      write_data_gnt_o : out std_logic);
+      write_data_a_i   : in  std_logic_vector(W-1 downto 0)); 
   end component general_purpose_registers;
 
   signal clk              : std_logic                     := '0';
@@ -41,7 +40,6 @@ architecture behav of test_general_purpose_registers is
   signal write_enable_a_i : std_logic                     := '0';
   signal write_addr_a_i   : std_logic_vector(4 downto 0)  := (others => '0');
   signal write_data_a_i   : std_logic_vector(31 downto 0) := (others => '0');
-  signal write_data_gnt_o : std_logic;
 
 begin  -- architecture behav
 
@@ -60,8 +58,7 @@ begin  -- architecture behav
       read_data_b_o    => read_data_b_o,
       write_enable_a_i => write_enable_a_i,
       write_addr_a_i   => write_addr_a_i,
-      write_data_a_i   => write_data_a_i,
-      write_data_gnt_o => write_data_gnt_o);
+      write_data_a_i   => write_data_a_i);
 
   clk   <= not clk after 5 ns;
   rst_n <= '1'     after 7 ns;
@@ -122,17 +119,10 @@ begin  -- architecture behav
     wait on clk;
     wait on clk;
 
-    assert (write_data_gnt_o = '0') report "Can not read and write at the same register" severity warning;
     assert (read_data_b_o(3 downto 0) = "1011") report "Incorrect data in register r2" severity warning;
-    read_enable_b_i <= '0';
+    wait on clk;
+    wait on clk;
 
-    wait on clk;
-    wait on clk;
-    assert (write_data_gnt_o = '1') report "Now register should be able to refresh its data" severity warning;
-    read_enable_b_i <= '1';
-
-    wait on clk;
-    wait on clk;
     assert (read_data_b_o(3 downto 0) = "1111") report "Incorrect data in register r2" severity warning;
 
     wait;
