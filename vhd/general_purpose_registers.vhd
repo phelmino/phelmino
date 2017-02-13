@@ -73,7 +73,9 @@ begin  -- architecture behav
       -- write the same register
       write_data_gnt <= next_write_data_gnt;
       if (write_addr_a_en = '1' and next_write_data_gnt = '1') then
-        gpr(to_integer(unsigned(write_addr_a_i))) <= write_data_a_i;
+        if (write_addr_a_i = "00000") then  -- Can not rewrite register r0
+          gpr(to_integer(unsigned(write_addr_a_i))) <= write_data_a_i;
+        end if;
       end if;
 
     end if;
@@ -91,17 +93,18 @@ begin  -- architecture behav
 
     if (write_addr_a_en = '1') then
       next_write_data_gnt <= '1';
-      
-      if (write_addr_a_i = "00000") then 
-        next_write_data_gnt <= '1'; -- If trying to write over r0, then writing
-                                    -- is accepted, even though the register
-                                    -- will not be rewritten.
+
+      if (write_addr_a_i = "00000") then
+        -- If trying to write over r0, then writing
+        -- is accepted, even though the register
+        -- will not be rewritten.
+        next_write_data_gnt <= '1';
       elsif (read_addr_a_en = '1' and read_addr_a_i = write_addr_a_i) then
         next_write_data_gnt <= '0';
       elsif (read_addr_b_en = '1' and read_addr_b_i = write_addr_a_i) then
         next_write_data_gnt <= '0';
       end if;
-      
+
     end if;
   end process comb_proc;
 

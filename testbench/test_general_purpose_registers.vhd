@@ -1,6 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+use ieee.std_logic_unsigned.all;
+use ieee.std_logic_arith.all;
 
 library lib_VHDL;
 use lib_VHDL.all;
@@ -29,17 +30,17 @@ architecture behav of test_general_purpose_registers is
       write_data_gnt  : out std_logic);
   end component general_purpose_registers;
 
-  signal clk             : std_logic := '0';
-  signal rst_n           : std_logic := '0';
-  signal read_addr_a_en  : std_logic;
-  signal read_addr_a_i   : std_logic_vector(4 downto 0);
+  signal clk             : std_logic                     := '0';
+  signal rst_n           : std_logic                     := '0';
+  signal read_addr_a_en  : std_logic                     := '0';
+  signal read_addr_a_i   : std_logic_vector(4 downto 0)  := (others => '0');
   signal read_data_a_o   : std_logic_vector(31 downto 0);
-  signal read_addr_b_en  : std_logic;
-  signal read_addr_b_i   : std_logic_vector(4 downto 0);
+  signal read_addr_b_en  : std_logic                     := '0';
+  signal read_addr_b_i   : std_logic_vector(4 downto 0)  := (others => '0');
   signal read_data_b_o   : std_logic_vector(31 downto 0);
-  signal write_addr_a_en : std_logic;
-  signal write_addr_a_i  : std_logic_vector(4 downto 0);
-  signal write_data_a_i  : std_logic_vector(31 downto 0);
+  signal write_addr_a_en : std_logic                     := '0';
+  signal write_addr_a_i  : std_logic_vector(4 downto 0)  := (others => '0');
+  signal write_data_a_i  : std_logic_vector(31 downto 0) := (others => '0');
   signal write_data_gnt  : std_logic;
 
 begin  -- architecture behav
@@ -63,14 +64,78 @@ begin  -- architecture behav
       write_data_a_i  => write_data_a_i,
       write_data_gnt  => write_data_gnt);
 
-  clk   <= not clk after 10 ns;
-  rst_n <= '1'     after 15 ns;
+  clk   <= not clk after 5 ns;
+  rst_n <= '1'     after 7 ns;
 
   stimulus : process is
   begin  -- process stimulus
+    -- Intention to write 
     write_addr_a_en <= '1';
-    write_addr_a_i  <= "01010";
+
+    -- Writes in some registers
+    write_addr_a_i <= "00000";
+    write_data_a_i <= (0 => '0', others => '1');
+    wait on clk;
+    wait on clk;
+
+    write_addr_a_i <= "00001";
+    write_data_a_i <= (1 => '0', others => '1');
+    wait on clk;
+    wait on clk;
+
+    write_addr_a_i <= "00010";
+    write_data_a_i <= (2 => '0', others => '1');
+    wait on clk;
+    wait on clk;
+
+    write_addr_a_i <= "00011";
+    write_data_a_i <= (3 => '0', others => '1');
+    wait on clk;
+    wait on clk;
+
+    -- No more intention to write
+    write_addr_a_en <= '0';
+    wait on clk;
+    wait on clk;
+
+    read_addr_a_en <= '1';
+    read_addr_a_i  <= "00000";
+    read_addr_b_en <= '1';
+    read_addr_b_i  <= "00001";
+    wait on clk;
+    wait on clk;
+
+    assert (unsigned(read_data_a_o) = 0) report "Can not write over register r0" severity warning;
+    assert (read_data_b_o(3 downto 0) = "1101") report "Could not read data in register r1" severity warning;
+    read_addr_a_en <= '0';
+    read_addr_b_i  <= "00010";
+    wait on clk;
+    wait on clk;
+
+    assert (unsigned(read_data_a_o) = 0) report "Data left in disabled read port" severity warning;
+    assert (read_data_b_o(3 downto 0) = "1011") report "Could not read data in register r2" severity warning;
+    wait on clk;
+    wait on clk;
+
+    write_addr_a_en <= '1';
+    write_addr_a_i  <= "00010";
     write_data_a_i  <= (others => '1');
+    wait on clk;
+    wait on clk;
+
+    assert (write_data_gnt = '0') report "Can not read and write at the same register" severity warning;
+    assert (read_data_b_o(3 downto 0) = "1011") report "Incorrect data in register r2" severity warning;
+    read_addr_b_en <= '0';
+
+    wait on clk;
+    wait on clk;
+    assert (write_data_gnt = '1') report "Now register should be able to refresh its data" severity warning;
+    read_addr_b_en <= '1';
+
+    wait on clk;
+    wait on clk;
+    assert (read_data_b_o(3 downto 0) = "1111") report "Incorrect data in register r2" severity warning;
+
     wait;
   end process stimulus;
 
