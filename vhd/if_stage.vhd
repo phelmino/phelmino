@@ -36,6 +36,8 @@ architecture behav of if_stage is
   signal next_state    : IF_State;
 begin  -- architecture behav
 
+  instr_addr_o <= current_pc;
+
   -- purpose: Updates current state and current program counter (PC)
   -- type   : sequential
   -- inputs : clk, rst_n
@@ -51,11 +53,17 @@ begin  -- architecture behav
     end if;
   end process seq_process;
 
+  -- purpose: Updates current state and current program counter (PC)
+  -- type   : combinational
+  -- inputs : current_pc, current_state, instr_gnt_i, instr_rdata_i,
+  -- instr_rvalid_i, rst_n
+  -- outputs: next_state, next_pc, instr_req_o, instr_addr_o, instr_rdata_id_o,
+  -- instr_rvalid_id_o
   comb_process : process (current_pc, current_state, instr_gnt_i,
                           instr_rdata_i, instr_rvalid_i, rst_n) is
   begin  -- process comb_process
     case current_state is
-      
+
       when INIT =>
         if rst_n = '1' then
           next_state <= REQUISITION;
@@ -64,7 +72,6 @@ begin  -- architecture behav
         end if;
         next_pc           <= (others => '0');
         instr_req_o       <= '0';
-        instr_addr_o      <= (others => '0');
         instr_rdata_id_o  <= (others => '0');
         instr_rvalid_id_o <= '0';
 
@@ -73,9 +80,15 @@ begin  -- architecture behav
         if (instr_gnt_i = '1') then
           next_state <= LECTURE;
         end if;
-        next_pc      <= current_pc;
-        instr_req_o  <= '1';
-        instr_addr_o <= current_pc;
+        next_pc           <= std_logic_vector(unsigned(current_pc) + 2);
+        instr_req_o       <= '1';
+        instr_rdata_id_o  <= (others => '0');
+        instr_rvalid_id_o <= '0';
+
+      when LECTURE =>
+        next_state  <= REQUISITION;
+        next_pc     <= current_pc;
+        instr_req_o <= '1';
         if (instr_rvalid_i = '1') then
           instr_rdata_id_o  <= instr_rdata_i;
           instr_rvalid_id_o <= '1';
@@ -83,12 +96,6 @@ begin  -- architecture behav
           instr_rdata_id_o  <= (others => '0');
           instr_rvalid_id_o <= '0';
         end if;
-
-      when LECTURE =>
-        next_state        <= REQUISITION;
-        next_pc           <= std_logic_vector(unsigned(current_pc) + 1);
-        instr_req_o       <= '1';
-        instr_addr_o      <= current_pc;
         instr_rdata_id_o  <= (others => '0');
         instr_rvalid_id_o <= '0';
 

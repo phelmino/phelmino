@@ -12,3 +12,4 @@ vlib ${BENCH_PATH}/libs/${BENCH_LIB}
 vmap ${BENCH_LIB} ${BENCH_PATH}/libs/${BENCH_LIB}
 
 vcom -work ${BENCH_LIB} test_general_purpose_registers.vhd 
+vcom -work ${BENCH_LIB} test_if_stage.vhd 
