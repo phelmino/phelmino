@@ -60,9 +60,119 @@ begin  -- architecture Behavioural
   begin  -- process Stimulus
     wait for 10 ns;
 
+    assert (Empty = '1') report "FIFO does not report it is empty at its start" severity failure;
+    assert (Full = '0') report "FIFO does not report it is not full at its start" severity failure;
     WriteEn <= '1';
-    DataIn  <= ('0', others => '1');
-    
+    ReadEn  <= '0';
+    DataIn  <= (0 => '1', others => '0');
+    wait until falling_edge(clk);
+
+    DataIn <= (1 => '1', others => '0');
+    wait until falling_edge(clk);
+
+    DataIn <= (2 => '1', others => '0');
+    wait until falling_edge(clk);
+
+    DataIn <= (3 => '1', others => '0');
+    wait until falling_edge(clk);
+
+    assert (Full = '1') report "FIFO does not report it is Full" severity failure;
+    ReadEn <= '1';
+    DataIn <= (4 => '1', others => '0');  -- Should not store this information,
+                                          -- as FIFO is Full.
+    wait until falling_edge(clk);
+
+    WriteEn <= '0';
+    assert (DataOut(3 downto 0) = "0001") report "FIFO does not work" severity failure;
+    wait until falling_edge(clk);
+
+    assert (DataOut(3 downto 0) = "0010") report "FIFO does not work" severity failure;
+    wait until falling_edge(clk);
+
+    assert (DataOut(3 downto 0) = "0100") report "FIFO does not work" severity failure;
+    wait until falling_edge(clk);
+
+    assert (DataOut(3 downto 0) = "1000") report "FIFO does not work" severity failure;
+    wait until falling_edge(clk);
+
+    assert (DataOut(3 downto 0) = "0000") report "FIFO does not work" severity failure;
+    assert (Empty = '1') report "FIFO does not report it is Empty" severity failure;
+
+    wait for 10 ns;
+
+    assert (Empty = '1') report "FIFO does not report it is empty at its start" severity failure;
+    assert (Full = '0') report "FIFO does not report it is not full at its start" severity failure;
+    WriteEn <= '1';
+    ReadEn  <= '0';
+    DataIn  <= (4 => '1', others => '0');
+    wait until falling_edge(clk);
+
+    DataIn <= (3 => '1', others => '0');
+    wait until falling_edge(clk);
+
+    DataIn <= (2 => '1', others => '0');
+    wait until falling_edge(clk);
+
+    DataIn <= (1 => '1', others => '0');
+    wait until falling_edge(clk);
+
+    assert (Full = '1') report "FIFO does not report it is Full" severity failure;
+    ReadEn <= '1';
+    DataIn <= (0 => '1', others => '0');  -- Should not store this information,
+                                          -- as FIFO is Full.
+    wait until falling_edge(clk);
+
+    WriteEn <= '0';
+    assert (DataOut(3 downto 0) = "0000") report "FIFO does not work" severity failure;
+    wait until falling_edge(clk);
+
+    assert (DataOut(3 downto 0) = "1000") report "FIFO does not work" severity failure;
+    wait until falling_edge(clk);
+
+    assert (DataOut(3 downto 0) = "0100") report "FIFO does not work" severity failure;
+    wait until falling_edge(clk);
+
+    assert (DataOut(3 downto 0) = "0010") report "FIFO does not work" severity failure;
+    wait until falling_edge(clk);
+
+    assert (DataOut(3 downto 0) = "0000") report "FIFO does not work" severity failure;
+    assert (Empty = '1') report "FIFO does not report it is Empty" severity failure;
+
+    wait for 10 ns;
+
+    assert (Empty = '1') report "FIFO does not report it is empty at its start" severity failure;
+    assert (Full = '0') report "FIFO does not report it is not full at its start" severity failure;
+    WriteEn <= '1';
+    ReadEn  <= '0';
+    DataIn  <= (0 => '1', others => '0');
+    wait until falling_edge(clk);
+
+    DataIn <= (1 => '1', others => '0');
+    wait until falling_edge(clk);
+
+    DataIn <= (2 => '1', others => '0');
+    wait until falling_edge(clk);
+
+    ReadEn <= '1';
+    DataIn <= (3 => '1', others => '0');
+    wait until falling_edge(clk);
+
+    assert (Full = '0') report "FIFO does not report it is not Full" severity failure;
+    assert (DataOut(3 downto 0) = "0001") report "FIFO does not work" severity failure;
+    WriteEn <= '0';
+    wait until falling_edge(clk);
+
+    assert (DataOut(3 downto 0) = "0010") report "FIFO does not work" severity failure;
+    wait until falling_edge(clk);
+
+    assert (DataOut(3 downto 0) = "0100") report "FIFO does not work" severity failure;
+    wait until falling_edge(clk);
+
+    assert (DataOut(3 downto 0) = "1000") report "FIFO does not work" severity failure;
+    assert (Empty = '1') report "FIFO does not report it is Empty" severity failure;
+    wait for 10 ns;
+
+
     wait;
   end process Stimulus;
 

@@ -26,13 +26,17 @@ architecture behav of prefetch_buffer is
   type RegisterArray is array (0 to DEPTH-1) of std_logic_vector(DATA_WIDTH-1 downto 0);
   signal FIFO : RegisterArray;
 
-  signal ReadPointer   : std_logic_vector(DATA_WIDTH-1 downto 0) := (others => '0');
-  signal WritePointer  : std_logic_vector(DATA_WIDTH-1 downto 0) := (others => '0');
-  signal StatusCounter : std_logic_vector(DATA_WIDTH downto 0)   := (others => '0');
+  signal ReadPointer  : std_logic_vector(ADDR_WIDTH-1 downto 0) := (others => '0');
+  signal WritePointer : std_logic_vector(ADDR_WIDTH-1 downto 0) := (others => '0');
+
+  -- Difference between the number of writes and the number of reads
+  signal StatusCounter : std_logic_vector(ADDR_WIDTH downto 0) := (others => '0');
 begin  -- architecture behav
 
-  Empty <= '1' when (unsigned(StatusCounter) = 0)       else '0';
-  Full  <= '1' when (unsigned(StatusCounter) = DEPTH-1) else '0';
+  -- Empty if number of reads equals number of writes
+  Empty   <= '1'         when (unsigned(StatusCounter) = 0)     else '0';
+  -- Full if number of writes is equal to the number of reads - DEPTH
+  Full    <= '1'         when (unsigned(StatusCounter) = DEPTH) else '0';
 
   -- purpose: Updates DataOut
   -- type   : sequential
@@ -41,11 +45,11 @@ begin  -- architecture behav
   ReadProc : process (CLK, RST_n) is
   begin  -- process ReadProc
     if RST_n = '0' then                 -- asynchronous reset (active low)
-      DataOut     <= (others => '0');
+      DataOut <= (others => '0');
       ReadPointer <= (others => '0');
     elsif CLK'event and CLK = '1' then  -- rising clock edge
-      if (ReadEn = '1') then
-        DataOut     <= FIFO(to_integer(unsigned(ReadPointer)));
+      if (ReadEn = '1' and (unsigned(StatusCounter) /= 0)) then
+        DataOut <= FIFO(to_integer(unsigned(ReadPointer)));
         ReadPointer <= std_logic_vector(unsigned(ReadPointer) + 1);
       else
         DataOut <= (others => '0');
@@ -62,7 +66,7 @@ begin  -- architecture behav
     if RST_n = '0' then                 -- asynchronous reset (active low)
       WritePointer <= (others => '0');
     elsif CLK'event and CLK = '1' then  -- rising clock edge
-      if ((WriteEn = '1') and (unsigned(StatusCounter) /= DEPTH-1)) then
+      if ((WriteEn = '1') and (unsigned(StatusCounter) /= DEPTH)) then
         FIFO(to_integer(unsigned(WritePointer))) <= DataIn;
         WritePointer                             <= std_logic_vector(unsigned(WritePointer) + 1);
       end if;
@@ -80,8 +84,10 @@ begin  -- architecture behav
     elsif CLK'event and CLK = '1' then  -- rising clock edge
       if ((ReadEn = '1') and (WriteEn = '0') and (unsigned(StatusCounter) /= 0)) then  -- Only reading
         StatusCounter <= std_logic_vector(unsigned(StatusCounter) - 1);
-      elsif ((ReadEn = '0') and (WriteEn = '1') and (unsigned(StatusCounter) /= DEPTH-1)) then  -- Only writing
+      elsif ((ReadEn = '0') and (WriteEn = '1') and (unsigned(StatusCounter) /= DEPTH)) then  -- Only writing
         StatusCounter <= std_logic_vector(unsigned(StatusCounter) + 1);
+      elsif ((ReadEn = '1') and (WriteEn = '1') and (unsigned(StatusCounter) = DEPTH)) then -- Trying to read and write when full : only does the read operation.
+        StatusCounter <= std_logic_vector(unsigned(StatusCounter) - 1);
       end if;
     end if;
   end process StatusCounterProc;
