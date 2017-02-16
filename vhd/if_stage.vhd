@@ -45,14 +45,14 @@ architecture Behavioural of IF_Stage is
       ADDR_WIDTH : natural;
       DATA_WIDTH : natural);
     port (
-      CLK     : in  std_logic;
-      RST_n   : in  std_logic;
-      WriteEn : in  std_logic;
-      DataIn  : in  std_logic_vector(DATA_WIDTH-1 downto 0);
-      ReadEn  : in  std_logic;
-      DataOut : out std_logic_vector(DATA_WIDTH-1 downto 0);
-      Empty   : out std_logic;
-      Full    : out std_logic);
+      CLK          : in  std_logic;
+      RST_n        : in  std_logic;
+      Write_Enable : in  std_logic;
+      Data_Input   : in  std_logic_vector(DATA_WIDTH-1 downto 0);
+      Read_Enable  : in  std_logic;
+      Data_Output  : out std_logic_vector(DATA_WIDTH-1 downto 0);
+      Empty        : out std_logic;
+      Full         : out std_logic);
   end component Prefetch_Buffer;
 
 begin  -- architecture Behavioural
@@ -66,14 +66,14 @@ begin  -- architecture Behavioural
       ADDR_WIDTH => 2,
       DATA_WIDTH => 32)
     port map (
-      CLK     => CLK,
-      RST_n   => RST_n,
-      WriteEn => CurrentWriteEn,
-      DataIn  => Instr_ReqData_i,
-      ReadEn  => CurrentReadEn,
-      DataOut => Instr_ReqData_ID_o,
-      Empty   => Empty,
-      Full    => Full);
+      CLK          => CLK,
+      RST_n        => RST_n,
+      Write_Enable => CurrentWriteEn,
+      Data_Input   => Instr_ReqData_i,
+      Read_Enable  => CurrentReadEn,
+      Data_Output  => Instr_ReqData_ID_o,
+      Empty        => Empty,
+      Full         => Full);
 
   -- purpose: Updates current state and current Program Counter
   -- type   : sequential
@@ -98,8 +98,7 @@ begin  -- architecture Behavioural
   -- type   : combinational
   -- inputs : CurrentState, CurrentPC, Full, Instr_Grant_i
   -- outputs: NextState, NextPC, NextReadEn, NextWriteEn
-  CombinationalProcess : process (CurrentPC, CurrentState, Full, Instr_Grant_i,
-                                  Instr_ReqValid_i, NextPC) is
+  CombinationalProcess : process (CurrentPC, CurrentState, Full, Instr_Grant_i) is
   begin  -- process CombinationalProcess
     case CurrentState is
       when INIT =>
@@ -121,7 +120,7 @@ begin  -- architecture Behavioural
       when WAITING =>
         Instr_Requisition_o <= '1';
         Instr_Address_o     <= CurrentPC;
-        NextPC              <= NextPC;
+        NextPC              <= CurrentPC;
         NextReadEn          <= '0';
         if (Full = '1' or Instr_Grant_i = '0') then
           NextState   <= WAITING;

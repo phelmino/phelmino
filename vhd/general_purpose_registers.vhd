@@ -2,6 +2,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+library lib_VHDL;
+
 entity general_purpose_registers is
 
   generic (
@@ -11,22 +13,22 @@ entity general_purpose_registers is
 
   port (
     -- Clock and reset signals
-    clk   : in std_logic;
-    rst_n : in std_logic;
+    CLK   : in std_logic;
+    RST_n : in std_logic;
 
     -- Read interface
-    read_enable_a_i : in  std_logic;
-    read_addr_a_i   : in  std_logic_vector(N-1 downto 0);
-    read_data_a_o   : out std_logic_vector(W-1 downto 0);
+    ReadEnableA_i  : in  std_logic;
+    ReadAddressA_i : in  std_logic_vector(N-1 downto 0);
+    ReadDataA_o    : out std_logic_vector(W-1 downto 0);
 
-    read_enable_b_i : in  std_logic;
-    read_addr_b_i   : in  std_logic_vector(N-1 downto 0);
-    read_data_b_o   : out std_logic_vector(W-1 downto 0);
+    ReadEnableB_i  : in  std_logic;
+    ReadAddressB_i : in  std_logic_vector(N-1 downto 0);
+    ReadDataB_o    : out std_logic_vector(W-1 downto 0);
 
     -- Write interface
-    write_enable_a_i : in std_logic;
-    write_addr_a_i   : in std_logic_vector(N-1 downto 0);
-    write_data_a_i   : in std_logic_vector(W-1 downto 0));
+    WriteEnableZ_i  : in std_logic;
+    WriteAddressZ_i : in std_logic_vector(N-1 downto 0);
+    WriteDataZ_i    : in std_logic_vector(W-1 downto 0));
 
 end entity general_purpose_registers;
 
@@ -40,29 +42,29 @@ begin  -- architecture behav
 
   -- purpose: Sequential process that refreshes the outputs of the GPR and rewrites the apropriated registers.
   -- type   : sequential
-  -- inputs : clk, rst_n
-  -- outputs: read_data_a_o, read_data_b_o
-  seq_process : process (clk, rst_n) is
+  -- inputs : CLK, RST_n
+  -- outputs: ReadDataA_o, ReadDataB_o
+  seq_process : process (CLK, RST_n) is
   begin  -- process seq_process
 
-    if rst_n = '0' then                 -- asynchronous reset (active low)
+    if RST_n = '0' then                 -- asynchronous reset (active low)
       -- Clears outputs
-      read_data_a_o    <= (others => '0');
-      read_data_b_o    <= (others => '0');
+      ReadDataA_o <= (others => '0');
+      ReadDataB_o <= (others => '0');
 
       -- Clears register bank
       for i in 0 to 2**N-1 loop
         gpr(i) <= (others => '0');
       end loop;
-    elsif clk'event and clk = '1' then  -- rising clock edge
+    elsif CLK'event and CLK = '1' then  -- rising clock edge
       -- Clears outputs
-      read_data_a_o    <= next_read_data_a;
-      read_data_b_o    <= next_read_data_b;
+      ReadDataA_o <= next_read_data_a;
+      ReadDataB_o <= next_read_data_b;
 
       -- Rewrites specific address in register bank
-      if (write_enable_a_i = '1') then
-        if (write_addr_a_i /= "00000") then  -- Can not rewrite register r0
-          gpr(to_integer(unsigned(write_addr_a_i))) <= write_data_a_i;
+      if (WriteEnableZ_i = '1') then
+        if (WriteAddressZ_i /= "00000") then  -- Can not rewrite register r0
+          gpr(to_integer(unsigned(WriteAddressZ_i))) <= WriteDataZ_i;
         end if;
       end if;
 
@@ -71,19 +73,19 @@ begin  -- architecture behav
 
   -- purpose: Monitores willing to read and decides next outputs of registers
   -- type   : combinational
-  -- inputs : read_enable_a_i, read_addr_a_i, read_enable_b_i, read_addr_b_i
+  -- inputs : ReadEnableA_i, ReadAddressA_i, ReadEnableB_i, ReadAddressB_i
   -- outputs: next_read_data_a, next_read_data_b
-  comb_proc : process (gpr, read_addr_a_i, read_addr_b_i, read_enable_a_i,
-                       read_enable_b_i) is
+  comb_proc : process (gpr, ReadAddressA_i, ReadAddressB_i, ReadEnableA_i,
+                       ReadEnableB_i) is
   begin  -- process comb_proc
     next_read_data_a <= (others => '0');
     next_read_data_b <= (others => '0');
 
-    if (read_enable_a_i = '1') then
-      next_read_data_a <= gpr(to_integer(unsigned(read_addr_a_i)));
+    if (ReadEnableA_i = '1') then
+      next_read_data_a <= gpr(to_integer(unsigned(ReadAddressA_i)));
     end if;
-    if (read_enable_b_i = '1') then
-      next_read_data_b <= gpr(to_integer(unsigned(read_addr_b_i)));
+    if (ReadEnableB_i = '1') then
+      next_read_data_b <= gpr(to_integer(unsigned(ReadAddressB_i)));
     end if;
 
   end process comb_proc;
