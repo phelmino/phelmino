@@ -50,5 +50,4 @@ begin  -- architecture behav
     end case;
   end process combinational_alu;
   
-
-end architecture behav
+end architecture behav;
