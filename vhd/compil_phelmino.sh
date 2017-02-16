@@ -1,5 +1,17 @@
 PHELMINO_PATH=`cd ../../; pwd`
 PHELMINO_LIB=lib_VHDL
+HAS_ERROR=0
+
+function compile {
+    if [ $HAS_ERROR = 0 ]; then
+        vcom -work ${PHELMINO_LIB} $1 > TMP
+        cat TMP
+        if [ `cat TMP | grep "** Error" | wc -l` != 0 ]; then
+            HAS_ERROR=1
+        fi
+        rm TMP
+    fi
+}
 
 if [ ! -e $PHELMINO_PATH ]; then
     mkdir -p $PHELMINO_PATH
@@ -11,9 +23,9 @@ vlib ${PHELMINO_PATH}/libs/${PHELMINO_LIB}
 
 vmap ${PHELMINO_LIB} ${PHELMINO_PATH}/libs/${PHELMINO_LIB}
 
-vcom -work ${PHELMINO_LIB} phelmino_core.vhd 
-vcom -work ${PHELMINO_LIB} general_purpose_registers.vhd 
-vcom -work ${PHELMINO_LIB} if_stage.vhd
-vcom -work ${PHELMINO_LIB} id_stage.vhd
-vcom -work ${PHELMINO_LIB} ex_stage.vhd
-vcom -work ${PHELMINO_LIB} wb_stage.vhd 
+compile general_purpose_registers.vhd
+compile prefetch_buffer.vhd
+compile if_stage.vhd
+compile id_stage.vhd
+compile ex_stage.vhd
+compile wb_stage.vhd 

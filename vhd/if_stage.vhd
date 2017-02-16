@@ -2,97 +2,134 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity if_stage is
+library lib_VHDL;
+
+entity IF_Stage is
 
   port (
     -- Clock and reset signals
-    clk   : in std_logic;
-    rst_n : in std_logic;
+    CLK   : in std_logic;
+    RST_n : in std_logic;
 
     -- Instruction interface signals
-    instr_req_o    : out std_logic;
-    instr_addr_o   : out std_logic_vector(31 downto 0);
-    instr_gnt_i    : in  std_logic;
-    instr_rvalid_i : in  std_logic;
-    instr_rdata_i  : in  std_logic_vector(31 downto 0);
+    Instr_Requisition_o : out std_logic;
+    Instr_Address_o     : out std_logic_vector(31 downto 0);
+    Instr_Grant_i       : in  std_logic;
+    Instr_ReqValid_i    : in  std_logic;
+    Instr_ReqData_i     : in  std_logic_vector(31 downto 0);
 
     -- Data output to ID stage
-    instr_rvalid_id_o : out std_logic;
-    instr_rdata_id_o  : out std_logic_vector(31 downto 0);
+    Instr_ReqValid_ID_o : out std_logic;
+    Instr_ReqData_ID_o  : out std_logic_vector(31 downto 0)
+    );
 
-    -- Pipeline propagation control signals
-    if_enable_o : out std_logic;
-    id_enable_i : in  std_logic;
-    if_valid_o  : out std_logic);
+end entity IF_Stage;
 
-end entity if_stage;
+architecture Behavioural of IF_Stage is
+  type IF_State is (INIT, REQUISITION, WAITING);
 
-architecture behav of if_stage is
-  type IF_State is (INIT, REQUISITION, LECTURE);
+  signal CurrentState   : IF_State                      := INIT;
+  signal NextState      : IF_State                      := INIT;
+  signal CurrentPC      : std_logic_vector(31 downto 0) := (others => '0');
+  signal NextPC         : std_logic_vector(31 downto 0) := (others => '0');
+  signal CurrentWriteEn : std_logic                     := '0';
+  signal NextWriteEn    : std_logic                     := '0';
+  signal CurrentReadEn  : std_logic                     := '0';
+  signal NextReadEn     : std_logic                     := '0';
 
-  signal current_pc    : std_logic_vector(31 downto 0);
-  signal next_pc       : std_logic_vector(31 downto 0);
-  signal current_state : IF_State;
-  signal next_state    : IF_State;
-begin  -- architecture behav
+  signal Empty : std_logic := '0';
+  signal Full  : std_logic := '0';
 
-  -- purpose: Updates current state and current program counter (PC)
+  component Prefetch_Buffer is
+    generic (
+      ADDR_WIDTH : natural;
+      DATA_WIDTH : natural);
+    port (
+      CLK          : in  std_logic;
+      RST_n        : in  std_logic;
+      Write_Enable : in  std_logic;
+      Data_Input   : in  std_logic_vector(DATA_WIDTH-1 downto 0);
+      Read_Enable  : in  std_logic;
+      Data_Output  : out std_logic_vector(DATA_WIDTH-1 downto 0);
+      Empty        : out std_logic;
+      Full         : out std_logic);
+  end component Prefetch_Buffer;
+
+begin  -- architecture Behavioural
+
+  -- Propagates Valid signal to ID stage
+  Instr_ReqValid_ID_o <= Instr_ReqValid_i;
+
+  -- instance "PrefetchBuffer"
+  PrefetchBuffer : entity lib_VHDL.Prefetch_Buffer
+    generic map (
+      ADDR_WIDTH => 2,
+      DATA_WIDTH => 32)
+    port map (
+      CLK          => CLK,
+      RST_n        => RST_n,
+      Write_Enable => CurrentWriteEn,
+      Data_Input   => Instr_ReqData_i,
+      Read_Enable  => CurrentReadEn,
+      Data_Output  => Instr_ReqData_ID_o,
+      Empty        => Empty,
+      Full         => Full);
+
+  -- purpose: Updates current state and current Program Counter
   -- type   : sequential
-  -- inputs : clk, rst_n
-  -- outputs: current_pc, current_state
-  seq_process : process (clk, rst_n) is
-  begin  -- process seq_process
-    if rst_n = '0' then                 -- asynchronous reset (active low)
-      current_state <= INIT;
-      current_pc    <= (others => '0');
-    elsif clk'event and clk = '1' then  -- rising clock edge
-      current_state <= next_state;
-      current_pc    <= next_pc;
+  -- inputs : CLK, RST_n, NextState, NextPC, NextReadEn, NextWriteEn
+  -- outputs: CurrentState, CurrentPC, CurrentReadEn, CurrentWriteEn
+  SequentialProcess : process (CLK, RST_n) is
+  begin  -- process SequentialProcess
+    if RST_n = '0' then                 -- asynchronous reset (active low)
+      CurrentState   <= INIT;
+      CurrentPC      <= (others => '0');
+      CurrentReadEn  <= '0';
+      CurrentWriteEn <= '0';
+    elsif CLK'event and CLK = '1' then  -- rising clock edge
+      CurrentState   <= NextState;
+      CurrentPC      <= NextPC;
+      CurrentReadEn  <= NextReadEn;
+      CurrentWriteEn <= NextWriteEn;
     end if;
-  end process seq_process;
+  end process SequentialProcess;
 
-  comb_process : process (current_pc, current_state, instr_gnt_i,
-                          instr_rdata_i, instr_rvalid_i, rst_n) is
-  begin  -- process comb_process
-    case current_state is
-      
+  -- purpose: Calculates next state and next Program Counter
+  -- type   : combinational
+  -- inputs : CurrentState, CurrentPC, Full, Instr_Grant_i
+  -- outputs: NextState, NextPC, NextReadEn, NextWriteEn
+  CombinationalProcess : process (CurrentPC, CurrentState, Full, Instr_Grant_i) is
+  begin  -- process CombinationalProcess
+    case CurrentState is
       when INIT =>
-        if rst_n = '1' then
-          next_state <= REQUISITION;
-        else
-          next_state <= INIT;
-        end if;
-        next_pc           <= (others => '0');
-        instr_req_o       <= '0';
-        instr_addr_o      <= (others => '0');
-        instr_rdata_id_o  <= (others => '0');
-        instr_rvalid_id_o <= '0';
+        Instr_Requisition_o <= '0';
+        Instr_Address_o     <= (others => '0');
+        NextPC              <= (others => '0');
+        NextReadEn          <= '0';
+        NextWriteEn         <= '0';
+        NextState           <= REQUISITION;
 
       when REQUISITION =>
-        next_state <= REQUISITION;
-        if (instr_gnt_i = '1') then
-          next_state <= LECTURE;
-        end if;
-        next_pc      <= current_pc;
-        instr_req_o  <= '1';
-        instr_addr_o <= current_pc;
-        if (instr_rvalid_i = '1') then
-          instr_rdata_id_o  <= instr_rdata_i;
-          instr_rvalid_id_o <= '1';
+        Instr_Requisition_o <= '1';
+        Instr_Address_o     <= CurrentPC;
+        NextPC              <= std_logic_vector(unsigned(CurrentPC) + 1);
+        NextReadEn          <= '0';
+        NextWriteEn         <= '0';
+        NextState           <= WAITING;
+
+      when WAITING =>
+        Instr_Requisition_o <= '1';
+        Instr_Address_o     <= CurrentPC;
+        NextPC              <= CurrentPC;
+        NextReadEn          <= '0';
+        if (Full = '1' or Instr_Grant_i = '0') then
+          NextState   <= WAITING;
+          NextWriteEn <= '0';
         else
-          instr_rdata_id_o  <= (others => '0');
-          instr_rvalid_id_o <= '0';
+          NextState   <= REQUISITION;
+          NextWriteEn <= '1';
         end if;
-
-      when LECTURE =>
-        next_state        <= REQUISITION;
-        next_pc           <= std_logic_vector(unsigned(current_pc) + 1);
-        instr_req_o       <= '1';
-        instr_addr_o      <= current_pc;
-        instr_rdata_id_o  <= (others => '0');
-        instr_rvalid_id_o <= '0';
-
     end case;
-  end process comb_process;
+  end process CombinationalProcess;
 
-end architecture behav;
+end architecture Behavioural;
