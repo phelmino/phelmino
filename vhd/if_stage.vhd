@@ -41,7 +41,7 @@ architecture Behavioural of IF_Stage is
   signal Empty : std_logic := '0';
   signal Full  : std_logic := '0';
 
-  component Prefetch_Buffer is
+  component FIFO is
     generic (
       ADDR_WIDTH : natural;
       DATA_WIDTH : natural);
@@ -54,17 +54,17 @@ architecture Behavioural of IF_Stage is
       Data_Output  : out std_logic_vector(DATA_WIDTH-1 downto 0);
       Empty        : out std_logic;
       Full         : out std_logic);
-  end component Prefetch_Buffer;
+  end component FIFO;
 
 begin  -- architecture Behavioural
 
   -- Propagates Valid signal to ID stage
   Instr_ReqValid_ID_Output <= Instr_ReqValid_Input;
 
-  -- instance "PrefetchBuffer"
-  PrefetchBuffer : entity lib_VHDL.Prefetch_Buffer
+  -- instance "Prefetch_Buffer"
+  Prefetch_Buffer : entity lib_VHDL.FIFO
     generic map (
-      ADDR_WIDTH => GPR_ADDRESS_WIDTH,
+      ADDR_WIDTH => PREFETCH_ADDRESS_WIDTH,
       DATA_WIDTH => WORD_WIDTH)
     port map (
       CLK          => CLK,

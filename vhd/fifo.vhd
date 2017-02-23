@@ -5,7 +5,7 @@ use ieee.std_logic_1164.all;
 library lib_VHDL;
 use lib_VHDL.phelmino_definitions.all;
 
-entity Prefetch_Buffer is
+entity FIFO is
 
   generic (
     ADDR_WIDTH : natural := PREFETCH_ADDRESS_WIDTH;
@@ -21,9 +21,9 @@ entity Prefetch_Buffer is
     Empty        : out std_logic;
     Full         : out std_logic);
 
-end entity Prefetch_Buffer;
+end entity FIFO;
 
-architecture Behavioural of Prefetch_Buffer is
+architecture Behavioural of FIFO is
   constant DEPTH : integer := 2**ADDR_WIDTH;
 
   type RegisterArray is array (0 to DEPTH-1) of std_logic_vector(DATA_WIDTH-1 downto 0);

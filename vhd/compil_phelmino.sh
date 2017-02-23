@@ -25,7 +25,7 @@ vmap ${PHELMINO_LIB} ${PHELMINO_PATH}/libs/${PHELMINO_LIB}
 
 compile ../include/phelmino_definitions.vhd 
 compile general_purpose_registers.vhd
-compile prefetch_buffer.vhd
+compile fifo.vhd
 compile alu.vhd 
 compile if_stage.vhd
 compile id_stage.vhd
