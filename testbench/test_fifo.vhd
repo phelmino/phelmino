@@ -4,10 +4,10 @@ use ieee.std_logic_1164.all;
 
 library lib_VHDL;
 
-entity test_prefetch_buffer is
-end entity test_prefetch_buffer;
+entity Test_FIFO is
+end entity Test_FIFO;
 
-architecture Behavioural of test_prefetch_buffer is
+architecture Behavioural of Test_FIFO is
   component prefetch_buffer is
     generic (
       ADDR_WIDTH : natural;
@@ -35,7 +35,7 @@ architecture Behavioural of test_prefetch_buffer is
 begin  -- architecture Behavioural
 
   -- instance "PrefetchBuffer"
-  PrefetchBuffer : entity lib_VHDL.prefetch_buffer
+  PrefetchBuffer : entity lib_VHDL.FIFO
     generic map (
       ADDR_WIDTH => 2,
       DATA_WIDTH => 32)

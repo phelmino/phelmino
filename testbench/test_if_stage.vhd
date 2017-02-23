@@ -59,7 +59,7 @@ begin  -- architecture Behavioural
       Instr_Grant_Input          <= '0';
       Instr_ReqData_Input        <= (others => '0');
       Instruction_ReqValid_Input <= '0';
-    elsif CLK'event and CLK = '1' then  -- rising clock edge
+    elsif CLK'event and CLK = '0' then  -- falling clock edge
       if (Instr_Grant_Input = '1') then
         Instr_Grant_Input          <= '0';
         Instruction_ReqValid_Input <= '1';
