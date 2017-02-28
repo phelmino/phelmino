@@ -34,6 +34,7 @@ architecture Behavioural of test_if_stage is
   signal Instr_ReqValid_ID_Output   : std_logic                               := '0';
   signal Instr_ReqData_ID_Output    : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
   signal Next_Grant                 : std_logic                               := '0';
+
 begin  -- architecture Behavioural
 
   CLK   <= not CLK after 5 ns;
@@ -53,7 +54,7 @@ begin  -- architecture Behavioural
       Instr_ReqData_ID_Output  => Instr_ReqData_ID_Output);
 
   -- purpose: Emulate the memory
-  proc_memory : process (CLK, RST_n) is
+  Proc_Memory : process (CLK, RST_n) is
   begin  -- process proc_memory
     if RST_n = '0' then                 -- asynchronous reset (active low)
       Instr_Grant_Input          <= '0';
@@ -63,7 +64,7 @@ begin  -- architecture Behavioural
       if (Instr_Grant_Input = '1') then
         Instr_Grant_Input          <= '0';
         Instruction_ReqValid_Input <= '1';
-        Instr_ReqData_Input        <= "00000000001000001000000110110011";
+        Instr_ReqData_Input     <= "00000000001000001000000110110011";
       elsif (Instruction_ReqValid_Input = '1') then
         Instruction_ReqValid_Input <= '0';
         Instr_ReqData_Input        <= (others => '0');
@@ -72,15 +73,15 @@ begin  -- architecture Behavioural
         Instr_ReqData_Input <= (others => '0');
       end if;
     end if;
-  end process proc_memory;
+  end process Proc_Memory;
 
-  comb_proc : process (Instr_Requisition_Output) is
-  begin  -- process comb_proc
+  Comb_Proc : process (Instr_Requisition_Output) is
+  begin  -- process Comb_Proc
     if (Instr_Requisition_Output = '1') then
       Next_Grant <= '1';
     else
       Next_Grant <= '0';
     end if;
-  end process comb_proc;
+  end process Comb_Proc;
 
 end architecture Behavioural;
