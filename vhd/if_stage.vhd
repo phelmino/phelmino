@@ -21,7 +21,11 @@ entity IF_Stage is
 
     -- Data output to ID stage
     Instr_ReqValid_ID_Output : out std_logic;
-    Instr_ReqData_ID_Output  : out std_logic_vector(WORD_WIDTH-1 downto 0)
+    Instr_ReqData_ID_Output  : out std_logic_vector(WORD_WIDTH-1 downto 0);
+
+    -- Branch signals
+    Branch_Active_Input      : in std_logic;
+    Branch_Destination_Input : in std_logic_vector(WORD_WIDTH-1 downto 0)
     );
 
 end entity IF_Stage;
@@ -131,12 +135,18 @@ begin  -- architecture Behavioural
         Next_Write_Enable    <= '0';
         Next_State           <= REQUISITION;
 
-        if (Full = '1' or Current_Instr_Grant = '0') then
-          Next_Program_Counter   <= Current_Program_Counter;
-          Next_Write_Enable      <= '0';
+        if (Branch_Active_Input = '1') then
+          Next_Program_Counter <= Branch_Destination_Input;
+        elsif (Full = '0' and Current_Instr_Grant = '1') then
+          Next_Program_Counter <= std_logic_vector(unsigned(Current_Program_Counter) + 1);
         else
-          Next_Program_Counter   <= std_logic_vector(unsigned(Current_Program_Counter) + 1);
-          Next_Write_Enable      <= '1';
+          Next_Program_Counter <= Current_Program_Counter;
+        end if;
+
+        if (Full = '1' or Current_Instr_Grant = '0' or Branch_Active_Input = '1') then
+          Next_Write_Enable <= '0';
+        else
+          Next_Write_Enable <= '1';
         end if;
 
         if (Full = '1') then
@@ -144,7 +154,7 @@ begin  -- architecture Behavioural
         else
           Next_Instr_Requisition <= '1';
         end if;
-        
+
     end case;
   end process CombinationalProcess;
 
