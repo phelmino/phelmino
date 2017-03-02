@@ -39,6 +39,9 @@ package phelmino_definitions is
   constant RSOURCE2_BEGIN     : natural := 24;
   constant RSOURCE2_END       : natural := 20;
 
+  -- OPCODEs from ISA
+  constant OPCODE_ALU_REGISTER_REGISTER : std_logic_vector(OPCODE_LENGTH-1 downto 0) := "0110011";
+
   -- NOP
   constant NOP : std_logic_vector(WORD_WIDTH-1 downto 0) := "00000000001000001000000110110011";
 
