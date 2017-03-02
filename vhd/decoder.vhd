@@ -9,6 +9,7 @@ entity Decoder is
 
   port (
     Instruction_Input           : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+    Instruction_Valid           : out std_logic;
     Read_Enable_A_Output        : out std_logic;
     Read_Address_A_Output       : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);  -- Read_Enable_B_Output
     Read_Enable_B_Output        : out std_logic;
@@ -26,6 +27,7 @@ architecture Behavioural of Decoder is
   signal RSOURCE1     : std_logic_vector(REG_LENGTH-1 downto 0)    := (others => '0');
   signal RSOURCE2     : std_logic_vector(REG_LENGTH-1 downto 0)    := (others => '0');
   signal RDESTINATION : std_logic_vector(REG_LENGTH-1 downto 0)    := (others => '0');
+  
 begin  -- architecture Behavioural
 
   -- purpose: Decodes an Instruction
@@ -39,6 +41,57 @@ begin  -- architecture Behavioural
     RSOURCE1     <= Instruction_Input(RSOURCE1_BEGIN downto RSOURCE1_END);
     RSOURCE2     <= Instruction_Input(RSOURCE2_BEGIN downto RSOURCE2_END);
     RDESTINATION <= Instruction_Input(RDESTINATION_BEGIN downto RDESTINATION_END);
+
+    case OPCODE is
+      when OPCODE_ALU_REGISTER_REGISTER =>
+        Read_Enable_A_Output        <= '1';
+        Read_Address_A_Output       <= RSOURCE1;
+        Read_Enable_B_Output        <= '1';
+        Read_Address_B_Output       <= RSOURCE2;
+        Instruction_Valid           <= '1';
+        Destination_Register_Output <= RDESTINATION;
+        Immediate_Extension_Output  <= (others => '0');
+        ALU_Operator_Output         <= ALU_ADD;
+        case FUNC3 is
+          when "000" =>
+            case FUNC7 is
+              when "0000000" => ALU_Operator_Output <= ALU_ADD;
+              when "0100000" => ALU_Operator_Output <= ALU_SUB;
+              when others    => Instruction_Valid   <= '0';
+            end case;
+
+          when "100" =>
+            case FUNC7 is
+              when "0000000" => ALU_Operator_Output <= ALU_XOR;
+              when others    => Instruction_Valid   <= '0';
+            end case;
+
+          when "110" =>
+            case FUNC7 is
+              when "0000000" => ALU_Operator_Output <= ALU_OR;
+              when others    => Instruction_Valid   <= '0';
+            end case;
+
+          when "111" =>
+            case FUNC7 is
+              when "0000000" => ALU_Operator_Output <= ALU_AND;
+              when others    => Instruction_Valid   <= '0';
+            end case;
+
+          when others =>
+            Instruction_Valid <= '0';
+        end case;
+
+      when others =>
+        Instruction_Valid           <= '0';
+        Read_Enable_A_Output        <= '1';
+        Read_Enable_B_Output        <= '1';
+        Read_Address_A_Output       <= (others => '0');
+        Read_Address_B_Output       <= (others => '0');
+        ALU_Operator_Output         <= ALU_ADD;
+        Destination_Register_Output <= (others => '0');
+        Immediate_Extension_Output  <= (others => '0');
+    end case;
 
   end process Decoder_Process;
 

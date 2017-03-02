@@ -48,10 +48,11 @@ architecture Behavioural of IF_Stage is
   signal Current_Instr_ReqValid : std_logic                               := '0';
   signal Current_Instr_ReqData  : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
 
-  signal Empty : std_logic := '0';
-  signal Full  : std_logic := '0';
 
-  signal FIFO_RST : std_logic := '0';
+  signal Empty               : std_logic                               := '0';
+  signal Full                : std_logic                               := '0';
+  signal FIFO_RST            : std_logic                               := '0';
+  signal Current_Instruction : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
 
   component FIFO is
     generic (
@@ -73,7 +74,8 @@ begin  -- architecture Behavioural
   FIFO_RST <= RST_n and not Branch_Active_Input;
 
   -- Propagates Valid signal to ID stage
-  Instr_ReqValid_ID_Output <= Instr_ReqValid_Input;
+  Instr_ReqValid_ID_Output <= not Empty;
+  Instr_ReqData_ID_Output  <= Current_Instruction when (Empty = '1') else NOP;
 
   -- instance "Prefetch_Buffer"
   Prefetch_Buffer : entity lib_VHDL.FIFO
@@ -86,7 +88,7 @@ begin  -- architecture Behavioural
       Write_Enable => Current_Write_Enable,
       Data_Input   => Current_Instr_ReqData,
       Read_Enable  => Current_Read_Enable,
-      Data_Output  => Instr_ReqData_ID_Output,
+      Data_Output  => Current_Instruction,
       Empty        => Empty,
       Full         => Full);
 
