@@ -24,6 +24,7 @@ vlib ${PHELMINO_PATH}/libs/${PHELMINO_LIB}
 vmap ${PHELMINO_LIB} ${PHELMINO_PATH}/libs/${PHELMINO_LIB}
 
 compile ../include/phelmino_definitions.vhd 
+compile decoder.vhd 
 compile general_purpose_registers.vhd
 compile fifo.vhd
 compile alu.vhd 

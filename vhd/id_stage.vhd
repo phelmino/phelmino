@@ -1,31 +1,39 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity id_stage is
+library lib_VHDL;
+use lib_VHDL.phelmino_definitions.all;
+
+entity ID_Stage is
 
   port (
     -- Clock and reset signals
-    clk   : in std_logic;
-    rst_n : in std_logic;
+    CLK   : in std_logic;
+    RST_n : in std_logic;
 
-    -- Data output to EX stage
-    instr_rvalid_i : in std_logic;
-    instr_rdata_i  : in std_logic_vector(31 downto 0);
+    -- Data input from IF stage
+    Instr_ReqValid_Input : in std_logic;
+    Instr_ReqData_Input  : in std_logic_vector(31 downto 0);
 
     -- ALU Signals
-    alu_input_a_ex_o  : out std_logic_vector(31 downto 0);
-    alu_input_b_ex_o  : out std_logic_vector(31 downto 0);
-    alu_operator_ex_o : out std_logic_vector(5 downto 0);  -- TODO: How many bits?
+    ALU_Input_A_EX_Output  : out std_logic_vector(31 downto 0);
+    ALU_Input_B_EX_Output  : out std_logic_vector(31 downto 0);
+    ALU_Operator_EX_Output : out std_logic_vector(5 downto 0);  -- TODO: How many bits?
 
-    -- Jump destination
-    instr_jump_destination_id_o : out std_logic_vector(31 downto 0);
+    -- Branch destination
+    Branch_Active_IF_Output      : out std_logic;
+    Branch_Destination_IF_Output : out std_logic_vector(WORD_WIDTH-1 downto 0);
 
     -- Program Counter (PC)
-    pc_id_i : in std_logic_vector(31 downto 0);
+    PC_ID_Input : in std_logic_vector(31 downto 0));
 
-    -- Pipeline propagation control signals
-    id_enable_o : out std_logic;
-    id_valid_o  : out std_logic;
-    ex_enable_i : in  std_logic);
+end entity ID_Stage;
 
-end entity id_stage;
+architecture Behavioural of ID_Stage is
+
+begin  -- architecture Behavioural
+
+
+
+
+end architecture Behavioural;

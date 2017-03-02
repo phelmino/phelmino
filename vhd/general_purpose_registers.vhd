@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 library lib_VHDL;
 use lib_VHDL.phelmino_definitions.all;
 
-entity general_purpose_registers is
+entity General_Purpose_Registers is
 
   generic (
     W : natural := WORD_WIDTH;      -- width of each register
@@ -31,9 +31,9 @@ entity general_purpose_registers is
     Write_Address_Z_Input : in std_logic_vector(N-1 downto 0);
     Write_Data_Z_Input    : in std_logic_vector(W-1 downto 0));
 
-end entity general_purpose_registers;
+end entity General_Purpose_Registers;
 
-architecture Behavioural of general_purpose_registers is
+architecture Behavioural of General_Purpose_Registers is
   type Register_Array is array (0 to 2**N-1) of std_logic_vector(W-1 downto 0);
   signal GPR : Register_Array;
 
