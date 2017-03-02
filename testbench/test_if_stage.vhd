@@ -81,7 +81,7 @@ begin  -- architecture Behavioural
       if (Instr_Grant_Input = '1') then
         Instr_Grant_Input          <= '0';
         Instruction_ReqValid_Input <= '1';
-        Instr_ReqData_Input        <= std_logic_vector(Counter);
+        Instr_ReqData_Input        <= Instr_Address_Output;
       elsif (Instruction_ReqValid_Input = '1') then
         Instruction_ReqValid_Input <= '0';
         Instr_ReqData_Input        <= (others => '0');

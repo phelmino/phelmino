@@ -51,6 +51,8 @@ architecture Behavioural of IF_Stage is
   signal Empty : std_logic := '0';
   signal Full  : std_logic := '0';
 
+  signal FIFO_RST : std_logic := '0';
+
   component FIFO is
     generic (
       ADDR_WIDTH : natural;
@@ -67,6 +69,8 @@ architecture Behavioural of IF_Stage is
   end component FIFO;
 
 begin  -- architecture Behavioural
+  -- FIFO empties if RST_n = '0' or if Branch_Active_Input = '1'
+  FIFO_RST <= RST_n and not Branch_Active_Input;
 
   -- Propagates Valid signal to ID stage
   Instr_ReqValid_ID_Output <= Instr_ReqValid_Input;
@@ -78,7 +82,7 @@ begin  -- architecture Behavioural
       DATA_WIDTH => WORD_WIDTH)
     port map (
       CLK          => CLK,
-      RST_n        => RST_n,
+      RST_n        => FIFO_RST,
       Write_Enable => Current_Write_Enable,
       Data_Input   => Current_Instr_ReqData,
       Read_Enable  => Current_Read_Enable,
