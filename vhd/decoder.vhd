@@ -33,7 +33,14 @@ begin  -- architecture Behavioural
   -- purpose: Decodes an Instruction
   -- type   : combinational
   -- inputs : Instruction_Input
-  Decoder_Process : process (Instruction_Input) is
+  Decoder_Process : process (FUNC3, FUNC7,
+                             Instruction_Input(FUNC3_BEGIN downto FUNC3_END),
+                             Instruction_Input(FUNC7_BEGIN downto FUNC7_END),
+                             Instruction_Input(OPCODE_BEGIN downto OPCODE_END),
+                             Instruction_Input(RDESTINATION_BEGIN downto RDESTINATION_END),
+                             Instruction_Input(RSOURCE1_BEGIN downto RSOURCE1_END),
+                             Instruction_Input(RSOURCE2_BEGIN downto RSOURCE2_END),
+                             OPCODE, RDESTINATION, RSOURCE1, RSOURCE2) is
   begin  -- process Decoder_Process
     OPCODE       <= Instruction_Input(OPCODE_BEGIN downto OPCODE_END);
     FUNC7        <= Instruction_Input(FUNC7_BEGIN downto FUNC7_END);

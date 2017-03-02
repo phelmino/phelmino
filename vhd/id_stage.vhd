@@ -88,8 +88,8 @@ architecture Behavioural of ID_Stage is
   signal Next_Mux_Controller_A         : std_logic_vector(1 downto 0) := "00";
   signal Current_Mux_Controller_B      : std_logic_vector(1 downto 0) := "00";
   signal Next_Mux_Controller_B         : std_logic_vector(1 downto 0) := "00";
-  signal Current_Mux_Controller_Branch : std_logic_vector(1 downto 0) := "00";
-  signal Next_Mux_Controller_Branch    : std_logic_vector(1 downto 0) := "00";
+  signal Current_Mux_Controller_Branch : std_logic_vector(2 downto 0) := "000";
+  signal Next_Mux_Controller_Branch    : std_logic_vector(2 downto 0) := "000";
 
 begin  -- architecture Behavioural
 
@@ -162,15 +162,16 @@ begin  -- architecture Behavioural
 
   -- purpose: Mux to define whether a branch will or will not be made the next cycle
   -- type   : combinational
-  Mux_Branch : process is
+  Mux_Branch : process (A_Equal_B, A_Less_Than_B,
+                        Current_Mux_Controller_Branch) is
   begin  -- process Mux_Branch
     case Current_Mux_Controller_Branch is
-      when "000"  => Branch_Active_Input <= '0';  -- Not in a branch
-      when "001"  => Branch_Active_Input <= A_Equal_B;          -- BEQ
-      when "010"  => Branch_Active_Input <= not A_Equal_B;      -- BNEQ
-      when "011"  => Branch_Active_Input <= A_Less_Than_B;      -- BLT
-      when "100"  => Branch_Active_Input <= not A_Less_Than_B;  -- BGE
-      when others => Branch_Active_Input <= '0';
+      when "000"  => Branch_Active_IF_Output <= '0';  -- Not in a branch
+      when "001"  => Branch_Active_IF_Output <= A_Equal_B;          -- BEQ
+      when "010"  => Branch_Active_IF_Output <= not A_Equal_B;      -- BNEQ
+      when "011"  => Branch_Active_IF_Output <= A_Less_Than_B;      -- BLT
+      when "100"  => Branch_Active_IF_Output <= not A_Less_Than_B;  -- BGE
+      when others => Branch_Active_IF_Output <= '0';
     end case;
   end process Mux_Branch;
 
