@@ -72,7 +72,6 @@ architecture Behavioural of ID_Stage is
       Immediate_Extension_Output  : out std_logic_vector(WORD_WIDTH-1 downto 0));
   end component Decoder;
   signal Instruction_Input           : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal Current_Instruction         : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
   signal Instruction_Valid           : std_logic;
   signal ALU_Operator_Output         : std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
   signal Mux_Controller_A            : std_logic_vector(1 downto 0);
@@ -95,12 +94,30 @@ architecture Behavioural of ID_Stage is
 
 begin  -- architecture Behavioural
 
-  -- Comparison signals
-  A_Equal_B     <= '1' when (Read_Data_A_Output = Read_Data_B_Output)                                        else '0';
-  A_Less_Than_B <= '1' when (unsigned('0' & Read_Data_A_Output) < unsigned('0' & Read_Data_B_Output)) = true else '0';
+  -- Recuperates instruction from IF stage
+  Instruction_Input <= Instr_ReqData_Input;
 
-  -- Current Instruction
-  Current_Instruction <= Instruction_Input when (Instr_ReqValid_Input = '1') else NOP;
+  -- Comparison signals
+  -- purpose: Compare outputs from registers A and B
+  -- type   : combinational
+  Comparisor : process (RST_n, Read_Data_A_Output, Read_Data_B_Output) is
+  begin  -- process Comparisor
+    if (RST_n = '0') then
+      A_Equal_B     <= '0';
+      A_Less_Than_B <= '0';
+    else
+      if (Read_Data_A_Output = Read_Data_B_Output) then
+        A_Equal_B     <= '1';
+        A_Less_Than_B <= '0';
+      elsif (unsigned('0' & Read_Data_A_Output) < unsigned('0' & Read_Data_B_Output)) = true then
+        A_Equal_B     <= '0';
+        A_Less_Than_B <= '1';
+      else
+        A_Equal_B     <= '0';
+        A_Less_Than_B <= '0';
+      end if;
+    end if;
+  end process Comparisor;
 
   GPR : entity lib_VHDL.General_Purpose_Registers
     generic map (
@@ -119,7 +136,7 @@ begin  -- architecture Behavioural
 
   DecoderBlock : entity lib_VHDL.Decoder
     port map (
-      Instruction_Input           => Current_Instruction,
+      Instruction_Input           => Instruction_Input,
       Instruction_Valid           => Instruction_Valid,
       Read_Address_A_Output       => Read_Address_A_Input,
       Read_Address_B_Output       => Read_Address_B_Input,
@@ -138,13 +155,11 @@ begin  -- architecture Behavioural
       Current_Mux_Controller_Branch  <= (others => '0');
       EX_ALU_Operator_Output         <= (others => '0');
       EX_Destination_Register_Output <= (others => '0');
-      Instruction_Input              <= (others => '0');
       Branch_Destination_IF_Output   <= (others => '0');
     elsif CLK'event and CLK = '1' then  -- rising clock edge
       Current_Mux_Controller_A       <= Mux_Controller_A;
       Current_Mux_Controller_B       <= Mux_Controller_B;
       Current_Mux_Controller_Branch  <= Mux_Controller_Branch;
-      Instruction_Input              <= Instr_ReqData_Input;
       EX_ALU_Operator_Output         <= ALU_Operator_Output;
       EX_Destination_Register_Output <= Destination_Register_Output;
       Branch_Destination_IF_Output   <= (others => '0');

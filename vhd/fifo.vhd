@@ -18,6 +18,7 @@ entity FIFO is
     Data_Input   : in  std_logic_vector(DATA_WIDTH-1 downto 0);
     Read_Enable  : in  std_logic;
     Data_Output  : out std_logic_vector(DATA_WIDTH-1 downto 0);
+    Data_Valid   : out std_logic;
     Empty        : out std_logic;
     Full         : out std_logic);
 
@@ -50,12 +51,19 @@ begin  -- architecture Behavioural
     if RST_n = '0' then                 -- asynchronous reset (active low)
       Data_Output  <= (others => '0');
       Read_Pointer <= (others => '0');
+      Data_Valid   <= '0';
     elsif CLK'event and CLK = '1' then  -- rising clock edge
+      Read_Pointer <= Read_Pointer;
       if (Read_Enable = '1' and (unsigned(Status_Counter) /= 0)) then
         Data_Output  <= FIFO(to_integer(unsigned(Read_Pointer)));
         Read_Pointer <= std_logic_vector(unsigned(Read_Pointer) + 1);
+        Data_Valid   <= '1';
+      elsif (Read_Enable = '1' and Write_Enable = '1' and (unsigned(Status_Counter) = 0)) then
+        Data_Output <= Data_Input;
+        Data_Valid  <= '1';
       else
         Data_Output <= (others => '0');
+        Data_Valid  <= '0';
       end if;
     end if;
   end process ReadProc;
@@ -72,7 +80,8 @@ begin  -- architecture Behavioural
         FIFO(I) <= (others => '0');
       end loop;  -- I
     elsif CLK'event and CLK = '1' then  -- rising clock edge
-      if ((Write_Enable = '1') and (unsigned(Status_Counter) /= DEPTH)) then
+      Write_Pointer <= Write_Pointer;
+      if ((Write_Enable = '1') and (unsigned(Status_Counter) /= DEPTH) and (unsigned(Status_Counter) /= 0)) then
         FIFO(to_integer(unsigned(Write_Pointer))) <= Data_Input;
         Write_Pointer                             <= std_logic_vector(unsigned(Write_Pointer) + 1);
       end if;
@@ -88,12 +97,20 @@ begin  -- architecture Behavioural
     if RST_n = '0' then                 -- asynchronous reset (active low)
       Status_Counter <= (others => '0');
     elsif CLK'event and CLK = '1' then  -- rising clock edge
-      if ((Read_Enable = '1') and (Write_Enable = '0') and (unsigned(Status_Counter) /= 0)) then  -- Only reading
+      -- Only reading
+      if ((Read_Enable = '1') and (Write_Enable = '0') and (unsigned(Status_Counter) /= 0)) then
         Status_Counter <= std_logic_vector(unsigned(Status_Counter) - 1);
-      elsif ((Read_Enable = '0') and (Write_Enable = '1') and (unsigned(Status_Counter) /= DEPTH)) then  -- Only writing
+      -- Only writing
+      elsif ((Read_Enable = '0') and (Write_Enable = '1') and (unsigned(Status_Counter) /= DEPTH)) then
         Status_Counter <= std_logic_vector(unsigned(Status_Counter) + 1);
-      elsif ((Read_Enable = '1') and (Write_Enable = '1') and (unsigned(Status_Counter) = DEPTH)) then  -- Trying to read and write when full : only does the read operation.
+      -- Trying to read and write when full : only does the read operation.
+      elsif ((Read_Enable = '1') and (Write_Enable = '1') and (unsigned(Status_Counter) = DEPTH)) then
         Status_Counter <= std_logic_vector(unsigned(Status_Counter) - 1);
+      -- Trying to read and write when empty : does both operations.
+      elsif ((Read_Enable = '1') and (Write_Enable = '1') and (unsigned(Status_Counter) = 0)) then
+        Status_Counter <= std_logic_vector(unsigned(Status_Counter));
+      else
+        Status_Counter <= Status_Counter;
       end if;
     end if;
   end process StatusCounterProc;

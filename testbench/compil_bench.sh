@@ -27,3 +27,4 @@ compile test_general_purpose_registers.vhd
 compile test_if_stage.vhd
 compile test_id_stage.vhd 
 compile test_fifo.vhd 
+compile test_phelmino_core.vhd 

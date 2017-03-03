@@ -51,6 +51,7 @@ architecture Behavioural of IF_Stage is
 
   signal Empty               : std_logic                               := '0';
   signal Full                : std_logic                               := '0';
+  signal Data_Valid          : std_logic                               := '0';
   signal FIFO_RST            : std_logic                               := '0';
   signal Current_Instruction : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
 
@@ -65,6 +66,7 @@ architecture Behavioural of IF_Stage is
       Data_Input   : in  std_logic_vector(DATA_WIDTH-1 downto 0);
       Read_Enable  : in  std_logic;
       Data_Output  : out std_logic_vector(DATA_WIDTH-1 downto 0);
+      Data_Valid   : out std_logic;
       Empty        : out std_logic;
       Full         : out std_logic);
   end component FIFO;
@@ -72,11 +74,6 @@ architecture Behavioural of IF_Stage is
 begin  -- architecture Behavioural
   -- FIFO empties if RST_n = '0' or if Branch_Active_Input = '1'
   FIFO_RST <= RST_n and not Branch_Active_Input;
-
-  -- Propagates Valid signal to ID stage
-  Instr_ReqValid_ID_Output        <= not Empty;
-  Instr_ReqData_ID_Output         <= Current_Instruction when (Empty = '1') else NOP;
-  Instr_Program_Counter_ID_Output <= Current_Program_Counter;
 
   -- instance "Prefetch_Buffer"
   Prefetch_Buffer : entity lib_VHDL.FIFO
@@ -90,6 +87,7 @@ begin  -- architecture Behavioural
       Data_Input   => Current_Instr_ReqData,
       Read_Enable  => Current_Read_Enable,
       Data_Output  => Current_Instruction,
+      Data_Valid   => Data_Valid,
       Empty        => Empty,
       Full         => Full);
 
@@ -100,23 +98,36 @@ begin  -- architecture Behavioural
   SequentialProcess : process (CLK, RST_n) is
   begin  -- process SequentialProcess
     if RST_n = '0' then                 -- asynchronous reset (active low)
-      Current_State            <= INIT;
-      Current_Program_Counter  <= (others => '0');
-      Current_Read_Enable      <= '0';
-      Current_Write_Enable     <= '0';
-      Current_Instr_Grant      <= '0';
-      Current_Instr_ReqValid   <= '0';
-      Current_Instr_ReqData    <= (others => '0');
-      Instr_Requisition_Output <= '0';
+      Current_State           <= INIT;
+      Current_Program_Counter <= (others => '0');
+      Current_Read_Enable     <= '0';
+      Current_Write_Enable    <= '0';
+      Current_Instr_Grant     <= '0';
+      Current_Instr_ReqValid  <= '0';
+      Current_Instr_ReqData   <= (others => '0');
+
+      Instr_Requisition_Output        <= '0';
+      Instr_ReqValid_ID_Output        <= '0';
+      Instr_ReqData_ID_Output         <= NOP;
+      Instr_Program_Counter_ID_Output <= (others => '0');
     elsif CLK'event and CLK = '1' then  -- rising clock edge
-      Current_State            <= Next_State;
-      Current_Program_Counter  <= Next_Program_Counter;
-      Current_Read_Enable      <= Next_Read_Enable;
-      Current_Write_Enable     <= Next_Write_Enable and Current_Instr_ReqValid;
-      Current_Instr_Grant      <= Instr_Grant_Input;
-      Current_Instr_ReqValid   <= Instr_ReqValid_Input;
-      Current_Instr_ReqData    <= Instr_ReqData_Input;
-      Instr_Requisition_Output <= Next_Instr_Requisition;
+      Current_State           <= Next_State;
+      Current_Program_Counter <= Next_Program_Counter;
+      Current_Read_Enable     <= Next_Read_Enable;
+      Current_Write_Enable    <= Next_Write_Enable and Instr_ReqValid_Input;
+      Current_Instr_Grant     <= Instr_Grant_Input;
+      Current_Instr_ReqValid  <= Instr_ReqValid_Input;
+      Current_Instr_ReqData   <= Instr_ReqData_Input;
+
+      Instr_Requisition_Output        <= Next_Instr_Requisition;
+      Instr_Program_Counter_ID_Output <= Current_Program_Counter;
+      if (Data_Valid = '1') then
+        Instr_ReqValid_ID_Output <= '1';
+        Instr_ReqData_ID_Output  <= Current_Instruction;
+      else
+        Instr_ReqValid_ID_Output <= '0';
+        Instr_ReqData_ID_Output  <= NOP;
+      end if;
     end if;
   end process SequentialProcess;
 
@@ -140,7 +151,7 @@ begin  -- architecture Behavioural
 
       when REQUISITION =>
         Instr_Address_Output <= Current_Program_Counter;
-        Next_Read_Enable     <= '0';
+        Next_Read_Enable     <= '1';
         Next_Write_Enable    <= '0';
         Next_State           <= REQUISITION;
 
