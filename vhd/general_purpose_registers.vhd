@@ -8,7 +8,7 @@ use lib_VHDL.phelmino_definitions.all;
 entity General_Purpose_Registers is
 
   generic (
-    W : natural := WORD_WIDTH;      -- width of each register
+    W : natural := WORD_WIDTH;          -- width of each register
     N : natural := GPR_ADDRESS_WIDTH    -- number of addressing bits    
     );
 
@@ -53,7 +53,7 @@ begin  -- architecture Behavioural
 
       -- Clears register bank
       for i in 0 to 2**N-1 loop
-        GPR(i) <= (others => '0');
+        GPR(i) <= std_logic_vector(to_unsigned(i, GPR(i)'length));
       end loop;
     elsif CLK'event and CLK = '1' then  -- rising clock edge
       -- Clears outputs
