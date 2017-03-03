@@ -81,7 +81,7 @@ begin  -- architecture Behavioural
       end loop;  -- I
     elsif CLK'event and CLK = '1' then  -- rising clock edge
       Write_Pointer <= Write_Pointer;
-      if ((Write_Enable = '1') and (unsigned(Status_Counter) /= DEPTH) and (unsigned(Status_Counter) /= 0)) then
+      if ((Write_Enable = '1') and (unsigned(Status_Counter) /= DEPTH)) then
         FIFO(to_integer(unsigned(Write_Pointer))) <= Data_Input;
         Write_Pointer                             <= std_logic_vector(unsigned(Write_Pointer) + 1);
       end if;
