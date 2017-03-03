@@ -14,7 +14,7 @@ entity ID_Stage is
     RST_n : in std_logic;
 
     -- Data input from IF stage
-    Instr_ReqValid_Input : in std_logic; 
+    Instr_ReqValid_Input : in std_logic;
     Instr_ReqData_Input  : in std_logic_vector(WORD_WIDTH-1 downto 0);
 
     -- EX Signals
@@ -72,6 +72,7 @@ architecture Behavioural of ID_Stage is
       Immediate_Extension_Output  : out std_logic_vector(WORD_WIDTH-1 downto 0));
   end component Decoder;
   signal Instruction_Input           : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal Current_Instruction         : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
   signal Instruction_Valid           : std_logic;
   signal ALU_Operator_Output         : std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
   signal Mux_Controller_A            : std_logic_vector(1 downto 0);
@@ -98,6 +99,9 @@ begin  -- architecture Behavioural
   A_Equal_B     <= '1' when (Read_Data_A_Output = Read_Data_B_Output)                                        else '0';
   A_Less_Than_B <= '1' when (unsigned('0' & Read_Data_A_Output) < unsigned('0' & Read_Data_B_Output)) = true else '0';
 
+  -- Current Instruction
+  Current_Instruction <= Instruction_Input when (Instr_ReqValid_Input = '1') else NOP;
+
   GPR : entity lib_VHDL.General_Purpose_Registers
     generic map (
       W => WORD_WIDTH,
@@ -115,7 +119,7 @@ begin  -- architecture Behavioural
 
   DecoderBlock : entity lib_VHDL.Decoder
     port map (
-      Instruction_Input           => Instruction_Input,
+      Instruction_Input           => Current_Instruction,
       Instruction_Valid           => Instruction_Valid,
       Read_Address_A_Output       => Read_Address_A_Input,
       Read_Address_B_Output       => Read_Address_B_Input,
