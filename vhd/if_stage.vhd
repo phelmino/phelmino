@@ -112,7 +112,7 @@ begin  -- architecture Behavioural
       Current_State            <= Next_State;
       Current_Program_Counter  <= Next_Program_Counter;
       Current_Read_Enable      <= Next_Read_Enable;
-      Current_Write_Enable     <= Next_Write_Enable;
+      Current_Write_Enable     <= Next_Write_Enable and Current_Instr_ReqValid;
       Current_Instr_Grant      <= Instr_Grant_Input;
       Current_Instr_ReqValid   <= Instr_ReqValid_Input;
       Current_Instr_ReqData    <= Instr_ReqData_Input;
@@ -124,7 +124,9 @@ begin  -- architecture Behavioural
   -- type   : combinational
   -- inputs : Current_State, Current_Program_Counter, Full, Instr_Grant_Input
   -- outputs: Next_State, Next_Program_Counter, Next_Read_Enable, Next_Write_Enable
-  CombinationalProcess : process (Current_Instr_Grant, Current_Program_Counter,
+  CombinationalProcess : process (Branch_Active_Input,
+                                  Branch_Destination_Input,
+                                  Current_Instr_Grant, Current_Program_Counter,
                                   Current_State, Full) is
   begin  -- process CombinationalProcess
     case Current_State is

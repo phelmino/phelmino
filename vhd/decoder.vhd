@@ -27,12 +27,7 @@ begin  -- architecture Behavioural
   -- purpose: Decodes an Instruction
   -- type   : combinational
   -- inputs : Instruction_Input
-  Decoder_Process : process (Instruction_Input(FUNC3_BEGIN downto FUNC3_END),
-                             Instruction_Input(FUNC7_BEGIN downto FUNC7_END),
-                             Instruction_Input(OPCODE_BEGIN downto OPCODE_END),
-                             Instruction_Input(RDESTINATION_BEGIN downto RDESTINATION_END),
-                             Instruction_Input(RSOURCE1_BEGIN downto RSOURCE1_END),
-                             Instruction_Input(RSOURCE2_BEGIN downto RSOURCE2_END)) is
+  Decoder_Process : process (Instruction_Input) is
     variable OPCODE       : std_logic_vector(OPCODE_LENGTH-1 downto 0) := (others => '0');
     variable FUNC7        : std_logic_vector(FUNC7_LENGTH-1 downto 0)  := (others => '0');
     variable FUNC3        : std_logic_vector(FUNC3_LENGTH-1 downto 0)  := (others => '0');

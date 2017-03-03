@@ -6,11 +6,11 @@ use lib_VHDL.all;
 use lib_VHDL.phelmino_definitions.all;
 
 entity Phelmino_Core is
-  
+
   port (
     -- Clock and reset signals
-    CLK                      : in  std_logic;
-    RST_n                    : in  std_logic;
+    CLK   : in std_logic;
+    RST_n : in std_logic;
 
     -- Instruction memory interface
     Instr_Requisition_Output : out std_logic;
@@ -64,9 +64,26 @@ architecture Behavioural of Phelmino_Core is
   signal EX_Destination_Register_Output : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
   signal Branch_Active_IF_Output        : std_logic;
   signal Branch_Destination_IF_Output   : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal Write_Enable_Z_Input           : std_logic;
-  signal Write_Address_Z_Input          : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-  signal Write_Data_Z_Input             : std_logic_vector(WORD_WIDTH-1 downto 0);
+
+  component EX_Stage is
+    port (
+      CLK                        : in  std_logic;
+      RST_n                      : in  std_logic;
+      ALU_Input_A_Input          : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      ALU_Input_B_Input          : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      ALU_Operator_Input         : in  std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
+      Write_Enable_Z_Output      : out std_logic;
+      Write_Address_Z_Output     : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+      Write_Data_Z_Output        : out std_logic_vector(WORD_WIDTH-1 downto 0);
+      Destination_Register_Input : in  std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0));
+  end component EX_Stage;
+  signal ALU_Input_A_Input          : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal ALU_Input_B_Input          : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal ALU_Operator_Input         : std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
+  signal Destination_Register_Input : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+  signal Write_Enable_Z_Output      : std_logic;
+  signal Write_Address_Z_Output     : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+  signal Write_Data_Z_Output        : std_logic_vector(WORD_WIDTH-1 downto 0);
 
 begin  -- architecture Behavioural
 
@@ -97,9 +114,21 @@ begin  -- architecture Behavioural
       EX_Destination_Register_Output => EX_Destination_Register_Output,
       Branch_Active_IF_Output        => Branch_Active_IF_Output,
       Branch_Destination_IF_Output   => Branch_Destination_IF_Output,
-      Write_Enable_Z_Input           => Write_Enable_Z_Input,
-      Write_Address_Z_Input          => Write_Address_Z_Input,
-      Write_Data_Z_Input             => Write_Data_Z_Input,
+      Write_Enable_Z_Input           => Write_Enable_Z_Output,
+      Write_Address_Z_Input          => Write_Address_Z_Output,
+      Write_Data_Z_Input             => Write_Data_Z_Output,
       PC_ID_Input                    => Instr_Program_Counter_ID_Output);
+
+  stage_EX : entity lib_VHDL.EX_Stage
+    port map (
+      CLK                        => CLK,
+      RST_n                      => RST_n,
+      ALU_Input_A_Input          => EX_ALU_Input_A_Output,
+      ALU_Input_B_Input          => EX_ALU_Input_B_Output,
+      ALU_Operator_Input         => EX_ALU_Operator_Output,
+      Write_Enable_Z_Output      => Write_Enable_Z_Output,
+      Write_Address_Z_Output     => Write_Address_Z_Output,
+      Write_Data_Z_Output        => Write_Data_Z_Output,
+      Destination_Register_Input => EX_Destination_Register_Output);
 
 end architecture Behavioural;
