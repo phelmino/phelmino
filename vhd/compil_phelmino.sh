@@ -32,3 +32,4 @@ compile if_stage.vhd
 compile id_stage.vhd
 compile ex_stage.vhd
 compile wb_stage.vhd 
+compile phelmino_core.vhd 
