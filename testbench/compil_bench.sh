@@ -25,4 +25,5 @@ vmap ${BENCH_LIB} ${BENCH_PATH}/libs/${BENCH_LIB}
 
 compile test_general_purpose_registers.vhd
 compile test_if_stage.vhd
+compile test_id_stage.vhd 
 compile test_fifo.vhd 

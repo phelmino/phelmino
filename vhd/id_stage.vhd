@@ -17,10 +17,11 @@ entity ID_Stage is
     Instr_ReqValid_Input : in std_logic;
     Instr_ReqData_Input  : in std_logic_vector(WORD_WIDTH-1 downto 0);
 
-    -- ALU Signals
-    ALU_Input_A_EX_Output  : out std_logic_vector(WORD_WIDTH-1 downto 0);
-    ALU_Input_B_EX_Output  : out std_logic_vector(WORD_WIDTH-1 downto 0);
-    ALU_Operator_EX_Output : out std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
+    -- EX Signals
+    EX_ALU_Input_A_Output   : out std_logic_vector(WORD_WIDTH-1 downto 0);
+    EX_ALU_Input_B_Output   : out std_logic_vector(WORD_WIDTH-1 downto 0);
+    EX_ALU_Operator_Output  : out std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
+    EX_Destination_Register : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
 
     -- Branch destination
     Branch_Active_IF_Output      : out std_logic;
@@ -44,20 +45,16 @@ architecture Behavioural of ID_Stage is
     port (
       CLK                   : in  std_logic;
       RST_n                 : in  std_logic;
-      Read_Enable_A_Input   : in  std_logic;
       Read_Address_A_Input  : in  std_logic_vector(N-1 downto 0);
       Read_Data_A_Output    : out std_logic_vector(W-1 downto 0);
-      Read_Enable_B_Input   : in  std_logic;
       Read_Address_B_Input  : in  std_logic_vector(N-1 downto 0);
       Read_Data_B_Output    : out std_logic_vector(W-1 downto 0);
       Write_Enable_Z_Input  : in  std_logic;
       Write_Address_Z_Input : in  std_logic_vector(N-1 downto 0);
       Write_Data_Z_Input    : in  std_logic_vector(W-1 downto 0));
   end component general_purpose_registers;
-  signal Read_Enable_A_Input  : std_logic;
   signal Read_Address_A_Input : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
   signal Read_Data_A_Output   : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal Read_Enable_B_Input  : std_logic;
   signal Read_Address_B_Input : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
   signal Read_Data_B_Output   : std_logic_vector(WORD_WIDTH-1 downto 0);
 
@@ -65,17 +62,21 @@ architecture Behavioural of ID_Stage is
     port (
       Instruction_Input           : in  std_logic_vector(WORD_WIDTH-1 downto 0);
       Instruction_Valid           : out std_logic;
-      Read_Enable_A_Output        : out std_logic;
       Read_Address_A_Output       : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-      Read_Enable_B_Output        : out std_logic;
       Read_Address_B_Output       : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       ALU_Operator_Output         : out std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
+      Mux_Controller_A            : out std_logic_vector(1 downto 0);
+      Mux_Controller_B            : out std_logic_vector(1 downto 0);
+      Mux_Controller_Branch       : out std_logic_vector(2 downto 0);
       Destination_Register_Output : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       Immediate_Extension_Output  : out std_logic_vector(WORD_WIDTH-1 downto 0));
   end component Decoder;
   signal Instruction_Input           : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal Instruction_Valid           : std_logic;
   signal ALU_Operator_Output         : std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
+  signal Mux_Controller_A            : std_logic_vector(1 downto 0);
+  signal Mux_Controller_B            : std_logic_vector(1 downto 0);
+  signal Mux_Controller_Branch       : std_logic_vector(2 downto 0);
   signal Destination_Register_Output : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
   signal Immediate_Extension_Output  : std_logic_vector(WORD_WIDTH-1 downto 0);
 
@@ -104,10 +105,8 @@ begin  -- architecture Behavioural
     port map (
       CLK                   => CLK,
       RST_n                 => RST_n,
-      Read_Enable_A_Input   => Read_Enable_A_Input,
       Read_Address_A_Input  => Read_Address_A_Input,
       Read_Data_A_Output    => Read_Data_A_Output,
-      Read_Enable_B_Input   => Read_Enable_B_Input,
       Read_Address_B_Input  => Read_Address_B_Input,
       Read_Data_B_Output    => Read_Data_B_Output,
       Write_Enable_Z_Input  => Write_Enable_Z_Input,
@@ -118,11 +117,12 @@ begin  -- architecture Behavioural
     port map (
       Instruction_Input           => Instruction_Input,
       Instruction_Valid           => Instruction_Valid,
-      Read_Enable_A_Output        => Read_Enable_A_Input,
       Read_Address_A_Output       => Read_Address_A_Input,
-      Read_Enable_B_Output        => Read_Enable_B_Input,
       Read_Address_B_Output       => Read_Address_B_Input,
       ALU_Operator_Output         => ALU_Operator_Output,
+      Mux_Controller_A            => Mux_Controller_A,
+      Mux_Controller_B            => Mux_Controller_B,
+      Mux_Controller_Branch       => Mux_Controller_Branch,
       Destination_Register_Output => Destination_Register_Output,
       Immediate_Extension_Output  => Immediate_Extension_Output);
 
@@ -132,9 +132,18 @@ begin  -- architecture Behavioural
       Current_Mux_Controller_A      <= (others => '0');
       Current_Mux_Controller_B      <= (others => '0');
       Current_Mux_Controller_Branch <= (others => '0');
-      ALU_Operator_Output           <= (others => '0');
-      Destination_Register_Output   <= (others => '0');
+      EX_ALU_Operator_Output        <= (others => '0');
+      EX_Destination_Register       <= (others => '0');
+      Instruction_Input             <= (others => '0');
+      Branch_Destination_IF_Output  <= (others => '0');
     elsif CLK'event and CLK = '1' then  -- rising clock edge
+      Current_Mux_Controller_A      <= Mux_Controller_A;
+      Current_Mux_Controller_B      <= Mux_Controller_B;
+      Current_Mux_Controller_Branch <= Mux_Controller_Branch;
+      Instruction_Input             <= Instr_ReqData_Input;
+      EX_ALU_Operator_Output        <= ALU_Operator_Output;
+      EX_Destination_Register       <= Destination_Register_Output;
+      Branch_Destination_IF_Output  <= (others => '0');
     end if;
   end process SequentialProcess;
 
@@ -143,9 +152,9 @@ begin  -- architecture Behavioural
   Mux_A : process (Current_Mux_Controller_A, Read_Data_A_Output) is
   begin  -- process Mux_A
     case Current_Mux_Controller_A is
-      when "00"   => ALU_Input_A_EX_Output <= (others => '0');
-      when "01"   => ALU_Input_A_EX_Output <= Read_Data_A_Output;
-      when others => ALU_Input_A_EX_Output <= (others => '0');
+      when ALU_SOURCE_ZERO          => EX_ALU_Input_A_Output <= (others => '0');
+      when ALU_SOURCE_FROM_REGISTER => EX_ALU_Input_A_Output <= Read_Data_A_Output;
+      when others                   => EX_ALU_Input_A_Output <= (others => '0');
     end case;
   end process Mux_A;
 
@@ -154,9 +163,9 @@ begin  -- architecture Behavioural
   Mux_B : process (Current_Mux_Controller_B, Read_Data_B_Output) is
   begin  -- process Mux_A
     case Current_Mux_Controller_B is
-      when "00"   => ALU_Input_B_EX_Output <= (others => '0');
-      when "01"   => ALU_Input_B_EX_Output <= Read_Data_B_Output;
-      when others => ALU_Input_B_EX_Output <= (others => '0');
+      when ALU_SOURCE_ZERO          => EX_ALU_Input_B_Output <= (others => '0');
+      when ALU_SOURCE_FROM_REGISTER => EX_ALU_Input_B_Output <= Read_Data_B_Output;
+      when others                   => EX_ALU_Input_B_Output <= (others => '0');
     end case;
   end process Mux_B;
 
@@ -166,12 +175,12 @@ begin  -- architecture Behavioural
                         Current_Mux_Controller_Branch) is
   begin  -- process Mux_Branch
     case Current_Mux_Controller_Branch is
-      when "000"  => Branch_Active_IF_Output <= '0';  -- Not in a branch
-      when "001"  => Branch_Active_IF_Output <= A_Equal_B;          -- BEQ
-      when "010"  => Branch_Active_IF_Output <= not A_Equal_B;      -- BNEQ
-      when "011"  => Branch_Active_IF_Output <= A_Less_Than_B;      -- BLT
-      when "100"  => Branch_Active_IF_Output <= not A_Less_Than_B;  -- BGE
-      when others => Branch_Active_IF_Output <= '0';
+      when BRANCH_MUX_NOT_IN_A_BRANCH  => Branch_Active_IF_Output <= '0';  -- Not in a branch
+      when BRANCH_MUX_EQUAL            => Branch_Active_IF_Output <= A_Equal_B;  -- BEQ
+      when BRANCH_MUX_UNEQUAL          => Branch_Active_IF_Output <= not A_Equal_B;  -- BNEQ
+      when BRANCH_MUX_LESS_THAN        => Branch_Active_IF_Output <= A_Less_Than_B;  -- BLT
+      when BRANCH_MUX_GREATER_OR_EQUAl => Branch_Active_IF_Output <= not A_Less_Than_B;  -- BGE
+      when others                      => Branch_Active_IF_Output <= '0';
     end case;
   end process Mux_Branch;
 
