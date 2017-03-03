@@ -18,10 +18,8 @@ architecture Behavioural of test_general_purpose_registers is
     port (
       CLK                   : in  std_logic;
       RST_n                 : in  std_logic;
-      Read_Enable_A_Input   : in  std_logic;
       Read_Address_A_Input  : in  std_logic_vector(N-1 downto 0);
       Read_Data_A_Output    : out std_logic_vector(W-1 downto 0);
-      Read_Enable_B_Input   : in  std_logic;
       Read_Address_B_Input  : in  std_logic_vector(N-1 downto 0);
       Read_Data_B_Output    : out std_logic_vector(W-1 downto 0);
       Write_Enable_Z_Input  : in  std_logic;
@@ -31,10 +29,8 @@ architecture Behavioural of test_general_purpose_registers is
 
   signal CLK                   : std_logic                                      := '0';
   signal RST_n                 : std_logic                                      := '0';
-  signal Read_Enable_A_Input   : std_logic                                      := '0';
   signal Read_Address_A_Input  : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0) := (others => '0');
   signal Read_Data_A_Output    : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal Read_Enable_B_Input   : std_logic                                      := '0';
   signal Read_Address_B_Input  : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0) := (others => '0');
   signal Read_Data_B_Output    : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal Write_Enable_Z_Input  : std_logic                                      := '0';
@@ -50,10 +46,8 @@ begin  -- architecture Behavioural
     port map (
       CLK                   => CLK,
       RST_n                 => RST_n,
-      Read_Enable_A_Input   => Read_Enable_A_Input,
       Read_Address_A_Input  => Read_Address_A_Input,
       Read_Data_A_Output    => Read_Data_A_Output,
-      Read_Enable_B_Input   => Read_Enable_B_Input,
       Read_Address_B_Input  => Read_Address_B_Input,
       Read_Data_B_Output    => Read_Data_B_Output,
       Write_Enable_Z_Input  => Write_Enable_Z_Input,
@@ -73,8 +67,6 @@ begin  -- architecture Behavioural
   begin  -- process Stimulus
 
     Write_Enable_Z_Input <= '0';
-    Read_Enable_A_Input  <= '0';
-    Read_Enable_B_Input  <= '0';
     wait for 10 ns;
     wait until falling_edge(CLK);
 
@@ -91,7 +83,6 @@ begin  -- architecture Behavioural
     wait until falling_edge(CLK);
 
     for RA in 0 to WORD_WIDTH-1 loop
-      Read_Enable_A_Input  <= '1';
       Read_Address_A_Input <= Read_Address_A;
       wait until falling_edge(CLK);
 
@@ -104,12 +95,10 @@ begin  -- architecture Behavioural
       Read_Address_A := std_logic_vector(unsigned(Read_Address_A) + 1);
       wait until falling_edge(CLK);
     end loop;  -- RA
-    Read_Enable_A_Input <= '0';
 
     wait for 10 ns;
 
     for RB in 0 to WORD_WIDTH-1 loop
-      Read_Enable_B_Input  <= '1';
       Read_Address_B_Input <= Read_Address_B;
       wait until falling_edge(CLK);
 
@@ -122,7 +111,6 @@ begin  -- architecture Behavioural
       Read_Address_B := std_logic_vector(unsigned(Read_Address_B) + 1);
       wait until falling_edge(CLK);
     end loop;  -- RB
-    Read_Enable_B_Input <= '0';
 
     wait for 10 ns;
 
@@ -132,8 +120,6 @@ begin  -- architecture Behavioural
     Read_Address_B := (others => '0');
 
     for RC in 0 to WORD_WIDTH-1 loop
-      Read_Enable_A_Input  <= '1';
-      Read_Enable_B_Input  <= '1';
       Read_Address_A_Input <= Read_Address_A;
       Read_Address_B_Input <= Read_Address_B;
       wait until falling_edge(CLK);

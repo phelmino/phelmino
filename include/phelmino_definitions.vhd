@@ -39,10 +39,19 @@ package phelmino_definitions is
   constant RSOURCE2_BEGIN     : natural := 24;
   constant RSOURCE2_END       : natural := 20;
 
+  constant ALU_SOURCE_ZERO             : std_logic_vector(1 downto 0) := "00";
+  constant ALU_SOURCE_FROM_REGISTER    : std_logic_vector(1 downto 0) := "01";
+  constant BRANCH_MUX_NOT_IN_A_BRANCH  : std_logic_vector(2 downto 0) := "000";
+  constant BRANCH_MUX_EQUAL            : std_logic_vector(2 downto 0) := "001";
+  constant BRANCH_MUX_UNEQUAL          : std_logic_vector(2 downto 0) := "010";
+  constant BRANCH_MUX_LESS_THAN        : std_logic_vector(2 downto 0) := "011";
+  constant BRANCH_MUX_GREATER_OR_EQUAl : std_logic_vector(2 downto 0) := "100";
+
   -- OPCODEs from ISA
   constant OPCODE_ALU_REGISTER_REGISTER : std_logic_vector(OPCODE_LENGTH-1 downto 0) := "0110011";
 
-  -- NOP
-  constant NOP : std_logic_vector(WORD_WIDTH-1 downto 0) := "00000000001000001000000110110011";
+  -- Some instructions
+  constant NOP            : std_logic_vector(WORD_WIDTH-1 downto 0) := "0000000" & "00000" & "00000" & "000" & "00000" & "0110011";
+  constant ADD_R1_PLUS_R2 : std_logic_vector(WORD_WIDTH-1 downto 0) := "0000000" & "00010" & "00001" & "000" & "00000" & "0110011";
 
 end package phelmino_definitions;

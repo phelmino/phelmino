@@ -18,11 +18,9 @@ entity General_Purpose_Registers is
     RST_n : in std_logic;
 
     -- Read interface
-    Read_Enable_A_Input  : in  std_logic;
     Read_Address_A_Input : in  std_logic_vector(N-1 downto 0);
     Read_Data_A_Output   : out std_logic_vector(W-1 downto 0);
 
-    Read_Enable_B_Input  : in  std_logic;
     Read_Address_B_Input : in  std_logic_vector(N-1 downto 0);
     Read_Data_B_Output   : out std_logic_vector(W-1 downto 0);
 
@@ -74,21 +72,12 @@ begin  -- architecture Behavioural
 
   -- purpose: Monitores willing to read and decides next outputs of registers
   -- type   : combinational
-  -- inputs : Read_Enable_A_Input, Read_Address_A_Input, Read_Enable_B_Input, Read_Address_B_Input
+  -- inputs : Read_Address_A_Input, Read_Address_B_Input
   -- outputs: Next_Read_Data_A, Next_Read_Data_B
-  comb_proc : process (GPR, Read_Address_A_Input, Read_Address_B_Input, Read_Enable_A_Input,
-                       Read_Enable_B_Input) is
+  comb_proc : process (GPR, Read_Address_A_Input, Read_Address_B_Input) is
   begin  -- process comb_proc
-    Next_Read_Data_A <= (others => '0');
-    Next_Read_Data_B <= (others => '0');
-
-    if (Read_Enable_A_Input = '1') then
-      Next_Read_Data_A <= GPR(to_integer(unsigned(Read_Address_A_Input)));
-    end if;
-    if (Read_Enable_B_Input = '1') then
-      Next_Read_Data_B <= GPR(to_integer(unsigned(Read_Address_B_Input)));
-    end if;
-
+    Next_Read_Data_A <= GPR(to_integer(unsigned(Read_Address_A_Input)));
+    Next_Read_Data_B <= GPR(to_integer(unsigned(Read_Address_B_Input)));
   end process comb_proc;
 
 end architecture Behavioural;
