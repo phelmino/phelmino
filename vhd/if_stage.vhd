@@ -20,8 +20,9 @@ entity IF_Stage is
     Instr_ReqData_Input      : in  std_logic_vector(WORD_WIDTH-1 downto 0);
 
     -- Data output to ID stage
-    Instr_ReqValid_ID_Output : out std_logic;
-    Instr_ReqData_ID_Output  : out std_logic_vector(WORD_WIDTH-1 downto 0);
+    Instr_ReqValid_ID_Output        : out std_logic;
+    Instr_ReqData_ID_Output         : out std_logic_vector(WORD_WIDTH-1 downto 0);
+    Instr_Program_Counter_ID_Output : out std_logic_vector(WORD_WIDTH-1 downto 0);
 
     -- Branch signals
     Branch_Active_Input      : in std_logic;
@@ -48,7 +49,6 @@ architecture Behavioural of IF_Stage is
   signal Current_Instr_ReqValid : std_logic                               := '0';
   signal Current_Instr_ReqData  : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
 
-
   signal Empty               : std_logic                               := '0';
   signal Full                : std_logic                               := '0';
   signal FIFO_RST            : std_logic                               := '0';
@@ -74,8 +74,9 @@ begin  -- architecture Behavioural
   FIFO_RST <= RST_n and not Branch_Active_Input;
 
   -- Propagates Valid signal to ID stage
-  Instr_ReqValid_ID_Output <= not Empty;
-  Instr_ReqData_ID_Output  <= Current_Instruction when (Empty = '1') else NOP;
+  Instr_ReqValid_ID_Output        <= not Empty;
+  Instr_ReqData_ID_Output         <= Current_Instruction when (Empty = '1') else NOP;
+  Instr_Program_Counter_ID_Output <= Current_Program_Counter;
 
   -- instance "Prefetch_Buffer"
   Prefetch_Buffer : entity lib_VHDL.FIFO

@@ -1,81 +1,105 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity phelmino_core is
+library lib_VHDL;
+use lib_VHDL.all;
+use lib_VHDL.phelmino_definitions.all;
 
+entity Phelmino_Core is
+  
   port (
     -- Clock and reset signals
-    clk	  : in std_logic;
-    rst_n : in std_logic);
+    CLK                      : in  std_logic;
+    RST_n                    : in  std_logic;
 
-end entity phelmino_core;
+    -- Instruction memory interface
+    Instr_Requisition_Output : out std_logic;
+    Instr_Address_Output     : out std_logic_vector(WORD_WIDTH-1 downto 0);
+    Instr_Grant_Input        : in  std_logic;
+    Instr_ReqValid_Input     : in  std_logic;
+    Instr_ReqData_Input      : in  std_logic_vector(WORD_WIDTH-1 downto 0));
 
-architecture phelmino_core_arch of phelmino_core is
+end entity Phelmino_Core;
 
-  component if_stage is
+architecture Behavioural of Phelmino_Core is
+  component IF_Stage is
     port (
-      clk			    : in  std_logic;
-      rst_n			    : in  std_logic;
-      instr_req_o		    : out std_logic;
-      instr_addr_o		    : out std_logic_vector(31 downto 0);
-      instr_gnt_i		    : in  std_logic;
-      instr_rvalid_i		    : in  std_logic;
-      instr_rdata_i		    : in  std_logic_vector(31 downto 0);
-      instr_rvalid_id_o		    : out std_logic;
-      instr_rdata_id_o		    : out std_logic_vector(31 downto 0);
-      instr_jump_destination_id_i   : in  std_logic_vector(31 downto 0);
-      instr_branch_destination_ex_i : in  std_logic_vector(31 downto 0);
-      if_enable_o		    : out std_logic;
-      id_enable_i		    : in  std_logic;
-      if_valid_o		    : out std_logic);
-  end component if_stage;
+      CLK                             : in  std_logic;
+      RST_n                           : in  std_logic;
+      Instr_Requisition_Output        : out std_logic;
+      Instr_Address_Output            : out std_logic_vector(WORD_WIDTH-1 downto 0);
+      Instr_Grant_Input               : in  std_logic;
+      Instr_ReqValid_Input            : in  std_logic;
+      Instr_ReqData_Input             : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      Instr_ReqValid_ID_Output        : out std_logic;
+      Instr_ReqData_ID_Output         : out std_logic_vector(WORD_WIDTH-1 downto 0);
+      Instr_Program_Counter_ID_Output : out std_logic_vector(WORD_WIDTH-1 downto 0);
+      Branch_Active_Input             : in  std_logic;
+      Branch_Destination_Input        : in  std_logic_vector(WORD_WIDTH-1 downto 0));
+  end component IF_Stage;
+  signal Instr_ReqValid_ID_Output        : std_logic;
+  signal Instr_ReqData_ID_Output         : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal Instr_Program_Counter_ID_Output : std_logic_vector(WORD_WIDTH-1 downto 0);
 
-  component id_stage is
+  component ID_Stage is
     port (
-      clk			  : in	std_logic;
-      rst_n			  : in	std_logic;
-      instr_rvalid_i		  : in	std_logic;
-      instr_rdata_i		  : in	std_logic_vector(31 downto 0);
-      alu_input_a_ex_o		  : out std_logic_vector(31 downto 0);
-      alu_input_b_ex_o		  : out std_logic_vector(31 downto 0);
-      alu_operator_ex_o		  : out std_logic_vector(5 downto 0);
-      instr_jump_destination_id_o : out std_logic_vector(31 downto 0);
-      pc_id_i			  : in	std_logic_vector(31 downto 0);
-      id_enable_o		  : out std_logic;
-      id_valid_o		  : out std_logic;
-      ex_enable_i		  : in	std_logic);
-  end component id_stage;
+      CLK                            : in  std_logic;
+      RST_n                          : in  std_logic;
+      Instr_ReqValid_Input           : in  std_logic;
+      Instr_ReqData_Input            : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      EX_ALU_Input_A_Output          : out std_logic_vector(WORD_WIDTH-1 downto 0);
+      EX_ALU_Input_B_Output          : out std_logic_vector(WORD_WIDTH-1 downto 0);
+      EX_ALU_Operator_Output         : out std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
+      EX_Destination_Register_Output : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+      Branch_Active_IF_Output        : out std_logic;
+      Branch_Destination_IF_Output   : out std_logic_vector(WORD_WIDTH-1 downto 0);
+      Write_Enable_Z_Input           : in  std_logic;
+      Write_Address_Z_Input          : in  std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+      Write_Data_Z_Input             : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      PC_ID_Input                    : in  std_logic_vector(31 downto 0));
+  end component ID_Stage;
+  signal EX_ALU_Input_A_Output          : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal EX_ALU_Input_B_Output          : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal EX_ALU_Operator_Output         : std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
+  signal EX_Destination_Register_Output : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+  signal Branch_Active_IF_Output        : std_logic;
+  signal Branch_Destination_IF_Output   : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal Write_Enable_Z_Input           : std_logic;
+  signal Write_Address_Z_Input          : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+  signal Write_Data_Z_Input             : std_logic_vector(WORD_WIDTH-1 downto 0);
 
-  component ex_stage is
-    port (
-      clk			    : in  std_logic;
-      rst_n			    : in  std_logic;
-      alu_input_a_ex_i		    : in  std_logic_vector(31 downto 0);
-      alu_input_b_ex_i		    : in  std_logic_vector(31 downto 0);
-      alu_operator_ex_i		    : in  std_logic_vector(5 downto 0);
-      ex_enable_o		    : out std_logic;
-      ex_ready_o		    : out std_logic;
-      wb_enable_i		    : in  std_logic;
-      instr_branch_destination_ex_o : out std_logic_vector(31 downto 0));
-  end component ex_stage;
+begin  -- architecture Behavioural
 
-  component wb_stage is
-    port (
-      clk	    : in  std_logic;
-      rst_n	    : in  std_logic;
-      data_req_o    : out std_logic;
-      data_gnt_i    : in  std_logic;
-      data_rvalid_i : in  std_logic;
-      data_addr_o   : out std_logic_vector(31 downto 0);
-      data_we_o	    : out std_logic;
-      data_be_o	    : out std_logic_vector(3 downto 0);
-      data_wdata_o  : out std_logic_vector(31 downto 0);
-      data_rdata_i  : in  std_logic_vector(31 downto 0);
-      ex_valid_i    : in  std_logic);
-  end component wb_stage;
-  
-begin  -- architecture phelmino_core_arch
+  stage_IF : entity lib_VHDL.IF_Stage
+    port map (
+      CLK                             => CLK,
+      RST_n                           => RST_n,
+      Instr_Requisition_Output        => Instr_Requisition_Output,
+      Instr_Address_Output            => Instr_Address_Output,
+      Instr_Grant_Input               => Instr_Grant_Input,
+      Instr_ReqValid_Input            => Instr_ReqValid_Input,
+      Instr_ReqData_Input             => Instr_ReqData_Input,
+      Instr_ReqValid_ID_Output        => Instr_ReqValid_ID_Output,
+      Instr_ReqData_ID_Output         => Instr_ReqData_ID_Output,
+      Instr_Program_Counter_ID_Output => Instr_Program_Counter_ID_Output,
+      Branch_Active_Input             => Branch_Active_IF_Output,
+      Branch_Destination_Input        => Branch_Destination_IF_Output);
 
-  
+  stage_ID : entity lib_VHDL.ID_Stage
+    port map (
+      CLK                            => CLK,
+      RST_n                          => RST_n,
+      Instr_ReqValid_Input           => Instr_ReqValid_ID_Output,
+      Instr_ReqData_Input            => Instr_ReqData_ID_Output,
+      EX_ALU_Input_A_Output          => EX_ALU_Input_A_Output,
+      EX_ALU_Input_B_Output          => EX_ALU_Input_B_Output,
+      EX_ALU_Operator_Output         => EX_ALU_Operator_Output,
+      EX_Destination_Register_Output => EX_Destination_Register_Output,
+      Branch_Active_IF_Output        => Branch_Active_IF_Output,
+      Branch_Destination_IF_Output   => Branch_Destination_IF_Output,
+      Write_Enable_Z_Input           => Write_Enable_Z_Input,
+      Write_Address_Z_Input          => Write_Address_Z_Input,
+      Write_Data_Z_Input             => Write_Data_Z_Input,
+      PC_ID_Input                    => Instr_Program_Counter_ID_Output);
 
-end architecture phelmino_core_arch;
+end architecture Behavioural;

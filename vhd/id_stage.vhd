@@ -14,14 +14,14 @@ entity ID_Stage is
     RST_n : in std_logic;
 
     -- Data input from IF stage
-    Instr_ReqValid_Input : in std_logic;
+    Instr_ReqValid_Input : in std_logic; 
     Instr_ReqData_Input  : in std_logic_vector(WORD_WIDTH-1 downto 0);
 
     -- EX Signals
-    EX_ALU_Input_A_Output   : out std_logic_vector(WORD_WIDTH-1 downto 0);
-    EX_ALU_Input_B_Output   : out std_logic_vector(WORD_WIDTH-1 downto 0);
-    EX_ALU_Operator_Output  : out std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
-    EX_Destination_Register : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+    EX_ALU_Input_A_Output          : out std_logic_vector(WORD_WIDTH-1 downto 0);
+    EX_ALU_Input_B_Output          : out std_logic_vector(WORD_WIDTH-1 downto 0);
+    EX_ALU_Operator_Output         : out std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
+    EX_Destination_Register_Output : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
 
     -- Branch destination
     Branch_Active_IF_Output      : out std_logic;
@@ -129,21 +129,21 @@ begin  -- architecture Behavioural
   SequentialProcess : process (CLK, RST_n) is
   begin  -- process SequentialProcess
     if RST_n = '0' then                 -- asynchronous reset (active low)
-      Current_Mux_Controller_A      <= (others => '0');
-      Current_Mux_Controller_B      <= (others => '0');
-      Current_Mux_Controller_Branch <= (others => '0');
-      EX_ALU_Operator_Output        <= (others => '0');
-      EX_Destination_Register       <= (others => '0');
-      Instruction_Input             <= (others => '0');
-      Branch_Destination_IF_Output  <= (others => '0');
+      Current_Mux_Controller_A       <= (others => '0');
+      Current_Mux_Controller_B       <= (others => '0');
+      Current_Mux_Controller_Branch  <= (others => '0');
+      EX_ALU_Operator_Output         <= (others => '0');
+      EX_Destination_Register_Output <= (others => '0');
+      Instruction_Input              <= (others => '0');
+      Branch_Destination_IF_Output   <= (others => '0');
     elsif CLK'event and CLK = '1' then  -- rising clock edge
-      Current_Mux_Controller_A      <= Mux_Controller_A;
-      Current_Mux_Controller_B      <= Mux_Controller_B;
-      Current_Mux_Controller_Branch <= Mux_Controller_Branch;
-      Instruction_Input             <= Instr_ReqData_Input;
-      EX_ALU_Operator_Output        <= ALU_Operator_Output;
-      EX_Destination_Register       <= Destination_Register_Output;
-      Branch_Destination_IF_Output  <= (others => '0');
+      Current_Mux_Controller_A       <= Mux_Controller_A;
+      Current_Mux_Controller_B       <= Mux_Controller_B;
+      Current_Mux_Controller_Branch  <= Mux_Controller_Branch;
+      Instruction_Input              <= Instr_ReqData_Input;
+      EX_ALU_Operator_Output         <= ALU_Operator_Output;
+      EX_Destination_Register_Output <= Destination_Register_Output;
+      Branch_Destination_IF_Output   <= (others => '0');
     end if;
   end process SequentialProcess;
 

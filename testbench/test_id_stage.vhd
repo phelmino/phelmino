@@ -10,40 +10,40 @@ end entity test_id_stage;
 architecture Test of test_id_stage is
 
   -- component ports
-  signal CLK                          : std_logic                                      := '1';
-  signal RST_n                        : std_logic                                      := '0';
-  signal Instr_ReqValid_Input         : std_logic                                      := '0';
-  signal Instr_ReqData_Input          : std_logic_vector(WORD_WIDTH-1 downto 0)        := (others => '0');
-  signal EX_ALU_Input_A_Output        : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal EX_ALU_Input_B_Output        : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal EX_ALU_Operator_Output       : std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
-  signal EX_Destination_Register      : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-  signal Branch_Active_IF_Output      : std_logic;
-  signal Branch_Destination_IF_Output : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal Write_Enable_Z_Input         : std_logic                                      := '0';
-  signal Write_Address_Z_Input        : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0) := (others => '0');
-  signal Write_Data_Z_Input           : std_logic_vector(WORD_WIDTH-1 downto 0)        := (others => '0');
-  signal PC_ID_Input                  : std_logic_vector(31 downto 0)                  := (others => '0');
+  signal CLK                            : std_logic                                      := '1';
+  signal RST_n                          : std_logic                                      := '0';
+  signal Instr_ReqValid_Input           : std_logic                                      := '0';
+  signal Instr_ReqData_Input            : std_logic_vector(WORD_WIDTH-1 downto 0)        := (others => '0');
+  signal EX_ALU_Input_A_Output          : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal EX_ALU_Input_B_Output          : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal EX_ALU_Operator_Output         : std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
+  signal EX_Destination_Register_Output : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+  signal Branch_Active_IF_Output        : std_logic;
+  signal Branch_Destination_IF_Output   : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal Write_Enable_Z_Input           : std_logic                                      := '0';
+  signal Write_Address_Z_Input          : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0) := (others => '0');
+  signal Write_Data_Z_Input             : std_logic_vector(WORD_WIDTH-1 downto 0)        := (others => '0');
+  signal PC_ID_Input                    : std_logic_vector(31 downto 0)                  := (others => '0');
 
 begin  -- architecture Test
 
   -- component instantiation
   DUT : entity lib_VHDL.ID_Stage
     port map (
-      CLK                          => CLK,
-      RST_n                        => RST_n,
-      Instr_ReqValid_Input         => Instr_ReqValid_Input,
-      Instr_ReqData_Input          => Instr_ReqData_Input,
-      EX_ALU_Input_A_Output        => EX_ALU_Input_A_Output,
-      EX_ALU_Input_B_Output        => EX_ALU_Input_B_Output,
-      EX_ALU_Operator_Output       => EX_ALU_Operator_Output,
-      EX_Destination_Register      => EX_Destination_Register,
-      Branch_Active_IF_Output      => Branch_Active_IF_Output,
-      Branch_Destination_IF_Output => Branch_Destination_IF_Output,
-      Write_Enable_Z_Input         => Write_Enable_Z_Input,
-      Write_Address_Z_Input        => Write_Address_Z_Input,
-      Write_Data_Z_Input           => Write_Data_Z_Input,
-      PC_ID_Input                  => PC_ID_Input);
+      CLK                            => CLK,
+      RST_n                          => RST_n,
+      Instr_ReqValid_Input           => Instr_ReqValid_Input,
+      Instr_ReqData_Input            => Instr_ReqData_Input,
+      EX_ALU_Input_A_Output          => EX_ALU_Input_A_Output,
+      EX_ALU_Input_B_Output          => EX_ALU_Input_B_Output,
+      EX_ALU_Operator_Output         => EX_ALU_Operator_Output,
+      EX_Destination_Register_Output => EX_Destination_Register_Output,
+      Branch_Active_IF_Output        => Branch_Active_IF_Output,
+      Branch_Destination_IF_Output   => Branch_Destination_IF_Output,
+      Write_Enable_Z_Input           => Write_Enable_Z_Input,
+      Write_Address_Z_Input          => Write_Address_Z_Input,
+      Write_Data_Z_Input             => Write_Data_Z_Input,
+      PC_ID_Input                    => PC_ID_Input);
 
   -- clock generation
   CLK   <= not CLK after 5 ns;
