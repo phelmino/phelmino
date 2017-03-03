@@ -52,6 +52,6 @@ package phelmino_definitions is
 
   -- Some instructions
   constant NOP            : std_logic_vector(WORD_WIDTH-1 downto 0) := "0000000" & "00000" & "00000" & "000" & "00000" & "0110011";
-  constant ADD_R1_PLUS_R2 : std_logic_vector(WORD_WIDTH-1 downto 0) := "0000000" & "00010" & "00001" & "000" & "00000" & "0110011";
+  constant ADD_R1_PLUS_R2 : std_logic_vector(WORD_WIDTH-1 downto 0) := "0000000" & "00010" & "00001" & "000" & "11111" & "0110011";
 
 end package phelmino_definitions;

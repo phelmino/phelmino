@@ -137,6 +137,8 @@ begin  -- architecture Behavioural
       Read_Address_B := std_logic_vector(unsigned(Read_Address_B) + 1);
       wait until falling_edge(CLK);
     end loop;  -- RC
+
+    wait;
   end process Stimulus;
 
 end architecture Behavioural;
