@@ -56,7 +56,7 @@ begin  -- architecture Behavioural
       if (Instr_Grant_Input = '1') then
         Instr_Grant_Input    <= '0';
         Instr_ReqValid_Input <= '1';
-        Instr_ReqData_Input  <= ADD_R1_PLUS_R2;
+        Instr_ReqData_Input  <= BNE_R1_R2;
       elsif (Instr_ReqValid_Input = '1') then
         Instr_ReqValid_Input <= '0';
         Instr_ReqData_Input  <= (others => '0');
@@ -75,6 +75,5 @@ begin  -- architecture Behavioural
       Next_Grant <= '0';
     end if;
   end process Comb_Proc;
-
 
 end architecture Behavioural;
