@@ -111,13 +111,14 @@ begin  -- architecture Behavioural
       A_Less_Than_B <= '0';
     else
       if (Read_Data_A_Output = Read_Data_B_Output) then
-        A_Equal_B     <= '1';
-        A_Less_Than_B <= '0';
-      elsif (unsigned('0' & Read_Data_A_Output) < unsigned('0' & Read_Data_B_Output)) = true then
-        A_Equal_B     <= '0';
+        A_Equal_B <= '1';
+      else
+        A_Equal_B <= '0';
+      end if;
+
+      if (unsigned('0' & Read_Data_A_Output) < unsigned('0' & Read_Data_B_Output)) = true then
         A_Less_Than_B <= '1';
       else
-        A_Equal_B     <= '0';
         A_Less_Than_B <= '0';
       end if;
     end if;

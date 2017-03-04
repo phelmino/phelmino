@@ -28,7 +28,7 @@ architecture Behavioural of FIFO is
   constant DEPTH : integer := 2**ADDR_WIDTH;
 
   type RegisterArray is array (0 to DEPTH-1) of std_logic_vector(DATA_WIDTH-1 downto 0);
-  signal FIFO : RegisterArray;
+  signal FIFO : RegisterArray := (others => (others => '0'));
 
   signal Read_Pointer  : std_logic_vector(ADDR_WIDTH-1 downto 0) := (others => '0');
   signal Write_Pointer : std_logic_vector(ADDR_WIDTH-1 downto 0) := (others => '0');
@@ -54,17 +54,27 @@ begin  -- architecture Behavioural
       Data_Valid   <= '0';
     elsif CLK'event and CLK = '1' then  -- rising clock edge
       Read_Pointer <= Read_Pointer;
-      if (Read_Enable = '1' and (unsigned(Status_Counter) /= 0)) then
-        Data_Output  <= FIFO(to_integer(unsigned(Read_Pointer)));
-        Read_Pointer <= std_logic_vector(unsigned(Read_Pointer) + 1);
-        Data_Valid   <= '1';
-      elsif (Read_Enable = '1' and Write_Enable = '1' and (unsigned(Status_Counter) = 0)) then
-        Data_Output <= Data_Input;
-        Data_Valid  <= '1';
-      else
-        Data_Output <= (others => '0');
-        Data_Valid  <= '0';
-      end if;
+      Data_Output  <= (others => '0');
+      Data_Valid   <= '0';
+
+      case Read_Enable is
+        when '1' =>
+          -- FIFO is not empty. Just reads.
+          if (unsigned(Status_Counter) /= 0) then
+            Data_Output  <= FIFO(to_integer(unsigned(Read_Pointer)));
+            Read_Pointer <= std_logic_vector(unsigned(Read_Pointer) + 1);
+            Data_Valid   <= '1';
+          -- FIFO is empty, but is trying to write in the same cycle. Relies input and
+          -- output directly.
+          elsif (Write_Enable = '1') then
+            Data_Output <= Data_Input;
+            Data_Valid  <= '1';
+          end if;
+
+        when others =>
+          Data_Output <= (others => '0');
+          Data_Valid  <= '0';
+      end case;
     end if;
   end process ReadProc;
 
@@ -76,11 +86,10 @@ begin  -- architecture Behavioural
   begin  -- process WriteProc
     if RST_n = '0' then                 -- asynchronous reset (active low)
       Write_Pointer <= (others => '0');
-      for I in 0 to DEPTH-1 loop
-        FIFO(I) <= (others => '0');
-      end loop;  -- I
     elsif CLK'event and CLK = '1' then  -- rising clock edge
       Write_Pointer <= Write_Pointer;
+
+      -- Writes, if not Full.
       if ((Write_Enable = '1') and (unsigned(Status_Counter) /= DEPTH)) then
         FIFO(to_integer(unsigned(Write_Pointer))) <= Data_Input;
         Write_Pointer                             <= std_logic_vector(unsigned(Write_Pointer) + 1);
@@ -97,21 +106,26 @@ begin  -- architecture Behavioural
     if RST_n = '0' then                 -- asynchronous reset (active low)
       Status_Counter <= (others => '0');
     elsif CLK'event and CLK = '1' then  -- rising clock edge
-      -- Only reading
+      -- Default assignemnt.
+      Status_Counter <= Status_Counter;
+
+      -- Only reading, and it is not empty.
       if ((Read_Enable = '1') and (Write_Enable = '0') and (unsigned(Status_Counter) /= 0)) then
         Status_Counter <= std_logic_vector(unsigned(Status_Counter) - 1);
-      -- Only writing
-      elsif ((Read_Enable = '0') and (Write_Enable = '1') and (unsigned(Status_Counter) /= DEPTH)) then
-        Status_Counter <= std_logic_vector(unsigned(Status_Counter) + 1);
-      -- Trying to read and write when full : only does the read operation.
-      elsif ((Read_Enable = '1') and (Write_Enable = '1') and (unsigned(Status_Counter) = DEPTH)) then
-        Status_Counter <= std_logic_vector(unsigned(Status_Counter) - 1);
-      -- Trying to read and write when empty : does both operations.
-      elsif ((Read_Enable = '1') and (Write_Enable = '1') and (unsigned(Status_Counter) = 0)) then
-        Status_Counter <= std_logic_vector(unsigned(Status_Counter));
-      else
-        Status_Counter <= Status_Counter;
       end if;
+
+      -- Trying to read and write when full: only reads.
+      if ((Read_Enable = '1') and (Write_Enable = '1') and (unsigned(Status_Counter) = DEPTH)) then
+        Status_Counter <= std_logic_vector(unsigned(Status_Counter) - 1);
+      end if;
+
+      -- Only writing, and it is not full.
+      if ((Read_Enable = '0') and (Write_Enable = '1') and (unsigned(Status_Counter) /= DEPTH)) then
+        Status_Counter <= std_logic_vector(unsigned(Status_Counter) + 1);
+      end if;
+
+      -- If trying to read and write on FIFO, and it is empty, both operations
+      -- will be made. So Status_Counter <= Status_Counter.
     end if;
   end process StatusCounterProc;
 
