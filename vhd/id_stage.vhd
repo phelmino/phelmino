@@ -79,6 +79,7 @@ architecture Behavioural of ID_Stage is
   signal Mux_Controller_Branch       : std_logic_vector(2 downto 0);
   signal Destination_Register_Output : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
   signal Immediate_Extension_Output  : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal Next_Branch_Destination     : std_logic_vector(WORD_WIDTH-1 downto 0);
 
   -- Comparison signals
   signal A_Equal_B     : std_logic := '0';
@@ -96,6 +97,9 @@ begin  -- architecture Behavioural
 
   -- Recuperates instruction from IF stage
   Instruction_Input <= Instr_ReqData_Input;
+
+  -- Calculates next branch destination
+  Next_Branch_Destination <= std_logic_vector(unsigned(PC_ID_Input) + unsigned(Immediate_Extension_Output));
 
   -- Comparison signals
   -- purpose: Compare outputs from registers A and B
@@ -162,7 +166,7 @@ begin  -- architecture Behavioural
       Current_Mux_Controller_Branch  <= Mux_Controller_Branch;
       EX_ALU_Operator_Output         <= ALU_Operator_Output;
       EX_Destination_Register_Output <= Destination_Register_Output;
-      Branch_Destination_IF_Output   <= (others => '0');
+      Branch_Destination_IF_Output   <= Next_Branch_Destination;
     end if;
   end process SequentialProcess;
 
