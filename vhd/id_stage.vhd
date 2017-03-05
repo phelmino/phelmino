@@ -27,10 +27,15 @@ entity ID_Stage is
     Branch_Active_IF_Output      : out std_logic;
     Branch_Destination_IF_Output : out std_logic_vector(WORD_WIDTH-1 downto 0);
 
-    -- Write acess to GPR
+    -- Write acess to GPR, from EX Stage.
     Write_Enable_Z_Input  : in std_logic;
     Write_Address_Z_Input : in std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
     Write_Data_Z_Input    : in std_logic_vector(WORD_WIDTH-1 downto 0);
+
+    -- Write acess to GPR, from WB Stage.
+    Write_Enable_Y_Input  : in std_logic;
+    Write_Address_Y_Input : in std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+    Write_Data_Y_Input    : in std_logic_vector(WORD_WIDTH-1 downto 0);
 
     -- Program Counter (PC)
     PC_ID_Input : in std_logic_vector(31 downto 0));
@@ -38,7 +43,7 @@ entity ID_Stage is
 end entity ID_Stage;
 
 architecture Behavioural of ID_Stage is
-  component general_purpose_registers is
+  component General_Purpose_Registers is
     generic (
       W : natural;
       N : natural);
@@ -49,10 +54,13 @@ architecture Behavioural of ID_Stage is
       Read_Data_A_Output    : out std_logic_vector(W-1 downto 0);
       Read_Address_B_Input  : in  std_logic_vector(N-1 downto 0);
       Read_Data_B_Output    : out std_logic_vector(W-1 downto 0);
+      Write_Enable_Y_Input  : in  std_logic;
+      Write_Address_Y_Input : in  std_logic_vector(N-1 downto 0);
+      Write_Data_Y_Input    : in  std_logic_vector(W-1 downto 0);
       Write_Enable_Z_Input  : in  std_logic;
       Write_Address_Z_Input : in  std_logic_vector(N-1 downto 0);
       Write_Data_Z_Input    : in  std_logic_vector(W-1 downto 0));
-  end component general_purpose_registers;
+  end component General_Purpose_Registers;
   signal Read_Address_A_Input : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
   signal Read_Data_A_Output   : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal Read_Address_B_Input : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
@@ -117,6 +125,9 @@ begin  -- architecture Behavioural
       Read_Data_A_Output    => Read_Data_A_Output,
       Read_Address_B_Input  => Read_Address_B_Input,
       Read_Data_B_Output    => Read_Data_B_Output,
+      Write_Enable_Y_Input  => Write_Enable_Y_Input,
+      Write_Address_Y_Input => Write_Address_Y_Input,
+      Write_Data_Y_Input    => Write_Data_Y_Input,
       Write_Enable_Z_Input  => Write_Enable_Z_Input,
       Write_Address_Z_Input => Write_Address_Z_Input,
       Write_Data_Z_Input    => Write_Data_Z_Input);

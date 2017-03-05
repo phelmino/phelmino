@@ -25,6 +25,10 @@ entity General_Purpose_Registers is
     Read_Data_B_Output   : out std_logic_vector(W-1 downto 0);
 
     -- Write interface
+    Write_Enable_Y_Input  : in std_logic;
+    Write_Address_Y_Input : in std_logic_vector(N-1 downto 0);
+    Write_Data_Y_Input    : in std_logic_vector(W-1 downto 0);
+
     Write_Enable_Z_Input  : in std_logic;
     Write_Address_Z_Input : in std_logic_vector(N-1 downto 0);
     Write_Data_Z_Input    : in std_logic_vector(W-1 downto 0));
@@ -53,7 +57,8 @@ begin  -- architecture Behavioural
 
       -- Clears register bank
       for i in 0 to 2**N-1 loop
-        GPR(i) <= std_logic_vector(to_unsigned(i, GPR(i)'length));
+        GPR(i) <= (others => '0');
+        -- GPR(i) <= std_logic_vector(to_unsigned(i, GPR(i)'length));
       end loop;
     elsif CLK'event and CLK = '1' then  -- rising clock edge
       -- Clears outputs
@@ -61,9 +66,16 @@ begin  -- architecture Behavioural
       Read_Data_B_Output <= Next_Read_Data_B;
 
       -- Rewrites specific address in register bank
-      if (Write_Enable_Z_Input = '1') then
-        if (Write_Address_Z_Input /= "00000") then  -- Can not rewrite register r0
-          GPR(to_integer(unsigned(Write_Address_Z_Input))) <= Write_Data_Z_Input;
+      -- Can not rewrite register r0
+      if (Write_Enable_Z_Input = '1' and (Write_Address_Z_Input /= "00000")) then
+        GPR(to_integer(unsigned(Write_Address_Z_Input))) <= Write_Data_Z_Input;
+      end if;
+
+      if (Write_Enable_Y_Input = '1' and (Write_Address_Y_Input /= "00000")) then
+        -- Bus Z has priority over bus Y. Howerver the decoding unit should
+        -- never let that the same register is written at the same time.
+        if (Write_Enable_Z_Input = '0' or Write_Address_Y_Input /= Write_Address_Z_Input) then
+          GPR(to_integer(unsigned(Write_Address_Y_Input))) <= Write_Data_Y_Input;
         end if;
       end if;
 

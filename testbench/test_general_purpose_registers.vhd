@@ -22,6 +22,9 @@ architecture Behavioural of test_general_purpose_registers is
       Read_Data_A_Output    : out std_logic_vector(W-1 downto 0);
       Read_Address_B_Input  : in  std_logic_vector(N-1 downto 0);
       Read_Data_B_Output    : out std_logic_vector(W-1 downto 0);
+      Write_Enable_Y_Input  : in  std_logic;
+      Write_Address_Y_Input : in  std_logic_vector(N-1 downto 0);
+      Write_Data_Y_Input    : in  std_logic_vector(W-1 downto 0);
       Write_Enable_Z_Input  : in  std_logic;
       Write_Address_Z_Input : in  std_logic_vector(N-1 downto 0);
       Write_Data_Z_Input    : in  std_logic_vector(W-1 downto 0));
@@ -33,6 +36,9 @@ architecture Behavioural of test_general_purpose_registers is
   signal Read_Data_A_Output    : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal Read_Address_B_Input  : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0) := (others => '0');
   signal Read_Data_B_Output    : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal Write_Enable_Y_Input  : std_logic                                      := '0';
+  signal Write_Address_Y_Input : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0) := (others => '0');
+  signal Write_Data_Y_Input    : std_logic_vector(WORD_WIDTH-1 downto 0)        := (others => '0');
   signal Write_Enable_Z_Input  : std_logic                                      := '0';
   signal Write_Address_Z_Input : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0) := (others => '0');
   signal Write_Data_Z_Input    : std_logic_vector(WORD_WIDTH-1 downto 0)        := (others => '0');
@@ -50,6 +56,9 @@ begin  -- architecture Behavioural
       Read_Data_A_Output    => Read_Data_A_Output,
       Read_Address_B_Input  => Read_Address_B_Input,
       Read_Data_B_Output    => Read_Data_B_Output,
+      Write_Enable_Y_Input  => Write_Enable_Y_Input,
+      Write_Address_Y_Input => Write_Address_Y_Input,
+      Write_Data_Y_Input    => Write_Data_Y_Input,
       Write_Enable_Z_Input  => Write_Enable_Z_Input,
       Write_Address_Z_Input => Write_Address_Z_Input,
       Write_Data_Z_Input    => Write_Data_Z_Input);
@@ -62,23 +71,51 @@ begin  -- architecture Behavioural
     variable Read_Address_A  : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0) := (others => '0');
     variable Read_Counter_B  : std_logic_vector(WORD_WIDTH-1 downto 0)        := (0      => '1', others => '0');
     variable Read_Address_B  : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0) := (others => '0');
+    variable Write_Counter_Y : std_logic_vector(WORD_WIDTH-1 downto 0)        := (others => '1');
+    variable Write_Address_Y : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0) := (others => '1');
     variable Write_Counter_Z : std_logic_vector(WORD_WIDTH-1 downto 0)        := (others => '0');
     variable Write_Address_Z : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0) := (others => '0');
   begin  -- process Stimulus
 
+    Write_Enable_Y_Input <= '0';
     Write_Enable_Z_Input <= '0';
     wait for 10 ns;
     wait until falling_edge(CLK);
 
-    for W in 0 to WORD_WIDTH-1 loop
-      Write_Enable_Z_Input  <= '1';
+    for W in 0 to WORD_WIDTH/2-1 loop
+      Write_Enable_Y_Input <= '1';
+      Write_Enable_Z_Input <= '1';
+
       Write_Address_Z_Input <= Write_Address_Z;
       Write_Data_Z_Input    <= Write_Counter_Z;
-      Write_Counter_Z       := std_logic_vector(unsigned(Write_Counter_Z) + 1);
-      Write_Address_Z       := std_logic_vector(unsigned(Write_Address_Z) + 1);
+      Write_Address_Y_Input <= Write_Address_Y;
+      Write_Data_Y_Input    <= Write_Counter_Y;
+
+      Write_Counter_Y := std_logic_vector(unsigned(Write_Counter_Y) - 1);
+      Write_Address_Y := std_logic_vector(unsigned(Write_Address_Y) - 1);
+      Write_Counter_Z := std_logic_vector(unsigned(Write_Counter_Z) + 1);
+      Write_Address_Z := std_logic_vector(unsigned(Write_Address_Z) + 1);
       wait until falling_edge(CLK);
     end loop;  -- W
 
+    Write_Address_Y := std_logic_vector(unsigned(Write_Address_Y) + 1);
+    for W in WORD_WIDTH/2 to WORD_WIDTH-1 loop
+      Write_Enable_Y_Input <= '1';
+      Write_Enable_Z_Input <= '1';
+
+      Write_Address_Z_Input <= Write_Address_Z;
+      Write_Data_Z_Input    <= Write_Counter_Z;
+      Write_Address_Y_Input <= Write_Address_Y;
+      Write_Data_Y_Input    <= Write_Counter_Y;
+
+      Write_Counter_Y := std_logic_vector(unsigned(Write_Counter_Y) + 1);
+      Write_Address_Y := std_logic_vector(unsigned(Write_Address_Y) + 1);
+      Write_Counter_Z := std_logic_vector(unsigned(Write_Counter_Z) + 1);
+      Write_Address_Z := std_logic_vector(unsigned(Write_Address_Z) + 1);
+      wait until falling_edge(CLK);
+    end loop;  -- W
+
+    Write_Enable_Y_Input <= '0';
     Write_Enable_Z_Input <= '0';
     wait until falling_edge(CLK);
 
