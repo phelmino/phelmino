@@ -1,145 +1,145 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-library lib_VHDL;
-use lib_VHDL.all;
-use lib_VHDL.phelmino_definitions.all;
+library lib_vhdl;
+use lib_vhdl.all;
+use lib_vhdl.phelmino_definitions.all;
 
-entity Phelmino_Core is
+entity phelmino_core is
 
   port (
-    -- Clock and reset signals
-    CLK   : in std_logic;
-    RST_n : in std_logic;
+    -- clock and reset signals
+    clk   : in std_logic;
+    rst_n : in std_logic;
 
-    -- Instruction memory interface
-    Instr_Requisition_Output : out std_logic;
-    Instr_Address_Output     : out std_logic_vector(WORD_WIDTH-1 downto 0);
-    Instr_Grant_Input        : in  std_logic;
-    Instr_ReqValid_Input     : in  std_logic;
-    Instr_ReqData_Input      : in  std_logic_vector(WORD_WIDTH-1 downto 0));
+    -- instruction memory interface
+    instr_requisition_output : out std_logic;
+    instr_address_output     : out std_logic_vector(WORD_WIDTH-1 downto 0);
+    instr_grant_input        : in  std_logic;
+    instr_reqvalid_input     : in  std_logic;
+    instr_reqdata_input      : in  std_logic_vector(WORD_WIDTH-1 downto 0));
 
-end entity Phelmino_Core;
+end entity phelmino_core;
 
-architecture Behavioural of Phelmino_Core is
-  component IF_Stage is
+architecture behavioural of phelmino_core is
+  component if_stage is
     port (
-      CLK                             : in  std_logic;
-      RST_n                           : in  std_logic;
-      Instr_Requisition_Output        : out std_logic;
-      Instr_Address_Output            : out std_logic_vector(WORD_WIDTH-1 downto 0);
-      Instr_Grant_Input               : in  std_logic;
-      Instr_ReqValid_Input            : in  std_logic;
-      Instr_ReqData_Input             : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      Instr_ReqValid_ID_Output        : out std_logic;
-      Instr_ReqData_ID_Output         : out std_logic_vector(WORD_WIDTH-1 downto 0);
-      Instr_Program_Counter_ID_Output : out std_logic_vector(WORD_WIDTH-1 downto 0);
-      Branch_Active_Input             : in  std_logic;
-      Branch_Destination_Input        : in  std_logic_vector(WORD_WIDTH-1 downto 0));
-  end component IF_Stage;
-  signal Instr_ReqValid_ID_Output        : std_logic;
-  signal Instr_ReqData_ID_Output         : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal Instr_Program_Counter_ID_Output : std_logic_vector(WORD_WIDTH-1 downto 0);
+      clk                             : in  std_logic;
+      rst_n                           : in  std_logic;
+      instr_requisition_output        : out std_logic;
+      instr_address_output            : out std_logic_vector(WORD_WIDTH-1 downto 0);
+      instr_grant_input               : in  std_logic;
+      instr_reqvalid_input            : in  std_logic;
+      instr_reqdata_input             : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      instr_reqvalid_id_output        : out std_logic;
+      instr_reqdata_id_output         : out std_logic_vector(WORD_WIDTH-1 downto 0);
+      instr_program_counter_id_output : out std_logic_vector(WORD_WIDTH-1 downto 0);
+      branch_active_input             : in  std_logic;
+      branch_destination_input        : in  std_logic_vector(WORD_WIDTH-1 downto 0));
+  end component if_stage;
+  signal instr_reqvalid_id_output        : std_logic;
+  signal instr_reqdata_id_output         : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal instr_program_counter_id_output : std_logic_vector(WORD_WIDTH-1 downto 0);
 
-  component ID_Stage is
+  component id_stage is
     port (
-      CLK                            : in  std_logic;
-      RST_n                          : in  std_logic;
-      Instr_ReqValid_Input           : in  std_logic;
-      Instr_ReqData_Input            : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      EX_ALU_Input_A_Output          : out std_logic_vector(WORD_WIDTH-1 downto 0);
-      EX_ALU_Input_B_Output          : out std_logic_vector(WORD_WIDTH-1 downto 0);
-      EX_ALU_Operator_Output         : out std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
-      EX_Destination_Register_Output : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-      Branch_Active_IF_Output        : out std_logic;
-      Branch_Destination_IF_Output   : out std_logic_vector(WORD_WIDTH-1 downto 0);
-      Write_Enable_Z_Input           : in  std_logic;
-      Write_Address_Z_Input          : in  std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-      Write_Data_Z_Input             : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      Write_Enable_Y_Input           : in  std_logic;
-      Write_Address_Y_Input          : in  std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-      Write_Data_Y_Input             : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      PC_ID_Input                    : in  std_logic_vector(31 downto 0)); 
-  end component ID_Stage;
-  signal EX_ALU_Input_A_Output          : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal EX_ALU_Input_B_Output          : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal EX_ALU_Operator_Output         : std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
-  signal EX_Destination_Register_Output : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-  signal Branch_Active_IF_Output        : std_logic;
-  signal Branch_Destination_IF_Output   : std_logic_vector(WORD_WIDTH-1 downto 0);
+      clk                            : in  std_logic;
+      rst_n                          : in  std_logic;
+      instr_reqvalid_input           : in  std_logic;
+      instr_reqdata_input            : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      ex_alu_input_a_output          : out std_logic_vector(WORD_WIDTH-1 downto 0);
+      ex_alu_input_b_output          : out std_logic_vector(WORD_WIDTH-1 downto 0);
+      ex_alu_operator_output         : out std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
+      ex_destination_register_output : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+      branch_active_if_output        : out std_logic;
+      branch_destination_if_output   : out std_logic_vector(WORD_WIDTH-1 downto 0);
+      write_enable_z_input           : in  std_logic;
+      write_address_z_input          : in  std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+      write_data_z_input             : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      write_enable_y_input           : in  std_logic;
+      write_address_y_input          : in  std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+      write_data_y_input             : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      pc_id_input                    : in  std_logic_vector(31 downto 0)); 
+  end component id_stage;
+  signal ex_alu_input_a_output          : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal ex_alu_input_b_output          : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal ex_alu_operator_output         : std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
+  signal ex_destination_register_output : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+  signal branch_active_if_output        : std_logic;
+  signal branch_destination_if_output   : std_logic_vector(WORD_WIDTH-1 downto 0);
 
-  component EX_Stage is
+  component ex_stage is
     port (
-      CLK                        : in  std_logic;
-      RST_n                      : in  std_logic;
-      ALU_Input_A_Input          : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      ALU_Input_B_Input          : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      ALU_Operator_Input         : in  std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
-      Write_Enable_Z_Output      : out std_logic;
-      Write_Address_Z_Output     : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-      Write_Data_Z_Output        : out std_logic_vector(WORD_WIDTH-1 downto 0);
-      Destination_Register_Input : in  std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0));
-  end component EX_Stage;
-  signal ALU_Input_A_Input          : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal ALU_Input_B_Input          : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal ALU_Operator_Input         : std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
-  signal Destination_Register_Input : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-  signal Write_Enable_Z_Output      : std_logic;
-  signal Write_Address_Z_Output     : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-  signal Write_Data_Z_Output        : std_logic_vector(WORD_WIDTH-1 downto 0);
+      clk                        : in  std_logic;
+      rst_n                      : in  std_logic;
+      alu_input_a_input          : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      alu_input_b_input          : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      alu_operator_input         : in  std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
+      write_enable_z_output      : out std_logic;
+      write_address_z_output     : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+      write_data_z_output        : out std_logic_vector(WORD_WIDTH-1 downto 0);
+      destination_register_input : in  std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0));
+  end component ex_stage;
+  signal alu_input_a_input          : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal alu_input_b_input          : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal alu_operator_input         : std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
+  signal destination_register_input : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+  signal write_enable_z_output      : std_logic;
+  signal write_address_z_output     : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+  signal write_data_z_output        : std_logic_vector(WORD_WIDTH-1 downto 0);
 
 
-  signal Write_Enable_Y_Output      : std_logic;
-  signal Write_Address_Y_Output     : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-  signal Write_Data_Y_Output        : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal write_enable_y_output      : std_logic;
+  signal write_address_y_output     : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+  signal write_data_y_output        : std_logic_vector(WORD_WIDTH-1 downto 0);
 
-begin  -- architecture Behavioural
+begin  -- architecture behavioural
 
-  stage_IF : entity lib_VHDL.IF_Stage
+  stage_if : entity lib_vhdl.if_stage
     port map (
-      CLK                             => CLK,
-      RST_n                           => RST_n,
-      Instr_Requisition_Output        => Instr_Requisition_Output,
-      Instr_Address_Output            => Instr_Address_Output,
-      Instr_Grant_Input               => Instr_Grant_Input,
-      Instr_ReqValid_Input            => Instr_ReqValid_Input,
-      Instr_ReqData_Input             => Instr_ReqData_Input,
-      Instr_ReqValid_ID_Output        => Instr_ReqValid_ID_Output,
-      Instr_ReqData_ID_Output         => Instr_ReqData_ID_Output,
-      Instr_Program_Counter_ID_Output => Instr_Program_Counter_ID_Output,
-      Branch_Active_Input             => Branch_Active_IF_Output,
-      Branch_Destination_Input        => Branch_Destination_IF_Output);
+      clk                             => clk,
+      rst_n                           => rst_n,
+      instr_requisition_output        => instr_requisition_output,
+      instr_address_output            => instr_address_output,
+      instr_grant_input               => instr_grant_input,
+      instr_reqvalid_input            => instr_reqvalid_input,
+      instr_reqdata_input             => instr_reqdata_input,
+      instr_reqvalid_id_output        => instr_reqvalid_id_output,
+      instr_reqdata_id_output         => instr_reqdata_id_output,
+      instr_program_counter_id_output => instr_program_counter_id_output,
+      branch_active_input             => branch_active_if_output,
+      branch_destination_input        => branch_destination_if_output);
 
-  stage_ID : entity lib_VHDL.ID_Stage
+  stage_id : entity lib_vhdl.id_stage
     port map (
-      CLK                            => CLK,
-      RST_n                          => RST_n,
-      Instr_ReqValid_Input           => Instr_ReqValid_ID_Output,
-      Instr_ReqData_Input            => Instr_ReqData_ID_Output,
-      EX_ALU_Input_A_Output          => EX_ALU_Input_A_Output,
-      EX_ALU_Input_B_Output          => EX_ALU_Input_B_Output,
-      EX_ALU_Operator_Output         => EX_ALU_Operator_Output,
-      EX_Destination_Register_Output => EX_Destination_Register_Output,
-      Branch_Active_IF_Output        => Branch_Active_IF_Output,
-      Branch_Destination_IF_Output   => Branch_Destination_IF_Output,
-      Write_Enable_Z_Input           => Write_Enable_Z_Output,
-      Write_Address_Z_Input          => Write_Address_Z_Output,
-      Write_Data_Z_Input             => Write_Data_Z_Output,
-      Write_Enable_Y_Input           => Write_Enable_Y_Output,
-      Write_Address_Y_Input          => Write_Address_Y_Output,
-      Write_Data_Y_Input             => Write_Data_Y_Output,
-      PC_ID_Input                    => Instr_Program_Counter_ID_Output);
+      clk                            => clk,
+      rst_n                          => rst_n,
+      instr_reqvalid_input           => instr_reqvalid_id_output,
+      instr_reqdata_input            => instr_reqdata_id_output,
+      ex_alu_input_a_output          => ex_alu_input_a_output,
+      ex_alu_input_b_output          => ex_alu_input_b_output,
+      ex_alu_operator_output         => ex_alu_operator_output,
+      ex_destination_register_output => ex_destination_register_output,
+      branch_active_if_output        => branch_active_if_output,
+      branch_destination_if_output   => branch_destination_if_output,
+      write_enable_z_input           => write_enable_z_output,
+      write_address_z_input          => write_address_z_output,
+      write_data_z_input             => write_data_z_output,
+      write_enable_y_input           => write_enable_y_output,
+      write_address_y_input          => write_address_y_output,
+      write_data_y_input             => write_data_y_output,
+      pc_id_input                    => instr_program_counter_id_output);
 
-  stage_EX : entity lib_VHDL.EX_Stage
+  stage_ex : entity lib_vhdl.ex_stage
     port map (
-      CLK                        => CLK,
-      RST_n                      => RST_n,
-      ALU_Input_A_Input          => EX_ALU_Input_A_Output,
-      ALU_Input_B_Input          => EX_ALU_Input_B_Output,
-      ALU_Operator_Input         => EX_ALU_Operator_Output,
-      Write_Enable_Z_Output      => Write_Enable_Z_Output,
-      Write_Address_Z_Output     => Write_Address_Z_Output,
-      Write_Data_Z_Output        => Write_Data_Z_Output,
-      Destination_Register_Input => EX_Destination_Register_Output);
+      clk                        => clk,
+      rst_n                      => rst_n,
+      alu_input_a_input          => ex_alu_input_a_output,
+      alu_input_b_input          => ex_alu_input_b_output,
+      alu_operator_input         => ex_alu_operator_output,
+      write_enable_z_output      => write_enable_z_output,
+      write_address_z_output     => write_address_z_output,
+      write_data_z_output        => write_data_z_output,
+      destination_register_input => ex_destination_register_output);
 
-end architecture Behavioural;
+end architecture behavioural;

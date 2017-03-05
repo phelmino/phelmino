@@ -1,80 +1,80 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-library lib_VHDL;
-use lib_VHDL.phelmino_definitions.all;
+library lib_vhdl;
+use lib_vhdl.phelmino_definitions.all;
 
-entity EX_Stage is
+entity ex_stage is
 
   port (
-    -- Clock and reset signals
-    CLK   : in std_logic;
-    RST_n : in std_logic;
+    -- clock and reset signals
+    clk   : in std_logic;
+    rst_n : in std_logic;
 
-    -- ALU Signals
-    ALU_Input_A_Input  : in std_logic_vector(WORD_WIDTH-1 downto 0);
-    ALU_Input_B_Input  : in std_logic_vector(WORD_WIDTH-1 downto 0);
-    ALU_Operator_Input : in std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
+    -- alu signals
+    alu_input_a_input  : in std_logic_vector(WORD_WIDTH-1 downto 0);
+    alu_input_b_input  : in std_logic_vector(WORD_WIDTH-1 downto 0);
+    alu_operator_input : in std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
 
-    -- Writing on GPR
-    Write_Enable_Z_Output  : out std_logic;
-    Write_Address_Z_Output : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-    Write_Data_Z_Output    : out std_logic_vector(WORD_WIDTH-1 downto 0);
+    -- writing on gpr
+    write_enable_z_output  : out std_logic;
+    write_address_z_output : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+    write_data_z_output    : out std_logic_vector(WORD_WIDTH-1 downto 0);
 
-    -- Destination register
-    Destination_Register_Input : in std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0));
+    -- destination register
+    destination_register_input : in std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0));
 
-end entity EX_Stage;
+end entity ex_stage;
 
-architecture Behavioural of EX_Stage is
-  component ALU is
+architecture behavioural of ex_stage is
+  component alu is
     port (
-      ALU_Operand_A_Input  : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      ALU_Operand_B_Input  : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      ALU_Operator_Input   : in  std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
-      ALU_Result_Output    : out std_logic_vector(WORD_WIDTH-1 downto 0);
-      ALU_Carry_Out_Output : out std_logic);
-  end component ALU;
+      alu_operand_a_input  : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      alu_operand_b_input  : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      alu_operator_input   : in  std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
+      alu_result_output    : out std_logic_vector(WORD_WIDTH-1 downto 0);
+      alu_carry_out_output : out std_logic);
+  end component alu;
 
-  signal ALU_Operand_A_Input  : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal ALU_Operand_B_Input  : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal ALU_Operator         : std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
-  signal ALU_Result_Output    : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal ALU_Carry_Out_Output : std_logic;
+  signal alu_operand_a_input  : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal alu_operand_b_input  : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal alu_operator         : std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
+  signal alu_result_output    : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal alu_carry_out_output : std_logic;
 
-begin  -- architecture Behavioural
+begin  -- architecture behavioural
 
-  Write_Data_Z_Output <= ALU_Result_Output;
+  write_data_z_output <= alu_result_output;
 
-  ALU_1 : entity lib_VHDL.ALU
+  alu_1 : entity lib_vhdl.alu
     port map (
-      ALU_Operand_A_Input  => ALU_Operand_A_Input,
-      ALU_Operand_B_Input  => ALU_Operand_B_Input,
-      ALU_Operator_Input   => ALU_Operator,
-      ALU_Result_Output    => ALU_Result_Output,
-      ALU_Carry_Out_Output => ALU_Carry_Out_Output);
+      alu_operand_a_input  => alu_operand_a_input,
+      alu_operand_b_input  => alu_operand_b_input,
+      alu_operator_input   => alu_operator,
+      alu_result_output    => alu_result_output,
+      alu_carry_out_output => alu_carry_out_output);
 
-  Sequential : process (CLK, RST_n) is
-  begin  -- process Sequential
-    if RST_n = '0' then                 -- asynchronous reset (active low)
-      -- ALU
-      ALU_Operand_A_Input <= (others => '0');
-      ALU_Operand_B_Input <= (others => '0');
-      ALU_Operator        <= ALU_ADD;
+  sequential : process (clk, rst_n) is
+  begin  -- process sequential
+    if rst_n = '0' then                 -- asynchronous reset (active low)
+      -- alu
+      alu_operand_a_input <= (others => '0');
+      alu_operand_b_input <= (others => '0');
+      alu_operator        <= ALU_ADD;
 
-      -- GPR
-      Write_Enable_Z_Output  <= '0';
-      Write_Address_Z_Output <= (others => '0');
-    elsif CLK'event and CLK = '1' then  -- rising clock edge
-      -- ALU
-      ALU_Operand_A_Input <= ALU_Input_A_Input;
-      ALU_Operand_B_Input <= ALU_Input_B_Input;
-      ALU_Operator        <= ALU_Operator_Input;
+      -- gpr
+      write_enable_z_output  <= '0';
+      write_address_z_output <= (others => '0');
+    elsif clk'event and clk = '1' then  -- rising clock edge
+      -- alu
+      alu_operand_a_input <= alu_input_a_input;
+      alu_operand_b_input <= alu_input_b_input;
+      alu_operator        <= alu_operator_input;
 
-      -- GPR
-      Write_Enable_Z_Output  <= '1';
-      Write_Address_Z_Output <= Destination_Register_Input;
+      -- gpr
+      write_enable_z_output  <= '1';
+      write_address_z_output <= destination_register_input;
     end if;
-  end process Sequential;
+  end process sequential;
 
-end architecture Behavioural;
+end architecture behavioural;

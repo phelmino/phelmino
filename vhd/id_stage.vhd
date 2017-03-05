@@ -2,215 +2,215 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library lib_VHDL;
-use lib_VHDL.all;
-use lib_VHDL.phelmino_definitions.all;
+library lib_vhdl;
+use lib_vhdl.all;
+use lib_vhdl.phelmino_definitions.all;
 
-entity ID_Stage is
+entity id_stage is
 
   port (
-    -- Clock and reset signals
-    CLK   : in std_logic;
-    RST_n : in std_logic;
+    -- clock and reset signals
+    clk   : in std_logic;
+    rst_n : in std_logic;
 
-    -- Data input from IF stage
-    Instr_ReqValid_Input : in std_logic;
-    Instr_ReqData_Input  : in std_logic_vector(WORD_WIDTH-1 downto 0);
+    -- data input from if stage
+    instr_reqvalid_input : in std_logic;
+    instr_reqdata_input  : in std_logic_vector(WORD_WIDTH-1 downto 0);
 
-    -- EX Signals
-    EX_ALU_Input_A_Output          : out std_logic_vector(WORD_WIDTH-1 downto 0);
-    EX_ALU_Input_B_Output          : out std_logic_vector(WORD_WIDTH-1 downto 0);
-    EX_ALU_Operator_Output         : out std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
-    EX_Destination_Register_Output : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+    -- ex signals
+    ex_alu_input_a_output          : out std_logic_vector(WORD_WIDTH-1 downto 0);
+    ex_alu_input_b_output          : out std_logic_vector(WORD_WIDTH-1 downto 0);
+    ex_alu_operator_output         : out std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
+    ex_destination_register_output : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
 
-    -- Branch destination
-    Branch_Active_IF_Output      : out std_logic;
-    Branch_Destination_IF_Output : out std_logic_vector(WORD_WIDTH-1 downto 0);
+    -- branch destination
+    branch_active_if_output      : out std_logic;
+    branch_destination_if_output : out std_logic_vector(WORD_WIDTH-1 downto 0);
 
-    -- Write acess to GPR, from EX Stage.
-    Write_Enable_Z_Input  : in std_logic;
-    Write_Address_Z_Input : in std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-    Write_Data_Z_Input    : in std_logic_vector(WORD_WIDTH-1 downto 0);
+    -- write acess to gpr, from ex stage.
+    write_enable_z_input  : in std_logic;
+    write_address_z_input : in std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+    write_data_z_input    : in std_logic_vector(WORD_WIDTH-1 downto 0);
 
-    -- Write acess to GPR, from WB Stage.
-    Write_Enable_Y_Input  : in std_logic;
-    Write_Address_Y_Input : in std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-    Write_Data_Y_Input    : in std_logic_vector(WORD_WIDTH-1 downto 0);
+    -- write acess to gpr, from wb stage.
+    write_enable_y_input  : in std_logic;
+    write_address_y_input : in std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+    write_data_y_input    : in std_logic_vector(WORD_WIDTH-1 downto 0);
 
-    -- Program Counter (PC)
-    PC_ID_Input : in std_logic_vector(31 downto 0));
+    -- program counter (pc)
+    pc_id_input : in std_logic_vector(31 downto 0));
 
-end entity ID_Stage;
+end entity id_stage;
 
-architecture Behavioural of ID_Stage is
-  component General_Purpose_Registers is
+architecture behavioural of id_stage is
+  component general_purpose_registers is
     generic (
-      W : natural;
-      N : natural);
+      w : natural;
+      n : natural);
     port (
-      CLK                   : in  std_logic;
-      RST_n                 : in  std_logic;
-      Read_Address_A_Input  : in  std_logic_vector(N-1 downto 0);
-      Read_Data_A_Output    : out std_logic_vector(W-1 downto 0);
-      Read_Address_B_Input  : in  std_logic_vector(N-1 downto 0);
-      Read_Data_B_Output    : out std_logic_vector(W-1 downto 0);
-      Write_Enable_Y_Input  : in  std_logic;
-      Write_Address_Y_Input : in  std_logic_vector(N-1 downto 0);
-      Write_Data_Y_Input    : in  std_logic_vector(W-1 downto 0);
-      Write_Enable_Z_Input  : in  std_logic;
-      Write_Address_Z_Input : in  std_logic_vector(N-1 downto 0);
-      Write_Data_Z_Input    : in  std_logic_vector(W-1 downto 0));
-  end component General_Purpose_Registers;
-  signal Read_Address_A_Input : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-  signal Read_Data_A_Output   : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal Read_Address_B_Input : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-  signal Read_Data_B_Output   : std_logic_vector(WORD_WIDTH-1 downto 0);
+      clk                   : in  std_logic;
+      rst_n                 : in  std_logic;
+      read_address_a_input  : in  std_logic_vector(n-1 downto 0);
+      read_data_a_output    : out std_logic_vector(w-1 downto 0);
+      read_address_b_input  : in  std_logic_vector(n-1 downto 0);
+      read_data_b_output    : out std_logic_vector(w-1 downto 0);
+      write_enable_y_input  : in  std_logic;
+      write_address_y_input : in  std_logic_vector(n-1 downto 0);
+      write_data_y_input    : in  std_logic_vector(w-1 downto 0);
+      write_enable_z_input  : in  std_logic;
+      write_address_z_input : in  std_logic_vector(n-1 downto 0);
+      write_data_z_input    : in  std_logic_vector(w-1 downto 0));
+  end component general_purpose_registers;
+  signal read_address_a_input : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+  signal read_data_a_output   : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal read_address_b_input : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+  signal read_data_b_output   : std_logic_vector(WORD_WIDTH-1 downto 0);
 
-  component Decoder is
+  component decoder is
     port (
-      Instruction_Input           : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      Instruction_Valid           : out std_logic;
-      Read_Address_A_Output       : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-      Read_Address_B_Output       : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-      ALU_Operator_Output         : out std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
-      Mux_Controller_A            : out std_logic_vector(1 downto 0);
-      Mux_Controller_B            : out std_logic_vector(1 downto 0);
-      Mux_Controller_Branch       : out std_logic_vector(2 downto 0);
-      Destination_Register_Output : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0));
-  end component Decoder;
-  signal Instruction_Input           : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal Instruction_Valid           : std_logic;
-  signal ALU_Operator_Output         : std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
-  signal Mux_Controller_A            : std_logic_vector(1 downto 0);
-  signal Mux_Controller_B            : std_logic_vector(1 downto 0);
-  signal Mux_Controller_Branch       : std_logic_vector(2 downto 0);
-  signal Destination_Register_Output : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-  signal Next_Branch_Destination     : std_logic_vector(WORD_WIDTH-1 downto 0);
+      instruction_input           : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      instruction_valid           : out std_logic;
+      read_address_a_output       : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+      read_address_b_output       : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+      alu_operator_output         : out std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
+      mux_controller_a            : out std_logic_vector(1 downto 0);
+      mux_controller_b            : out std_logic_vector(1 downto 0);
+      mux_controller_branch       : out std_logic_vector(2 downto 0);
+      destination_register_output : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0));
+  end component decoder;
+  signal instruction_input           : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal instruction_valid           : std_logic;
+  signal alu_operator_output         : std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
+  signal mux_controller_a            : std_logic_vector(1 downto 0);
+  signal mux_controller_b            : std_logic_vector(1 downto 0);
+  signal mux_controller_branch       : std_logic_vector(2 downto 0);
+  signal destination_register_output : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+  signal next_branch_destination     : std_logic_vector(WORD_WIDTH-1 downto 0);
 
-  component Sign_Extender is
+  component sign_extender is
     port (
-      Instruction                : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      Immediate_Extension_Output : out std_logic_vector(WORD_WIDTH-1 downto 0));
-  end component Sign_Extender;
-  signal Immediate_Extension_Output : std_logic_vector(WORD_WIDTH-1 downto 0);
+      instruction                : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      immediate_extension_output : out std_logic_vector(WORD_WIDTH-1 downto 0));
+  end component sign_extender;
+  signal immediate_extension_output : std_logic_vector(WORD_WIDTH-1 downto 0);
 
-  -- Comparison signals
-  signal A_Equal_B     : std_logic := '0';
-  signal A_Less_Than_B : std_logic := '0';
+  -- comparison signals
+  signal a_equal_b     : std_logic := '0';
+  signal a_less_than_b : std_logic := '0';
 
-  -- Mux Signals
-  signal Current_Mux_Controller_A      : std_logic_vector(1 downto 0) := "00";
-  signal Next_Mux_Controller_A         : std_logic_vector(1 downto 0) := "00";
-  signal Current_Mux_Controller_B      : std_logic_vector(1 downto 0) := "00";
-  signal Next_Mux_Controller_B         : std_logic_vector(1 downto 0) := "00";
-  signal Current_Mux_Controller_Branch : std_logic_vector(2 downto 0) := "000";
-  signal Next_Mux_Controller_Branch    : std_logic_vector(2 downto 0) := "000";
+  -- mux signals
+  signal current_mux_controller_a      : std_logic_vector(1 downto 0) := "00";
+  signal next_mux_controller_a         : std_logic_vector(1 downto 0) := "00";
+  signal current_mux_controller_b      : std_logic_vector(1 downto 0) := "00";
+  signal next_mux_controller_b         : std_logic_vector(1 downto 0) := "00";
+  signal current_mux_controller_branch : std_logic_vector(2 downto 0) := "000";
+  signal next_mux_controller_branch    : std_logic_vector(2 downto 0) := "000";
 
-begin  -- architecture Behavioural
+begin  -- architecture behavioural
 
-  -- Recuperates instruction from IF stage
-  Instruction_Input <= Instr_ReqData_Input;
+  -- recuperates instruction from if stage
+  instruction_input <= instr_reqdata_input;
 
-  -- Calculates next branch destination
-  Next_Branch_Destination <= std_logic_vector(unsigned(PC_ID_Input) + unsigned(Immediate_Extension_Output));
+  -- calculates next branch destination
+  next_branch_destination <= std_logic_vector(unsigned(pc_id_input) + unsigned(immediate_extension_output));
 
-  GPR : entity lib_VHDL.General_Purpose_Registers
+  gpr : entity lib_vhdl.general_purpose_registers
     generic map (
-      W => WORD_WIDTH,
-      N => GPR_ADDRESS_WIDTH)
+      w => WORD_WIDTH,
+      n => GPR_ADDRESS_WIDTH)
     port map (
-      CLK                   => CLK,
-      RST_n                 => RST_n,
-      Read_Address_A_Input  => Read_Address_A_Input,
-      Read_Data_A_Output    => Read_Data_A_Output,
-      Read_Address_B_Input  => Read_Address_B_Input,
-      Read_Data_B_Output    => Read_Data_B_Output,
-      Write_Enable_Y_Input  => Write_Enable_Y_Input,
-      Write_Address_Y_Input => Write_Address_Y_Input,
-      Write_Data_Y_Input    => Write_Data_Y_Input,
-      Write_Enable_Z_Input  => Write_Enable_Z_Input,
-      Write_Address_Z_Input => Write_Address_Z_Input,
-      Write_Data_Z_Input    => Write_Data_Z_Input);
+      clk                   => clk,
+      rst_n                 => rst_n,
+      read_address_a_input  => read_address_a_input,
+      read_data_a_output    => read_data_a_output,
+      read_address_b_input  => read_address_b_input,
+      read_data_b_output    => read_data_b_output,
+      write_enable_y_input  => write_enable_y_input,
+      write_address_y_input => write_address_y_input,
+      write_data_y_input    => write_data_y_input,
+      write_enable_z_input  => write_enable_z_input,
+      write_address_z_input => write_address_z_input,
+      write_data_z_input    => write_data_z_input);
 
-  DecoderBlock : entity lib_VHDL.Decoder
+  decoderblock : entity lib_vhdl.decoder
     port map (
-      Instruction_Input           => Instruction_Input,
-      Instruction_Valid           => Instruction_Valid,
-      Read_Address_A_Output       => Read_Address_A_Input,
-      Read_Address_B_Output       => Read_Address_B_Input,
-      ALU_Operator_Output         => ALU_Operator_Output,
-      Mux_Controller_A            => Mux_Controller_A,
-      Mux_Controller_B            => Mux_Controller_B,
-      Mux_Controller_Branch       => Mux_Controller_Branch,
-      Destination_Register_Output => Destination_Register_Output);
+      instruction_input           => instruction_input,
+      instruction_valid           => instruction_valid,
+      read_address_a_output       => read_address_a_input,
+      read_address_b_output       => read_address_b_input,
+      alu_operator_output         => alu_operator_output,
+      mux_controller_a            => mux_controller_a,
+      mux_controller_b            => mux_controller_b,
+      mux_controller_branch       => mux_controller_branch,
+      destination_register_output => destination_register_output);
 
-  SignExtender : entity lib_VHDL.Sign_Extender
+  signextender : entity lib_vhdl.sign_extender
     port map (
-      Instruction                => Instruction_Input,
-      Immediate_Extension_Output => Immediate_Extension_Output);
+      instruction                => instruction_input,
+      immediate_extension_output => immediate_extension_output);
 
-  SequentialProcess : process (CLK, RST_n) is
-  begin  -- process SequentialProcess
-    if RST_n = '0' then                 -- asynchronous reset (active low)
-      Current_Mux_Controller_A       <= ALU_SOURCE_ZERO;
-      Current_Mux_Controller_B       <= ALU_SOURCE_ZERO;
-      Current_Mux_Controller_Branch  <= BRANCH_MUX_NOT_IN_A_BRANCH;
-      EX_ALU_Operator_Output         <= (others => '0');
-      EX_Destination_Register_Output <= (others => '0');
-      Branch_Destination_IF_Output   <= (others => '0');
-    elsif CLK'event and CLK = '1' then  -- rising clock edge
-      Current_Mux_Controller_A       <= Mux_Controller_A;
-      Current_Mux_Controller_B       <= Mux_Controller_B;
-      Current_Mux_Controller_Branch  <= Mux_Controller_Branch;
-      EX_ALU_Operator_Output         <= ALU_Operator_Output;
-      EX_Destination_Register_Output <= Destination_Register_Output;
-      Branch_Destination_IF_Output   <= Next_Branch_Destination;
+  sequentialprocess : process (clk, rst_n) is
+  begin  -- process sequentialprocess
+    if rst_n = '0' then                 -- asynchronous reset (active low)
+      current_mux_controller_a       <= ALU_SOURCE_ZERO;
+      current_mux_controller_b       <= ALU_SOURCE_ZERO;
+      current_mux_controller_branch  <= BRANCH_MUX_NOT_IN_A_BRANCH;
+      ex_alu_operator_output         <= (others => '0');
+      ex_destination_register_output <= (others => '0');
+      branch_destination_if_output   <= (others => '0');
+    elsif clk'event and clk = '1' then  -- rising clock edge
+      current_mux_controller_a       <= mux_controller_a;
+      current_mux_controller_b       <= mux_controller_b;
+      current_mux_controller_branch  <= mux_controller_branch;
+      ex_alu_operator_output         <= alu_operator_output;
+      ex_destination_register_output <= destination_register_output;
+      branch_destination_if_output   <= next_branch_destination;
     end if;
-  end process SequentialProcess;
+  end process sequentialprocess;
 
-  CombinationalProcess : process (A_Equal_B, A_Less_Than_B,
-                                  Current_Mux_Controller_A,
-                                  Current_Mux_Controller_B,
-                                  Current_Mux_Controller_Branch,
-                                  Read_Data_A_Output,
-                                  Read_Data_B_Output) is
-  begin  -- process CombinationalProcess
-    -- Mux to define origin of signal ALU_Input_A_EX_Output
-    case Current_Mux_Controller_A is
-      when ALU_SOURCE_ZERO          => EX_ALU_Input_A_Output <= (others => '0');
-      when ALU_SOURCE_FROM_REGISTER => EX_ALU_Input_A_Output <= Read_Data_A_Output;
-      when others                   => EX_ALU_Input_A_Output <= (others => '0');
+  combinationalprocess : process (a_equal_b, a_less_than_b,
+                                  current_mux_controller_a,
+                                  current_mux_controller_b,
+                                  current_mux_controller_branch,
+                                  read_data_a_output,
+                                  read_data_b_output) is
+  begin  -- process combinationalprocess
+    -- mux to define origin of signal alu_input_a_ex_output
+    case current_mux_controller_a is
+      when ALU_SOURCE_ZERO          => ex_alu_input_a_output <= (others => '0');
+      when ALU_SOURCE_FROM_REGISTER => ex_alu_input_a_output <= read_data_a_output;
+      when others                   => ex_alu_input_a_output <= (others => '0');
     end case;
 
-    -- Mux to define origin of signal ALU_Input_B_EX_Output
-    case Current_Mux_Controller_B is
-      when ALU_SOURCE_ZERO          => EX_ALU_Input_B_Output <= (others => '0');
-      when ALU_SOURCE_FROM_REGISTER => EX_ALU_Input_B_Output <= Read_Data_B_Output;
-      when others                   => EX_ALU_Input_B_Output <= (others => '0');
+    -- mux to define origin of signal alu_input_b_ex_output
+    case current_mux_controller_b is
+      when ALU_SOURCE_ZERO          => ex_alu_input_b_output <= (others => '0');
+      when ALU_SOURCE_FROM_REGISTER => ex_alu_input_b_output <= read_data_b_output;
+      when others                   => ex_alu_input_b_output <= (others => '0');
     end case;
 
-    -- Mux to define whether a branch will or will not be made the next cycle
-    case Current_Mux_Controller_Branch is
-      when BRANCH_MUX_NOT_IN_A_BRANCH  => Branch_Active_IF_Output <= '0';  -- Not in a branch
-      when BRANCH_MUX_EQUAL            => Branch_Active_IF_Output <= A_Equal_B;  -- BEQ
-      when BRANCH_MUX_UNEQUAL          => Branch_Active_IF_Output <= not A_Equal_B;  -- BNEQ
-      when BRANCH_MUX_LESS_THAN        => Branch_Active_IF_Output <= A_Less_Than_B;  -- BLT
-      when BRANCH_MUX_GREATER_OR_EQUAl => Branch_Active_IF_Output <= not A_Less_Than_B;  -- BGE
-      when others                      => Branch_Active_IF_Output <= '0';
+    -- mux to define whether a branch will or will not be made the next cycle
+    case current_mux_controller_branch is
+      when BRANCH_MUX_NOT_IN_A_BRANCH  => branch_active_if_output <= '0';  -- not in a branch
+      when BRANCH_MUX_EQUAL            => branch_active_if_output <= a_equal_b;  -- beq
+      when BRANCH_MUX_UNEQUAL          => branch_active_if_output <= not a_equal_b;  -- bneq
+      when BRANCH_MUX_LESS_THAN        => branch_active_if_output <= a_less_than_b;  -- blt
+      when BRANCH_MUX_GREATER_OR_EQUAL => branch_active_if_output <= not a_less_than_b;  -- bge
+      when others                      => branch_active_if_output <= '0';
     end case;
 
-    -- Compares two outputs
-    if (Read_Data_A_Output = Read_Data_B_Output) then
-      A_Equal_B <= '1';
+    -- compares two outputs
+    if (read_data_a_output = read_data_b_output) then
+      a_equal_b <= '1';
     else
-      A_Equal_B <= '0';
+      a_equal_b <= '0';
     end if;
 
-    if (unsigned('0' & Read_Data_A_Output) < unsigned('0' & Read_Data_B_Output)) = true then
-      A_Less_Than_B <= '1';
+    if (unsigned('0' & read_data_a_output) < unsigned('0' & read_data_b_output)) = true then
+      a_less_than_b <= '1';
     else
-      A_Less_Than_B <= '0';
+      a_less_than_b <= '0';
     end if;
-  end process CombinationalProcess;
+  end process combinationalprocess;
 
-end architecture Behavioural;
+end architecture behavioural;

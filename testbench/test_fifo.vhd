@@ -2,97 +2,97 @@ library ieee;
 use ieee.numeric_std.all;
 use ieee.std_logic_1164.all;
 
-library lib_VHDL;
+library lib_vhdl;
 
-entity Test_FIFO is
-end entity Test_FIFO;
+entity test_fifo is
+end entity test_fifo;
 
-architecture Behavioural of Test_FIFO is
+architecture behavioural of test_fifo is
   component prefetch_buffer is
     generic (
-      ADDR_WIDTH : natural;
-      DATA_WIDTH : natural);
+      addr_width : natural;
+      data_width : natural);
     port (
-      CLK          : in  std_logic;
-      RST_n        : in  std_logic;
-      Write_Enable : in  std_logic;
-      Data_Input   : in  std_logic_vector(DATA_WIDTH-1 downto 0);
-      Read_Enable  : in  std_logic;
-      Data_Output  : out std_logic_vector(DATA_WIDTH-1 downto 0);
-      Data_Valid   : out std_logic;
-      Empty        : out std_logic;
-      Full         : out std_logic);
+      clk          : in  std_logic;
+      rst_n        : in  std_logic;
+      write_enable : in  std_logic;
+      data_input   : in  std_logic_vector(data_width-1 downto 0);
+      read_enable  : in  std_logic;
+      data_output  : out std_logic_vector(data_width-1 downto 0);
+      data_valid   : out std_logic;
+      empty        : out std_logic;
+      full         : out std_logic);
   end component prefetch_buffer;
 
-  signal CLK          : std_logic                     := '0';
-  signal RST_n        : std_logic                     := '0';
-  signal Write_Enable : std_logic                     := '0';
-  signal Data_Input   : std_logic_vector(31 downto 0) := (others => '0');
-  signal Read_Enable  : std_logic                     := '0';
-  signal Data_Output  : std_logic_vector(31 downto 0) := (others => '0');
-  signal Data_Valid   : std_logic                     := '0';
-  signal Empty        : std_logic                     := '0';
-  signal Full         : std_logic                     := '0';
+  signal clk          : std_logic                     := '0';
+  signal rst_n        : std_logic                     := '0';
+  signal write_enable : std_logic                     := '0';
+  signal data_input   : std_logic_vector(31 downto 0) := (others => '0');
+  signal read_enable  : std_logic                     := '0';
+  signal data_output  : std_logic_vector(31 downto 0) := (others => '0');
+  signal data_valid   : std_logic                     := '0';
+  signal empty        : std_logic                     := '0';
+  signal full         : std_logic                     := '0';
 
-begin  -- architecture Behavioural
+begin  -- architecture behavioural
 
-  -- instance "PrefetchBuffer"
-  PrefetchBuffer : entity lib_VHDL.FIFO
+  -- instance "prefetchbuffer"
+  prefetchbuffer : entity lib_vhdl.fifo
     generic map (
-      ADDR_WIDTH => 2,
-      DATA_WIDTH => 32)
+      addr_width => 2,
+      data_width => 32)
     port map (
-      CLK          => CLK,
-      RST_n        => RST_n,
-      Write_Enable => Write_Enable,
-      Data_Input   => Data_Input,
-      Read_Enable  => Read_Enable,
-      Data_Output  => Data_Output,
-      Data_Valid   => Data_Valid,
-      Empty        => Empty,
-      Full         => Full);
+      clk          => clk,
+      rst_n        => rst_n,
+      write_enable => write_enable,
+      data_input   => data_input,
+      read_enable  => read_enable,
+      data_output  => data_output,
+      data_valid   => data_valid,
+      empty        => empty,
+      full         => full);
 
-  CLK   <= not CLK after 5 ns;
-  RST_n <= '1'     after 7 ns;
+  clk   <= not clk after 5 ns;
+  rst_n <= '1'     after 7 ns;
 
-  Stimulus : process is
-    variable ReadCounter, WriteCounter : std_logic_vector(31 downto 0) := (0 => '1', others => '0');
-  begin  -- process Stimulus
-    Write_Enable <= '0';
-    Read_Enable  <= '0';
+  stimulus : process is
+    variable readcounter, writecounter : std_logic_vector(31 downto 0) := (0 => '1', others => '0');
+  begin  -- process stimulus
+    write_enable <= '0';
+    read_enable  <= '0';
 
     wait for 10 ns;
-    wait until falling_edge(CLK);
+    wait until falling_edge(clk);
 
-    assert (Empty = '1') report "FIFO does not report it is empty at its start" severity failure;
-    assert (Full = '0') report "FIFO does not report it is not full at its start" severity failure;
+    assert (empty = '1') report "fifo does not report it is empty at its start" severity failure;
+    assert (full = '0') report "fifo does not report it is not full at its start" severity failure;
 
-    controler : for numReads in 0 to 3 loop
-      Write_Enable <= '1';
-      Read_Enable  <= '0';
-      writer : for W in 0 to numReads loop
-        Data_Input  <= std_logic_vector(unsigned(ReadCounter));
-        ReadCounter := std_logic_vector(unsigned(ReadCounter) + 1);
-        wait until falling_edge(CLK);
+    controler : for numreads in 0 to 3 loop
+      write_enable <= '1';
+      read_enable  <= '0';
+      writer : for w in 0 to numreads loop
+        data_input  <= std_logic_vector(unsigned(readcounter));
+        readcounter := std_logic_vector(unsigned(readcounter) + 1);
+        wait until falling_edge(clk);
       end loop writer;
 
-      Write_Enable <= '0';
-      Read_Enable  <= '1';
-      wait until falling_edge(CLK);
+      write_enable <= '0';
+      read_enable  <= '1';
+      wait until falling_edge(clk);
 
-      reader : for R in 0 to numReads loop
-        assert (Data_Output = std_logic_vector(unsigned(WriteCounter))) report "FIFO does not work as expected" severity failure;
-        WriteCounter := std_logic_vector(unsigned(WriteCounter) + 1);
-        wait until falling_edge(CLK);
+      reader : for r in 0 to numreads loop
+        assert (data_output = std_logic_vector(unsigned(writecounter))) report "fifo does not work as expected" severity failure;
+        writecounter := std_logic_vector(unsigned(writecounter) + 1);
+        wait until falling_edge(clk);
       end loop reader;
 
-      assert (Data_Output(7 downto 0) = "00000000") report "FIFO does not work as expected" severity failure;
-      assert (Empty = '1') report "FIFO does not report it is empty at its end" severity failure;
-      assert (Full = '0') report "FIFO does not report it is not full at its end" severity failure;
+      assert (data_output(7 downto 0) = "00000000") report "fifo does not work as expected" severity failure;
+      assert (empty = '1') report "fifo does not report it is empty at its end" severity failure;
+      assert (full = '0') report "fifo does not report it is not full at its end" severity failure;
     end loop controler;
 
-    assert (Empty = '1') report "FIFO does not report it is empty at its end" severity failure;
-    assert (Full = '0') report "FIFO does not report it is not full at its end" severity failure;
-  end process Stimulus;
+    assert (empty = '1') report "fifo does not report it is empty at its end" severity failure;
+    assert (full = '0') report "fifo does not report it is not full at its end" severity failure;
+  end process stimulus;
 
-end architecture Behavioural;
+end architecture behavioural;

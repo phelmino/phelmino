@@ -2,78 +2,78 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library lib_VHDL;
-use lib_VHDL.all;
-use lib_VHDL.phelmino_definitions.all;
+library lib_vhdl;
+use lib_vhdl.all;
+use lib_vhdl.phelmino_definitions.all;
 
 entity test_phelmino_core is
 end entity test_phelmino_core;
 
-architecture Behavioural of test_phelmino_core is
+architecture behavioural of test_phelmino_core is
 
-  component Phelmino_Core is
+  component phelmino_core is
     port (
-      CLK                      : in  std_logic;
-      RST_n                    : in  std_logic;
-      Instr_Requisition_Output : out std_logic;
-      Instr_Address_Output     : out std_logic_vector(WORD_WIDTH-1 downto 0);
-      Instr_Grant_Input        : in  std_logic;
-      Instr_ReqValid_Input     : in  std_logic;
-      Instr_ReqData_Input      : in  std_logic_vector(WORD_WIDTH-1 downto 0));
-  end component Phelmino_Core;
+      clk                      : in  std_logic;
+      rst_n                    : in  std_logic;
+      instr_requisition_output : out std_logic;
+      instr_address_output     : out std_logic_vector(WORD_WIDTH-1 downto 0);
+      instr_grant_input        : in  std_logic;
+      instr_reqvalid_input     : in  std_logic;
+      instr_reqdata_input      : in  std_logic_vector(WORD_WIDTH-1 downto 0));
+  end component phelmino_core;
 
-  signal CLK                      : std_logic                               := '0';
-  signal RST_n                    : std_logic                               := '0';
-  signal Instr_Requisition_Output : std_logic                               := '0';
-  signal Instr_Address_Output     : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
-  signal Instr_Grant_Input        : std_logic                               := '0';
-  signal Next_Grant               : std_logic                               := '0';
-  signal Instr_ReqValid_Input     : std_logic                               := '0';
-  signal Instr_ReqData_Input      : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
-begin  -- architecture Behavioural
+  signal clk                      : std_logic                               := '0';
+  signal rst_n                    : std_logic                               := '0';
+  signal instr_requisition_output : std_logic                               := '0';
+  signal instr_address_output     : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
+  signal instr_grant_input        : std_logic                               := '0';
+  signal next_grant               : std_logic                               := '0';
+  signal instr_reqvalid_input     : std_logic                               := '0';
+  signal instr_reqdata_input      : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
+begin  -- architecture behavioural
 
-  CLK   <= not CLK after 5 ns;
-  RST_n <= '1'     after 7 ns;
+  clk   <= not clk after 5 ns;
+  rst_n <= '1'     after 7 ns;
 
-  DUT : entity lib_VHDL.Phelmino_Core
+  dut : entity lib_vhdl.phelmino_core
     port map (
-      CLK                      => CLK,
-      RST_n                    => RST_n,
-      Instr_Requisition_Output => Instr_Requisition_Output,
-      Instr_Address_Output     => Instr_Address_Output,
-      Instr_Grant_Input        => Instr_Grant_Input,
-      Instr_ReqValid_Input     => Instr_ReqValid_Input,
-      Instr_ReqData_Input      => Instr_ReqData_Input);
+      clk                      => clk,
+      rst_n                    => rst_n,
+      instr_requisition_output => instr_requisition_output,
+      instr_address_output     => instr_address_output,
+      instr_grant_input        => instr_grant_input,
+      instr_reqvalid_input     => instr_reqvalid_input,
+      instr_reqdata_input      => instr_reqdata_input);
 
-  -- purpose: Emulate the memory
-  Proc_Memory : process (CLK, RST_n) is
+  -- purpose: emulate the memory
+  proc_memory : process (clk, rst_n) is
   begin  -- process proc_memory
-    if RST_n = '0' then                 -- asynchronous reset (active low)
-      Instr_Grant_Input    <= '0';
-      Instr_ReqData_Input  <= (others => '0');
-      Instr_ReqValid_Input <= '0';
-    elsif CLK'event and CLK = '0' then  -- falling clock edge
-      if (Instr_Grant_Input = '1') then
-        Instr_Grant_Input    <= '0';
-        Instr_ReqValid_Input <= '1';
-        Instr_ReqData_Input  <= BNE_R1_R2;
-      elsif (Instr_ReqValid_Input = '1') then
-        Instr_ReqValid_Input <= '0';
-        Instr_ReqData_Input  <= (others => '0');
+    if rst_n = '0' then                 -- asynchronous reset (active low)
+      instr_grant_input    <= '0';
+      instr_reqdata_input  <= (others => '0');
+      instr_reqvalid_input <= '0';
+    elsif clk'event and clk = '0' then  -- falling clock edge
+      if (instr_grant_input = '1') then
+        instr_grant_input    <= '0';
+        instr_reqvalid_input <= '1';
+        instr_reqdata_input  <= bne_r1_r2;
+      elsif (instr_reqvalid_input = '1') then
+        instr_reqvalid_input <= '0';
+        instr_reqdata_input  <= (others => '0');
       else
-        Instr_Grant_Input   <= Next_Grant;
-        Instr_ReqData_Input <= (others => '0');
+        instr_grant_input   <= next_grant;
+        instr_reqdata_input <= (others => '0');
       end if;
     end if;
-  end process Proc_Memory;
+  end process proc_memory;
 
-  Comb_Proc : process (Instr_Requisition_Output) is
-  begin  -- process Comb_Proc
-    if (Instr_Requisition_Output = '1') then
-      Next_Grant <= '1';
+  comb_proc : process (instr_requisition_output) is
+  begin  -- process comb_proc
+    if (instr_requisition_output = '1') then
+      next_grant <= '1';
     else
-      Next_Grant <= '0';
+      next_grant <= '0';
     end if;
-  end process Comb_Proc;
+  end process comb_proc;
 
-end architecture Behavioural;
+end architecture behavioural;
