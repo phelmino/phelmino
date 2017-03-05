@@ -2,51 +2,51 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library lib_VHDL;
-use lib_VHDL.phelmino_definitions.all;
+library lib_vhdl;
+use lib_vhdl.phelmino_definitions.all;
 
-entity ALU is
+entity alu is
 
   port (
-    -- ALU Inputs
-    ALU_Operand_A_Input : in std_logic_vector(WORD_WIDTH-1 downto 0);
-    ALU_Operand_B_Input : in std_logic_vector(WORD_WIDTH-1 downto 0);
-    ALU_Operator_Input  : in std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
+    -- alu inputs
+    alu_operand_a_input : in std_logic_vector(WORD_WIDTH-1 downto 0);
+    alu_operand_b_input : in std_logic_vector(WORD_WIDTH-1 downto 0);
+    alu_operator_input  : in std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
 
-    -- ALU Outputs
-    ALU_Result_Output    : out std_logic_vector(WORD_WIDTH-1 downto 0);
-    ALU_Carry_Out_Output : out std_logic
+    -- alu outputs
+    alu_result_output    : out std_logic_vector(WORD_WIDTH-1 downto 0);
+    alu_carry_out_output : out std_logic
     );
 
-end entity ALU;
+end entity alu;
 
-architecture Behavioural of ALU is
+architecture behavioural of alu is
 
-  signal ALU_Operand_A_Input_Unsigned : unsigned(WORD_WIDTH-1 downto 0);
-  signal ALU_Operand_B_Input_Unsigned : unsigned(WORD_WIDTH-1 downto 0);
-  signal ALU_Result_Output_Unsigned   : unsigned(WORD_WIDTH downto 0);
+  signal alu_operand_a_input_unsigned : unsigned(WORD_WIDTH-1 downto 0);
+  signal alu_operand_b_input_unsigned : unsigned(WORD_WIDTH-1 downto 0);
+  signal alu_result_output_unsigned   : unsigned(WORD_WIDTH downto 0);
 
 begin  -- architecture behavioural
 
-  ALU_Operand_A_Input_Unsigned <= unsigned(ALU_Operand_A_Input);
-  ALU_Operand_B_Input_Unsigned <= unsigned(ALU_Operand_B_Input);
-  ALU_Result_Output            <= std_logic_vector(ALU_Result_Output_Unsigned(WORD_WIDTH-1 downto 0));
-  ALU_Carry_Out_Output         <= std_logic(ALU_Result_Output_Unsigned(WORD_WIDTH));
+  alu_operand_a_input_unsigned <= unsigned(alu_operand_a_input);
+  alu_operand_b_input_unsigned <= unsigned(alu_operand_b_input);
+  alu_result_output            <= std_logic_vector(alu_result_output_unsigned(WORD_WIDTH-1 downto 0));
+  alu_carry_out_output         <= std_logic(alu_result_output_unsigned(WORD_WIDTH));
 
-  -- purpose: Combinational process in order to choose ALU Operator
+  -- purpose: combinational process in order to choose alu operator
   -- type   : combinational
-  -- Inputs : ALU_Operand_a_Input_unsigned
-  -- Outputs: ALU_Result_Output
-  Combinational_ALU : process (ALU_Operand_A_Input_Unsigned, ALU_Operand_B_Input_Unsigned, ALU_Operator_Input) is
-  begin  -- process combinatorial_ALU
-    case ALU_Operator_Input is
-      when ALU_ADD => ALU_Result_Output_Unsigned <= ('0' & ALU_Operand_A_Input_Unsigned) + ('0' & ALU_Operand_B_Input_Unsigned);
-      when ALU_SUB => ALU_Result_Output_Unsigned <= ('0' & ALU_Operand_A_Input_Unsigned) - ('0' & ALU_Operand_B_Input_Unsigned);
-      when ALU_XOR => ALU_Result_Output_Unsigned <= ('0' & ALU_Operand_A_Input_Unsigned) xor ('0' & ALU_Operand_B_Input_Unsigned);
-      when ALU_OR  => ALU_Result_Output_Unsigned <= ('0' & ALU_Operand_A_Input_Unsigned) or ('0' & ALU_Operand_B_Input_Unsigned);
-      when ALU_AND => ALU_Result_Output_Unsigned <= ('0' & ALU_Operand_A_Input_Unsigned) and ('0' & ALU_Operand_B_Input_Unsigned);
-      when others  => ALU_Result_Output_Unsigned <= (others => '0');
+  -- inputs : alu_operand_a_input_unsigned
+  -- outputs: alu_result_output
+  combinational_alu : process (alu_operand_a_input_unsigned, alu_operand_b_input_unsigned, alu_operator_input) is
+  begin  -- process combinatorial_alu
+    case alu_operator_input is
+      when ALU_ADD => alu_result_output_unsigned <= ('0' & alu_operand_a_input_unsigned) + ('0' & alu_operand_b_input_unsigned);
+      when ALU_SUB => alu_result_output_unsigned <= ('0' & alu_operand_a_input_unsigned) - ('0' & alu_operand_b_input_unsigned);
+      when ALU_XOR => alu_result_output_unsigned <= ('0' & alu_operand_a_input_unsigned) xor ('0' & alu_operand_b_input_unsigned);
+      when ALU_OR  => alu_result_output_unsigned <= ('0' & alu_operand_a_input_unsigned) or ('0' & alu_operand_b_input_unsigned);
+      when ALU_AND => alu_result_output_unsigned <= ('0' & alu_operand_a_input_unsigned) and ('0' & alu_operand_b_input_unsigned);
+      when others  => alu_result_output_unsigned <= (others => '0');
     end case;
-  end process Combinational_ALU;
+  end process combinational_alu;
 
-end architecture Behavioural;
+end architecture behavioural;

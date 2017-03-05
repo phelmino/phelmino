@@ -2,51 +2,51 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library lib_VHDL;
-use lib_VHDL.phelmino_definitions.all;
+library lib_vhdl;
+use lib_vhdl.phelmino_definitions.all;
 
-entity Sign_Extender is
+entity sign_extender is
 
   port (
-    Instruction                : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-    Immediate_Extension_Output : out std_logic_vector(WORD_WIDTH-1 downto 0));
+    instruction                : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+    immediate_extension_output : out std_logic_vector(WORD_WIDTH-1 downto 0));
 
-end entity Sign_Extender;
+end entity sign_extender;
 
-architecture Behavioural of Sign_Extender is
+architecture behavioural of sign_extender is
 
-begin  -- architecture Behavioural
+begin  -- architecture behavioural
 
-  -- purpose: Sign Extension of Immediates
+  -- purpose: sign extension of immediates
   -- type   : combinational
-  SignExtension : process (Instruction) is
-    alias SIGN_BIT is Instruction(WORD_WIDTH-1);
-    alias OPCODE is Instruction(OPCODE_BEGIN downto OPCODE_END);
-    alias IMMEDIATE_TYPE_I is Instruction(IMMEDIATE_I_BEGIN downto IMMEDIATE_I_END);
-    variable IMMEDIATE_TYPE_SB : std_logic_vector(IMMEDIATE_SB_LENGTH-1 downto 0);
+  signextension : process (instruction) is
+    alias sign_bit is instruction(WORD_WIDTH-1);
+    alias opcode is instruction(OPCODE_BEGIN downto OPCODE_END);
+    alias immediate_type_i is instruction(IMMEDIATE_I_BEGIN downto IMMEDIATE_I_END);
+    variable immediate_type_sb : std_logic_vector(IMMEDIATE_SB_LENGTH-1 downto 0);
 
-    constant Filled_One  : std_logic_vector(WORD_WIDTH-13 downto 0) := (others => '1');
-    constant Filled_Zero : std_logic_vector(WORD_WIDTH-13 downto 0) := (others => '0');
-  begin  -- process SignExtension
-    IMMEDIATE_TYPE_SB := Instruction(31) & Instruction(7) & Instruction(30 downto 25) & Instruction(11 downto 8) & '0';
+    constant filled_one  : std_logic_vector(WORD_WIDTH-13 downto 0) := (others => '1');
+    constant filled_zero : std_logic_vector(WORD_WIDTH-13 downto 0) := (others => '0');
+  begin  -- process signextension
+    immediate_type_sb := instruction(31) & instruction(7) & instruction(30 downto 25) & instruction(11 downto 8) & '0';
 
-    case OPCODE is
-      when OPCODE_ALU_IMMEDIATE_REGISTER =>
-        if SIGN_BIT = '0' then
-          Immediate_Extension_Output <= Filled_Zero & IMMEDIATE_TYPE_I;
+    case opcode is
+      when opcode_alu_immediate_register =>
+        if sign_bit = '0' then
+          immediate_extension_output <= filled_zero & immediate_type_i;
         else
-          Immediate_Extension_Output <= Filled_One & IMMEDIATE_TYPE_I;
+          immediate_extension_output <= filled_one & immediate_type_i;
         end if;
 
       when OPCODE_BRANCH =>
-        if SIGN_BIT = '0' then
-          Immediate_Extension_Output <= Filled_Zero(WORD_WIDTH-13 downto 1) & IMMEDIATE_TYPE_SB;
+        if sign_bit = '0' then
+          immediate_extension_output <= filled_zero(WORD_WIDTH-13 downto 1) & immediate_type_sb;
         else
-          Immediate_Extension_Output <= Filled_One(WORD_WIDTH-13 downto 1) & IMMEDIATE_TYPE_SB;
+          immediate_extension_output <= filled_one(WORD_WIDTH-13 downto 1) & immediate_type_sb;
         end if;
 
-      when others => Immediate_Extension_Output <= (others => '0');
+      when others => immediate_extension_output <= (others => '0');
     end case;
-  end process SignExtension;
+  end process signextension;
 
-end architecture Behavioural;
+end architecture behavioural;
