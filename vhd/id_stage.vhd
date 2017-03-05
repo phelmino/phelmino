@@ -68,8 +68,7 @@ architecture Behavioural of ID_Stage is
       Mux_Controller_A            : out std_logic_vector(1 downto 0);
       Mux_Controller_B            : out std_logic_vector(1 downto 0);
       Mux_Controller_Branch       : out std_logic_vector(2 downto 0);
-      Destination_Register_Output : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-      Immediate_Extension_Output  : out std_logic_vector(WORD_WIDTH-1 downto 0));
+      Destination_Register_Output : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0));
   end component Decoder;
   signal Instruction_Input           : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal Instruction_Valid           : std_logic;
@@ -78,8 +77,14 @@ architecture Behavioural of ID_Stage is
   signal Mux_Controller_B            : std_logic_vector(1 downto 0);
   signal Mux_Controller_Branch       : std_logic_vector(2 downto 0);
   signal Destination_Register_Output : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-  signal Immediate_Extension_Output  : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal Next_Branch_Destination     : std_logic_vector(WORD_WIDTH-1 downto 0);
+
+  component Sign_Extender is
+    port (
+      Instruction                : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      Immediate_Extension_Output : out std_logic_vector(WORD_WIDTH-1 downto 0));
+  end component Sign_Extender;
+  signal Immediate_Extension_Output : std_logic_vector(WORD_WIDTH-1 downto 0);
 
   -- Comparison signals
   signal A_Equal_B     : std_logic := '0';
@@ -100,29 +105,6 @@ begin  -- architecture Behavioural
 
   -- Calculates next branch destination
   Next_Branch_Destination <= std_logic_vector(unsigned(PC_ID_Input) + unsigned(Immediate_Extension_Output));
-
-  -- Comparison signals
-  -- purpose: Compare outputs from registers A and B
-  -- type   : combinational
-  Comparisor : process (RST_n, Read_Data_A_Output, Read_Data_B_Output) is
-  begin  -- process Comparisor
-    if (RST_n = '0') then
-      A_Equal_B     <= '0';
-      A_Less_Than_B <= '0';
-    else
-      if (Read_Data_A_Output = Read_Data_B_Output) then
-        A_Equal_B <= '1';
-      else
-        A_Equal_B <= '0';
-      end if;
-
-      if (unsigned('0' & Read_Data_A_Output) < unsigned('0' & Read_Data_B_Output)) = true then
-        A_Less_Than_B <= '1';
-      else
-        A_Less_Than_B <= '0';
-      end if;
-    end if;
-  end process Comparisor;
 
   GPR : entity lib_VHDL.General_Purpose_Registers
     generic map (
@@ -149,15 +131,19 @@ begin  -- architecture Behavioural
       Mux_Controller_A            => Mux_Controller_A,
       Mux_Controller_B            => Mux_Controller_B,
       Mux_Controller_Branch       => Mux_Controller_Branch,
-      Destination_Register_Output => Destination_Register_Output,
-      Immediate_Extension_Output  => Immediate_Extension_Output);
+      Destination_Register_Output => Destination_Register_Output);
+
+  SignExtender : entity lib_VHDL.Sign_Extender
+    port map (
+      Instruction                => Instruction_Input,
+      Immediate_Extension_Output => Immediate_Extension_Output);
 
   SequentialProcess : process (CLK, RST_n) is
   begin  -- process SequentialProcess
     if RST_n = '0' then                 -- asynchronous reset (active low)
-      Current_Mux_Controller_A       <= (others => '0');
-      Current_Mux_Controller_B       <= (others => '0');
-      Current_Mux_Controller_Branch  <= (others => '0');
+      Current_Mux_Controller_A       <= ALU_SOURCE_ZERO;
+      Current_Mux_Controller_B       <= ALU_SOURCE_ZERO;
+      Current_Mux_Controller_Branch  <= BRANCH_MUX_NOT_IN_A_BRANCH;
       EX_ALU_Operator_Output         <= (others => '0');
       EX_Destination_Register_Output <= (others => '0');
       Branch_Destination_IF_Output   <= (others => '0');
@@ -171,33 +157,28 @@ begin  -- architecture Behavioural
     end if;
   end process SequentialProcess;
 
-  -- purpose: Mux to define origin of signal ALU_Input_A_EX_Output
-  -- type   : combinational
-  Mux_A : process (Current_Mux_Controller_A, Read_Data_A_Output) is
-  begin  -- process Mux_A
+  CombinationalProcess : process (A_Equal_B, A_Less_Than_B,
+                                  Current_Mux_Controller_A,
+                                  Current_Mux_Controller_B,
+                                  Current_Mux_Controller_Branch,
+                                  Read_Data_A_Output,
+                                  Read_Data_B_Output) is
+  begin  -- process CombinationalProcess
+    -- Mux to define origin of signal ALU_Input_A_EX_Output
     case Current_Mux_Controller_A is
       when ALU_SOURCE_ZERO          => EX_ALU_Input_A_Output <= (others => '0');
       when ALU_SOURCE_FROM_REGISTER => EX_ALU_Input_A_Output <= Read_Data_A_Output;
       when others                   => EX_ALU_Input_A_Output <= (others => '0');
     end case;
-  end process Mux_A;
 
-  -- purpose: Mux to define origin of signal ALU_Input_B_EX_Output
-  -- type   : combinational
-  Mux_B : process (Current_Mux_Controller_B, Read_Data_B_Output) is
-  begin  -- process Mux_A
+    -- Mux to define origin of signal ALU_Input_B_EX_Output
     case Current_Mux_Controller_B is
       when ALU_SOURCE_ZERO          => EX_ALU_Input_B_Output <= (others => '0');
       when ALU_SOURCE_FROM_REGISTER => EX_ALU_Input_B_Output <= Read_Data_B_Output;
       when others                   => EX_ALU_Input_B_Output <= (others => '0');
     end case;
-  end process Mux_B;
 
-  -- purpose: Mux to define whether a branch will or will not be made the next cycle
-  -- type   : combinational
-  Mux_Branch : process (A_Equal_B, A_Less_Than_B,
-                        Current_Mux_Controller_Branch) is
-  begin  -- process Mux_Branch
+    -- Mux to define whether a branch will or will not be made the next cycle
     case Current_Mux_Controller_Branch is
       when BRANCH_MUX_NOT_IN_A_BRANCH  => Branch_Active_IF_Output <= '0';  -- Not in a branch
       when BRANCH_MUX_EQUAL            => Branch_Active_IF_Output <= A_Equal_B;  -- BEQ
@@ -206,6 +187,19 @@ begin  -- architecture Behavioural
       when BRANCH_MUX_GREATER_OR_EQUAl => Branch_Active_IF_Output <= not A_Less_Than_B;  -- BGE
       when others                      => Branch_Active_IF_Output <= '0';
     end case;
-  end process Mux_Branch;
+
+    -- Compares two outputs
+    if (Read_Data_A_Output = Read_Data_B_Output) then
+      A_Equal_B <= '1';
+    else
+      A_Equal_B <= '0';
+    end if;
+
+    if (unsigned('0' & Read_Data_A_Output) < unsigned('0' & Read_Data_B_Output)) = true then
+      A_Less_Than_B <= '1';
+    else
+      A_Less_Than_B <= '0';
+    end if;
+  end process CombinationalProcess;
 
 end architecture Behavioural;

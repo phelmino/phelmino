@@ -15,8 +15,9 @@ package phelmino_definitions is
   constant ALU_AND : std_logic_vector(5 downto 0) := "111000";
 
   -- GPR
-  constant WORD_WIDTH        : natural := 32;
-  constant GPR_ADDRESS_WIDTH : natural := 5;
+  constant WORD_WIDTH          : natural := 32;
+  constant WORD_WIDTH_IN_BYTES : natural := WORD_WIDTH/8;
+  constant GPR_ADDRESS_WIDTH   : natural := 5;
 
   -- Prefetch Buffer
   constant PREFETCH_ADDRESS_WIDTH : natural := 2;

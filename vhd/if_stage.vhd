@@ -71,22 +71,23 @@ architecture Behavioural of IF_Stage is
       Full         : out std_logic);
   end component FIFO;
 
-begin  -- architecture Behavioural
-  -- FIFO empties if RST_n = '0' or if Branch_Active_Input = '1'
-  FIFO_RST <= RST_n and not Branch_Active_Input;
+  -- FIFO should store the instruction and its PC.
+  signal FIFO_Input  : std_logic_vector(2*WORD_WIDTH-1 downto 0) := (others => '0');
+  signal FIFO_Output : std_logic_vector(2*WORD_WIDTH-1 downto 0) := (others => '0');
 
+begin  -- architecture Behavioural
   -- instance "Prefetch_Buffer"
   Prefetch_Buffer : entity lib_VHDL.FIFO
     generic map (
       ADDR_WIDTH => PREFETCH_ADDRESS_WIDTH,
-      DATA_WIDTH => WORD_WIDTH)
+      DATA_WIDTH => 2 * WORD_WIDTH)
     port map (
       CLK          => CLK,
       RST_n        => FIFO_RST,
       Write_Enable => Current_Write_Enable,
-      Data_Input   => Current_Instr_ReqData,
+      Data_Input   => FIFO_Input,
       Read_Enable  => Current_Read_Enable,
-      Data_Output  => Current_Instruction,
+      Data_Output  => FIFO_Output,
       Data_Valid   => Data_Valid,
       Empty        => Empty,
       Full         => Full);
@@ -105,6 +106,8 @@ begin  -- architecture Behavioural
       Current_Instr_Grant     <= '0';
       Current_Instr_ReqValid  <= '0';
       Current_Instr_ReqData   <= (others => '0');
+      FIFO_Input              <= (others => '0');
+      FIFO_RST                <= '0';
 
       Instr_Requisition_Output        <= '0';
       Instr_ReqValid_ID_Output        <= '0';
@@ -118,16 +121,21 @@ begin  -- architecture Behavioural
       Current_Instr_Grant     <= Instr_Grant_Input;
       Current_Instr_ReqValid  <= Instr_ReqValid_Input;
       Current_Instr_ReqData   <= Instr_ReqData_Input;
+      FIFO_Input              <= std_logic_vector(unsigned(Current_Program_Counter) - WORD_WIDTH_IN_BYTES) & Instr_ReqData_Input;
+      FIFO_RST                <= not Branch_Active_Input;
 
-      Instr_Requisition_Output        <= Next_Instr_Requisition;
-      Instr_Program_Counter_ID_Output <= Current_Program_Counter;
-      if (Data_Valid = '1') then
-        Instr_ReqValid_ID_Output <= '1';
-        Instr_ReqData_ID_Output  <= Current_Instruction;
-      else
-        Instr_ReqValid_ID_Output <= '0';
-        Instr_ReqData_ID_Output  <= NOP;
-      end if;
+      Instr_Requisition_Output <= Next_Instr_Requisition;
+      case Data_Valid is
+        when '1' =>
+          Instr_ReqValid_ID_Output        <= '1';
+          Instr_Program_Counter_ID_Output <= FIFO_Output(2*WORD_WIDTH-1 downto WORD_WIDTH);
+          Instr_ReqData_ID_Output         <= FIFO_Output(WORD_WIDTH-1 downto 0);
+
+        when others =>
+          Instr_ReqValid_ID_Output        <= '0';
+          Instr_Program_Counter_ID_Output <= (others => '0');
+          Instr_ReqData_ID_Output         <= NOP;
+      end case;
     end if;
   end process SequentialProcess;
 
@@ -158,7 +166,7 @@ begin  -- architecture Behavioural
         if (Branch_Active_Input = '1') then
           Next_Program_Counter <= Branch_Destination_Input;
         elsif (Full = '0' and Current_Instr_Grant = '1') then
-          Next_Program_Counter <= std_logic_vector(unsigned(Current_Program_Counter) + 1);
+          Next_Program_Counter <= std_logic_vector(unsigned(Current_Program_Counter) + WORD_WIDTH_IN_BYTES);
         else
           Next_Program_Counter <= Current_Program_Counter;
         end if;

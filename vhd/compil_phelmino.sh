@@ -28,6 +28,7 @@ compile decoder.vhd
 compile general_purpose_registers.vhd
 compile fifo.vhd
 compile alu.vhd 
+compile sign_extender.vhd 
 compile if_stage.vhd
 compile id_stage.vhd
 compile ex_stage.vhd

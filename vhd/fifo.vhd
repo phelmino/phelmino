@@ -124,8 +124,8 @@ begin  -- architecture Behavioural
         Status_Counter <= std_logic_vector(unsigned(Status_Counter) + 1);
       end if;
 
-      -- If trying to read and write on FIFO, and it is empty, both operations
-      -- will be made. So Status_Counter <= Status_Counter.
+    -- If trying to read and write on FIFO, and it is empty, both operations
+    -- will be made. So Status_Counter <= Status_Counter.
     end if;
   end process StatusCounterProc;
 
