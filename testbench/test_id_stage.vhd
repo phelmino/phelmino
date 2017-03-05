@@ -20,6 +20,9 @@ architecture Test of test_id_stage is
   signal EX_Destination_Register_Output : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
   signal Branch_Active_IF_Output        : std_logic;
   signal Branch_Destination_IF_Output   : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal Write_Enable_Y_Input           : std_logic                                      := '0';
+  signal Write_Address_Y_Input          : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0) := (others => '0');
+  signal Write_Data_Y_Input             : std_logic_vector(WORD_WIDTH-1 downto 0)        := (others => '0');
   signal Write_Enable_Z_Input           : std_logic                                      := '0';
   signal Write_Address_Z_Input          : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0) := (others => '0');
   signal Write_Data_Z_Input             : std_logic_vector(WORD_WIDTH-1 downto 0)        := (others => '0');
@@ -40,6 +43,9 @@ begin  -- architecture Test
       EX_Destination_Register_Output => EX_Destination_Register_Output,
       Branch_Active_IF_Output        => Branch_Active_IF_Output,
       Branch_Destination_IF_Output   => Branch_Destination_IF_Output,
+      Write_Enable_Y_Input           => Write_Enable_Y_Input,
+      Write_Address_Y_Input          => Write_Address_Y_Input,
+      Write_Data_Y_Input             => Write_Data_Y_Input,
       Write_Enable_Z_Input           => Write_Enable_Z_Input,
       Write_Address_Z_Input          => Write_Address_Z_Input,
       Write_Data_Z_Input             => Write_Data_Z_Input,

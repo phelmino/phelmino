@@ -56,7 +56,10 @@ architecture Behavioural of Phelmino_Core is
       Write_Enable_Z_Input           : in  std_logic;
       Write_Address_Z_Input          : in  std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       Write_Data_Z_Input             : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      PC_ID_Input                    : in  std_logic_vector(31 downto 0));
+      Write_Enable_Y_Input           : in  std_logic;
+      Write_Address_Y_Input          : in  std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+      Write_Data_Y_Input             : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      PC_ID_Input                    : in  std_logic_vector(31 downto 0)); 
   end component ID_Stage;
   signal EX_ALU_Input_A_Output          : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal EX_ALU_Input_B_Output          : std_logic_vector(WORD_WIDTH-1 downto 0);
@@ -84,6 +87,11 @@ architecture Behavioural of Phelmino_Core is
   signal Write_Enable_Z_Output      : std_logic;
   signal Write_Address_Z_Output     : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
   signal Write_Data_Z_Output        : std_logic_vector(WORD_WIDTH-1 downto 0);
+
+
+  signal Write_Enable_Y_Output      : std_logic;
+  signal Write_Address_Y_Output     : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+  signal Write_Data_Y_Output        : std_logic_vector(WORD_WIDTH-1 downto 0);
 
 begin  -- architecture Behavioural
 
@@ -117,6 +125,9 @@ begin  -- architecture Behavioural
       Write_Enable_Z_Input           => Write_Enable_Z_Output,
       Write_Address_Z_Input          => Write_Address_Z_Output,
       Write_Data_Z_Input             => Write_Data_Z_Output,
+      Write_Enable_Y_Input           => Write_Enable_Y_Output,
+      Write_Address_Y_Input          => Write_Address_Y_Output,
+      Write_Data_Y_Input             => Write_Data_Y_Output,
       PC_ID_Input                    => Instr_Program_Counter_ID_Output);
 
   stage_EX : entity lib_VHDL.EX_Stage
