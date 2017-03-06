@@ -46,9 +46,7 @@ architecture behavioural of if_stage is
   signal next_instr_requisition  : std_logic;
 
   -- memorizes the signals that come from memory. 
-  signal current_instr_grant    : std_logic;
-  signal current_instr_reqvalid : std_logic;
-  signal current_instr_reqdata  : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal current_instr_grant : std_logic;
 
   signal empty               : std_logic;
   signal full                : std_logic;
@@ -77,6 +75,8 @@ architecture behavioural of if_stage is
   signal fifo_output : std_logic_vector(2*WORD_WIDTH-1 downto 0);
 
 begin  -- architecture behavioural
+  fifo_rst <= rst_n and not branch_active;
+
   -- instance "prefetch_buffer"
   prefetch_buffer : entity lib_vhdl.fifo
     generic map (
@@ -105,10 +105,7 @@ begin  -- architecture behavioural
       current_read_enable     <= '0';
       current_write_enable    <= '0';
       current_instr_grant     <= '0';
-      current_instr_reqvalid  <= '0';
-      current_instr_reqdata   <= (others => '0');
       fifo_input              <= (others => '0');
-      fifo_rst                <= '0';
 
       instr_requisition <= '0';
       instruction_id    <= NOP;
@@ -119,17 +116,14 @@ begin  -- architecture behavioural
       current_read_enable     <= next_read_enable;
       current_write_enable    <= next_write_enable and instr_reqvalid;
       current_instr_grant     <= instr_grant;
-      current_instr_reqvalid  <= instr_reqvalid;
-      current_instr_reqdata   <= instr_reqdata;
 
       fifo_input <= std_logic_vector(unsigned(current_program_counter) - WORD_WIDTH_IN_BYTES) & instr_reqdata;
-      fifo_rst   <= not branch_active;
 
       instr_requisition <= next_instr_requisition;
       case data_valid is
         when '1' =>
-          instruction_id <= fifo_output(2*WORD_WIDTH-1 downto word_width);
-          pc_id          <= fifo_output(WORD_WIDTH-1 downto 0);
+          pc_id          <= fifo_output(2*WORD_WIDTH-1 downto word_width);
+          instruction_id <= fifo_output(WORD_WIDTH-1 downto 0);
 
         when others =>
           instruction_id <= NOP;

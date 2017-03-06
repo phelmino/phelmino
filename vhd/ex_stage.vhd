@@ -16,12 +16,16 @@ entity ex_stage is
     alu_operand_b : in std_logic_vector(WORD_WIDTH-1 downto 0);
     alu_operator  : in std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
 
+    -- forwarding
+    alu_result_id : out std_logic_vector(WORD_WIDTH-1 downto 0);
+
     -- writing on gpr
     write_enable_z_id  : out std_logic;
     write_address_z_id : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
     write_data_z_id    : out std_logic_vector(WORD_WIDTH-1 downto 0);
 
     -- data memory interface
+    is_requisition    : in  std_logic;
     data_requisition  : out std_logic;
     data_address      : out std_logic_vector(WORD_WIDTH-1 downto 0);
     data_write_enable : out std_logic;
@@ -55,7 +59,8 @@ architecture behavioural of ex_stage is
   signal alu_carry_out   : std_logic;
 begin  -- architecture behavioural
 
-  ready_id        <= ready and data_grant;
+  ready_id        <= ready when (is_requisition = '0') else ready and data_grant;
+  alu_result_id   <= alu_result;
   write_data_z_id <= alu_result;
 
   alu_1 : entity lib_vhdl.alu
