@@ -34,26 +34,26 @@ end entity if_stage;
 architecture behavioural of if_stage is
   type if_state is (init, requisition);
 
-  signal current_state           : if_state                                := init;
-  signal next_state              : if_state                                := init;
-  signal current_program_counter : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
-  signal next_program_counter    : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
-  signal current_write_enable    : std_logic                               := '0';
-  signal next_write_enable       : std_logic                               := '0';
-  signal current_read_enable     : std_logic                               := '0';
-  signal next_read_enable        : std_logic                               := '0';
-  signal next_instr_requisition  : std_logic                               := '0';
+  signal current_state           : if_state;
+  signal next_state              : if_state;
+  signal current_program_counter : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal next_program_counter    : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal current_write_enable    : std_logic;
+  signal next_write_enable       : std_logic;
+  signal current_read_enable     : std_logic;
+  signal next_read_enable        : std_logic;
+  signal next_instr_requisition  : std_logic;
 
   -- memorizes the signals that come from memory. 
-  signal current_instr_grant    : std_logic                               := '0';
-  signal current_instr_reqvalid : std_logic                               := '0';
-  signal current_instr_reqdata  : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
+  signal current_instr_grant    : std_logic;
+  signal current_instr_reqvalid : std_logic;
+  signal current_instr_reqdata  : std_logic_vector(WORD_WIDTH-1 downto 0);
 
-  signal empty               : std_logic                               := '0';
-  signal full                : std_logic                               := '0';
-  signal data_valid          : std_logic                               := '0';
-  signal fifo_rst            : std_logic                               := '0';
-  signal current_instruction : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
+  signal empty               : std_logic;
+  signal full                : std_logic;
+  signal data_valid          : std_logic;
+  signal fifo_rst            : std_logic;
+  signal current_instruction : std_logic_vector(WORD_WIDTH-1 downto 0);
 
   component fifo is
     generic (
@@ -72,8 +72,8 @@ architecture behavioural of if_stage is
   end component fifo;
 
   -- fifo should store the instruction and its pc.
-  signal fifo_input  : std_logic_vector(2*WORD_WIDTH-1 downto 0) := (others => '0');
-  signal fifo_output : std_logic_vector(2*WORD_WIDTH-1 downto 0) := (others => '0');
+  signal fifo_input  : std_logic_vector(2*WORD_WIDTH-1 downto 0);
+  signal fifo_output : std_logic_vector(2*WORD_WIDTH-1 downto 0);
 
 begin  -- architecture behavioural
   -- instance "prefetch_buffer"

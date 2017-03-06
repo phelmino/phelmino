@@ -95,16 +95,16 @@ architecture behavioural of id_stage is
   signal immediate_extension_output : std_logic_vector(WORD_WIDTH-1 downto 0);
 
   -- comparison signals
-  signal a_equal_b     : std_logic := '0';
-  signal a_less_than_b : std_logic := '0';
+  signal a_equal_b     : std_logic;
+  signal a_less_than_b : std_logic;
 
   -- mux signals
-  signal current_mux_controller_a      : std_logic_vector(1 downto 0) := "00";
-  signal next_mux_controller_a         : std_logic_vector(1 downto 0) := "00";
-  signal current_mux_controller_b      : std_logic_vector(1 downto 0) := "00";
-  signal next_mux_controller_b         : std_logic_vector(1 downto 0) := "00";
-  signal current_mux_controller_branch : std_logic_vector(2 downto 0) := "000";
-  signal next_mux_controller_branch    : std_logic_vector(2 downto 0) := "000";
+  signal current_mux_controller_a      : std_logic_vector(1 downto 0);
+  signal next_mux_controller_a         : std_logic_vector(1 downto 0);
+  signal current_mux_controller_b      : std_logic_vector(1 downto 0);
+  signal next_mux_controller_b         : std_logic_vector(1 downto 0);
+  signal current_mux_controller_branch : std_logic_vector(2 downto 0);
+  signal next_mux_controller_branch    : std_logic_vector(2 downto 0);
 
 begin  -- architecture behavioural
 
