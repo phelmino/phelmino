@@ -14,8 +14,7 @@ entity id_stage is
     rst_n : in std_logic;
 
     -- data input from if stage
-    instr_reqvalid_input : in std_logic;
-    instr_reqdata_input  : in std_logic_vector(WORD_WIDTH-1 downto 0);
+    instr_reqdata_input : in std_logic_vector(WORD_WIDTH-1 downto 0);
 
     -- ex signals
     ex_alu_input_a_output          : out std_logic_vector(WORD_WIDTH-1 downto 0);
@@ -38,7 +37,11 @@ entity id_stage is
     write_data_y_input    : in std_logic_vector(WORD_WIDTH-1 downto 0);
 
     -- program counter (pc)
-    pc_id_input : in std_logic_vector(31 downto 0));
+    pc_id_input : in std_logic_vector(31 downto 0);
+
+    -- pipeline control signals
+    id_ready : out std_logic;
+    ex_ready : in  std_logic);
 
 end entity id_stage;
 
@@ -106,7 +109,11 @@ architecture behavioural of id_stage is
   signal current_mux_controller_branch : std_logic_vector(2 downto 0);
   signal next_mux_controller_branch    : std_logic_vector(2 downto 0);
 
+  -- stall detection
+  signal stall : std_logic;
 begin  -- architecture behavioural
+
+  id_ready <= ex_ready and not stall;
 
   -- recuperates instruction from if stage
   instruction_input <= instr_reqdata_input;
@@ -155,16 +162,29 @@ begin  -- architecture behavioural
       current_mux_controller_a       <= ALU_SOURCE_ZERO;
       current_mux_controller_b       <= ALU_SOURCE_ZERO;
       current_mux_controller_branch  <= BRANCH_MUX_NOT_IN_A_BRANCH;
-      ex_alu_operator_output         <= (others => '0');
+      ex_alu_operator_output         <= ALU_ADD;
       ex_destination_register_output <= (others => '0');
       branch_destination_if_output   <= (others => '0');
     elsif clk'event and clk = '1' then  -- rising clock edge
-      current_mux_controller_a       <= mux_controller_a;
-      current_mux_controller_b       <= mux_controller_b;
-      current_mux_controller_branch  <= mux_controller_branch;
-      ex_alu_operator_output         <= alu_operator_output;
-      ex_destination_register_output <= destination_register_output;
-      branch_destination_if_output   <= next_branch_destination;
+      case ex_ready is
+        when '1' =>
+          -- ex_stage is ready
+          current_mux_controller_a       <= mux_controller_a;
+          current_mux_controller_b       <= mux_controller_b;
+          current_mux_controller_branch  <= mux_controller_branch;
+          ex_alu_operator_output         <= alu_operator_output;
+          ex_destination_register_output <= destination_register_output;
+          branch_destination_if_output   <= next_branch_destination;
+
+        when others =>
+          -- if ex_stage is not ready, creates a bubble.
+          current_mux_controller_a       <= ALU_SOURCE_ZERO;
+          current_mux_controller_b       <= ALU_SOURCE_ZERO;
+          current_mux_controller_branch  <= BRANCH_MUX_NOT_IN_A_BRANCH;
+          ex_alu_operator_output         <= ALU_ADD;
+          ex_destination_register_output <= (others => '0');
+          branch_destination_if_output   <= (others => '0');
+      end case;
     end if;
   end process sequentialprocess;
 

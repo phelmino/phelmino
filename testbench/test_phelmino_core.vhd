@@ -19,7 +19,14 @@ architecture behavioural of test_phelmino_core is
       instr_address_output     : out std_logic_vector(WORD_WIDTH-1 downto 0);
       instr_grant_input        : in  std_logic;
       instr_reqvalid_input     : in  std_logic;
-      instr_reqdata_input      : in  std_logic_vector(WORD_WIDTH-1 downto 0));
+      instr_reqdata_input      : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      data_requisition_output  : out std_logic;
+      data_address_output      : out std_logic_vector(WORD_WIDTH-1 downto 0);
+      data_write_enable_output : out std_logic;
+      data_write_data_output   : out std_logic_vector(WORD_WIDTH-1 downto 0);
+      data_reqdata_input       : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      data_grant_input         : in  std_logic;
+      data_reqvalid_input      : in  std_logic);
   end component phelmino_core;
 
   signal clk                      : std_logic                               := '0';
@@ -27,9 +34,17 @@ architecture behavioural of test_phelmino_core is
   signal instr_requisition_output : std_logic                               := '0';
   signal instr_address_output     : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
   signal instr_grant_input        : std_logic                               := '0';
-  signal next_grant               : std_logic                               := '0';
+  signal instr_next_grant         : std_logic                               := '0';
   signal instr_reqvalid_input     : std_logic                               := '0';
   signal instr_reqdata_input      : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
+  signal data_requisition_output  : std_logic                               := '0';
+  signal data_address_output      : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
+  signal data_write_enable_output : std_logic                               := '0';
+  signal data_write_data_output   : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
+  signal data_reqdata_input       : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
+  signal data_grant_input         : std_logic                               := '0';
+  signal data_next_grant          : std_logic                               := '0';
+  signal data_reqvalid_input      : std_logic                               := '0';
 begin  -- architecture behavioural
 
   clk   <= not clk after 5 ns;
@@ -43,7 +58,14 @@ begin  -- architecture behavioural
       instr_address_output     => instr_address_output,
       instr_grant_input        => instr_grant_input,
       instr_reqvalid_input     => instr_reqvalid_input,
-      instr_reqdata_input      => instr_reqdata_input);
+      instr_reqdata_input      => instr_reqdata_input,
+      data_requisition_output  => data_requisition_output,
+      data_address_output      => data_address_output,
+      data_write_enable_output => data_write_enable_output,
+      data_write_data_output   => data_write_data_output,
+      data_reqdata_input       => data_reqdata_input,
+      data_grant_input         => data_grant_input,
+      data_reqvalid_input      => data_reqvalid_input);
 
   -- purpose: emulate the memory
   proc_memory : process (clk, rst_n) is
@@ -61,8 +83,20 @@ begin  -- architecture behavioural
         instr_reqvalid_input <= '0';
         instr_reqdata_input  <= (others => '0');
       else
-        instr_grant_input   <= next_grant;
+        instr_grant_input   <= instr_next_grant;
         instr_reqdata_input <= (others => '0');
+      end if;
+
+      if (data_grant_input = '1') then
+        data_grant_input    <= '0';
+        data_reqvalid_input <= '1';
+        data_reqdata_input  <= bne_r1_r2;
+      elsif (data_reqvalid_input = '1') then
+        data_reqvalid_input <= '0';
+        data_reqdata_input  <= (others => '0');
+      else
+        data_grant_input   <= data_next_grant;
+        data_reqdata_input <= (others => '0');
       end if;
     end if;
   end process proc_memory;
@@ -70,9 +104,9 @@ begin  -- architecture behavioural
   comb_proc : process (instr_requisition_output) is
   begin  -- process comb_proc
     if (instr_requisition_output = '1') then
-      next_grant <= '1';
+      instr_next_grant <= '1';
     else
-      next_grant <= '0';
+      instr_next_grant <= '0';
     end if;
   end process comb_proc;
 
