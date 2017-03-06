@@ -8,8 +8,8 @@ use lib_vhdl.phelmino_definitions.all;
 entity sign_extender is
 
   port (
-    instruction                : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-    immediate_extension_output : out std_logic_vector(WORD_WIDTH-1 downto 0));
+    instruction         : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+    immediate_extension : out std_logic_vector(WORD_WIDTH-1 downto 0));
 
 end entity sign_extender;
 
@@ -33,19 +33,19 @@ begin  -- architecture behavioural
     case opcode is
       when opcode_alu_immediate_register =>
         if sign_bit = '0' then
-          immediate_extension_output <= filled_zero & immediate_type_i;
+          immediate_extension <= filled_zero & immediate_type_i;
         else
-          immediate_extension_output <= filled_one & immediate_type_i;
+          immediate_extension <= filled_one & immediate_type_i;
         end if;
 
       when OPCODE_BRANCH =>
         if sign_bit = '0' then
-          immediate_extension_output <= filled_zero(WORD_WIDTH-13 downto 1) & immediate_type_sb;
+          immediate_extension <= filled_zero(WORD_WIDTH-13 downto 1) & immediate_type_sb;
         else
-          immediate_extension_output <= filled_one(WORD_WIDTH-13 downto 1) & immediate_type_sb;
+          immediate_extension <= filled_one(WORD_WIDTH-13 downto 1) & immediate_type_sb;
         end if;
 
-      when others => immediate_extension_output <= (others => '0');
+      when others => immediate_extension <= (others => '0');
     end case;
   end process signextension;
 
