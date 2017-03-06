@@ -42,8 +42,13 @@ package phelmino_definitions is
   constant IMMEDIATE_I_END     : natural := 20;
   constant IMMEDIATE_SB_LENGTH : natural := 13;
 
-  constant ALU_SOURCE_ZERO             : std_logic_vector(1 downto 0) := "00";
-  constant ALU_SOURCE_FROM_REGISTER    : std_logic_vector(1 downto 0) := "01";
+  -- Controls of MUX generating ALU Operands
+  constant ALU_SOURCE_ZERO          : std_logic_vector(1 downto 0) := "00";
+  constant ALU_SOURCE_FROM_REGISTER : std_logic_vector(1 downto 0) := "01";
+  constant ALU_SOURCE_FROM_ALU      : std_logic_vector(1 downto 0) := "10";
+  constant ALU_SOURCE_FROM_WB_STAGE : std_logic_vector(1 downto 0) := "11";
+
+  -- Controls of MUX deciding whether there is or not a branch
   constant BRANCH_MUX_NOT_IN_A_BRANCH  : std_logic_vector(2 downto 0) := "111";
   constant BRANCH_MUX_EQUAL            : std_logic_vector(2 downto 0) := "000";
   constant BRANCH_MUX_UNEQUAL          : std_logic_vector(2 downto 0) := "001";

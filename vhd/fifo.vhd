@@ -74,6 +74,8 @@ begin  -- architecture behavioural
   begin  -- process writeproc
     if rst_n = '0' then                 -- asynchronous reset (active low)
       write_pointer <= (others => '0');
+      fifo          <= (others => (others => '0'));
+
     elsif clk'event and clk = '1' then  -- rising clock edge
       write_pointer <= write_pointer;
 

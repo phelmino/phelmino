@@ -78,7 +78,7 @@ begin  -- architecture behavioural
       if (instr_grant = '1') then
         instr_grant    <= '0';
         instr_reqvalid <= '1';
-        instr_reqdata  <= BNE_R1_R2;
+        instr_reqdata  <= BEQ_R1_R2;
       elsif (instr_reqvalid = '1') then
         instr_reqvalid <= '0';
         instr_reqdata  <= (others => '0');
