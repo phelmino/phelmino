@@ -1,8 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-library lib_VHDL;
-
 package phelmino_definitions is
   -- ALU
   constant ALU_OPERATOR_WIDTH : integer := 6;

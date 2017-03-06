@@ -1,4 +1,4 @@
-bench_path=`cd ../../; pwd`
+bench_path=`cd ../; pwd`
 bench_lib=lib_BENCH
 has_error=0
 
