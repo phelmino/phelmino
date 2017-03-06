@@ -13,22 +13,22 @@ entity if_stage is
     rst_n : in std_logic;
 
     -- instruction interface signals
-    instr_requisition_output : out std_logic;
-    instr_address_output     : out std_logic_vector(WORD_WIDTH-1 downto 0);
-    instr_grant_input        : in  std_logic;
-    instr_reqvalid_input     : in  std_logic;
-    instr_reqdata_input      : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+    instr_requisition : out std_logic;
+    instr_address     : out std_logic_vector(WORD_WIDTH-1 downto 0);
+    instr_grant       : in  std_logic;
+    instr_reqvalid    : in  std_logic;
+    instr_reqdata     : in  std_logic_vector(WORD_WIDTH-1 downto 0);
 
     -- data output to id stage
-    instr_reqdata_id_output         : out std_logic_vector(WORD_WIDTH-1 downto 0);
-    instr_program_counter_id_output : out std_logic_vector(WORD_WIDTH-1 downto 0);
+    instruction_id : out std_logic_vector(WORD_WIDTH-1 downto 0);
+    pc_id          : out std_logic_vector(WORD_WIDTH-1 downto 0);
 
     -- branch signals
-    branch_active_input      : in std_logic;
-    branch_destination_input : in std_logic_vector(WORD_WIDTH-1 downto 0);
+    branch_active      : in std_logic;
+    branch_destination : in std_logic_vector(WORD_WIDTH-1 downto 0);
 
     -- pipeline control signals
-    id_ready : in std_logic);
+    ready : in std_logic);
 
 end entity if_stage;
 
@@ -110,30 +110,30 @@ begin  -- architecture behavioural
       fifo_input              <= (others => '0');
       fifo_rst                <= '0';
 
-      instr_requisition_output        <= '0';
-      instr_reqdata_id_output         <= NOP;
-      instr_program_counter_id_output <= (others => '0');
+      instr_requisition <= '0';
+      instruction_id    <= NOP;
+      pc_id             <= (others => '0');
     elsif clk'event and clk = '1' then  -- rising clock edge
       current_state           <= next_state;
       current_program_counter <= next_program_counter;
       current_read_enable     <= next_read_enable;
-      current_write_enable    <= next_write_enable and instr_reqvalid_input;
-      current_instr_grant     <= instr_grant_input;
-      current_instr_reqvalid  <= instr_reqvalid_input;
-      current_instr_reqdata   <= instr_reqdata_input;
+      current_write_enable    <= next_write_enable and instr_reqvalid;
+      current_instr_grant     <= instr_grant;
+      current_instr_reqvalid  <= instr_reqvalid;
+      current_instr_reqdata   <= instr_reqdata;
 
-      fifo_input <= std_logic_vector(unsigned(current_program_counter) - WORD_WIDTH_IN_BYTES) & instr_reqdata_input;
-      fifo_rst   <= not branch_active_input;
+      fifo_input <= std_logic_vector(unsigned(current_program_counter) - WORD_WIDTH_IN_BYTES) & instr_reqdata;
+      fifo_rst   <= not branch_active;
 
-      instr_requisition_output <= next_instr_requisition;
+      instr_requisition <= next_instr_requisition;
       case data_valid is
         when '1' =>
-          instr_program_counter_id_output <= fifo_output(2*WORD_WIDTH-1 downto word_width);
-          instr_reqdata_id_output         <= fifo_output(WORD_WIDTH-1 downto 0);
+          instruction_id <= fifo_output(2*WORD_WIDTH-1 downto word_width);
+          pc_id          <= fifo_output(WORD_WIDTH-1 downto 0);
 
         when others =>
-          instr_program_counter_id_output <= (others => '0');
-          instr_reqdata_id_output         <= NOP;
+          instruction_id <= NOP;
+          pc_id          <= (others => '0');
       end case;
 
     end if;
@@ -143,40 +143,39 @@ begin  -- architecture behavioural
   -- type   : combinational
   -- inputs : current_state, current_program_counter, full, instr_grant_input
   -- outputs: next_state, next_program_counter, next_read_enable, next_write_enable
-  combinationalprocess : process (branch_active_input,
-                                  branch_destination_input,
+  combinationalprocess : process (branch_active, branch_destination,
                                   current_instr_grant, current_program_counter,
-                                  current_state, full, id_ready) is
+                                  current_state, full, ready) is
   begin  -- process combinationalprocess
     case current_state is
       when init =>
         next_instr_requisition <= '0';
-        instr_address_output   <= (others => '0');
+        instr_address          <= (others => '0');
         next_program_counter   <= (others => '0');
         next_read_enable       <= '0';
         next_write_enable      <= '0';
         next_state             <= requisition;
 
       when requisition =>
-        instr_address_output <= current_program_counter;
-        next_write_enable    <= '0';
-        next_state           <= requisition;
+        instr_address     <= current_program_counter;
+        next_write_enable <= '0';
+        next_state        <= requisition;
 
         -- can not read fifo if id_stage is not ready.
-        case id_ready is
+        case ready is
           when '1'    => next_read_enable <= '1';
           when others => next_read_enable <= '0';
         end case;
 
-        if (branch_active_input = '1') then
-          next_program_counter <= branch_destination_input;
+        if (branch_active = '1') then
+          next_program_counter <= branch_destination;
         elsif (full = '0' and current_instr_grant = '1') then
           next_program_counter <= std_logic_vector(unsigned(current_program_counter) + WORD_WIDTH_IN_BYTES);
         else
           next_program_counter <= current_program_counter;
         end if;
 
-        if (full = '1' or current_instr_grant = '0' or branch_active_input = '1') then
+        if (full = '1' or current_instr_grant = '0' or branch_active = '1') then
           next_write_enable <= '0';
         else
           next_write_enable <= '1';

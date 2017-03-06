@@ -57,24 +57,12 @@ begin  -- architecture behavioural
       data_output  <= (others => '0');
       data_valid   <= '0';
 
-      case read_enable is
-        when '1' =>
-          -- fifo is not empty. just reads.
-          if (unsigned(status_counter) /= 0) then
-            data_output  <= fifo(to_integer(unsigned(read_pointer)));
-            read_pointer <= std_logic_vector(unsigned(read_pointer) + 1);
-            data_valid   <= '1';
-          -- fifo is empty, but is trying to write in the same cycle. relies input and
-          -- output directly.
-          elsif (write_enable = '1') then
-            data_output <= data_input;
-            data_valid  <= '1';
-          end if;
-
-        when others =>
-          data_output <= (others => '0');
-          data_valid  <= '0';
-      end case;
+      -- reads, if not empty.
+      if ((read_enable = '1') and (unsigned(status_counter) /= 0)) then
+        data_output  <= fifo(to_integer(unsigned(read_pointer)));
+        read_pointer <= std_logic_vector(unsigned(read_pointer) + 1);
+        data_valid   <= '1';
+      end if;
     end if;
   end process readproc;
 
@@ -124,8 +112,10 @@ begin  -- architecture behavioural
         status_counter <= std_logic_vector(unsigned(status_counter) + 1);
       end if;
 
-    -- if trying to read and write on fifo, and it is empty, both operations
-    -- will be made. so status_counter <= status_counter.
+      -- trying to read and write when empty: only writes.
+      if ((read_enable = '1') and (write_enable = '1') and (unsigned(status_counter) = 0)) then
+        status_counter <= std_logic_vector(unsigned(status_counter) + 1);
+      end if;
     end if;
   end process statuscounterproc;
 

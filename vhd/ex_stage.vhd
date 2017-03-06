@@ -12,98 +12,98 @@ entity ex_stage is
     rst_n : in std_logic;
 
     -- alu signals
-    alu_input_a_input  : in std_logic_vector(WORD_WIDTH-1 downto 0);
-    alu_input_b_input  : in std_logic_vector(WORD_WIDTH-1 downto 0);
-    alu_operator_input : in std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
+    alu_operand_a : in std_logic_vector(WORD_WIDTH-1 downto 0);
+    alu_operand_b : in std_logic_vector(WORD_WIDTH-1 downto 0);
+    alu_operator  : in std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
 
     -- writing on gpr
-    write_enable_z_output  : out std_logic;
-    write_address_z_output : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-    write_data_z_output    : out std_logic_vector(WORD_WIDTH-1 downto 0);
+    write_enable_z_id  : out std_logic;
+    write_address_z_id : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+    write_data_z_id    : out std_logic_vector(WORD_WIDTH-1 downto 0);
 
     -- data memory interface
-    data_requisition_output  : out std_logic;
-    data_address_output      : out std_logic_vector(WORD_WIDTH-1 downto 0);
-    data_write_enable_output : out std_logic;
-    data_write_data_output   : out std_logic_vector(WORD_WIDTH-1 downto 0);
-    data_grant_input         : in  std_logic;
+    data_requisition  : out std_logic;
+    data_address      : out std_logic_vector(WORD_WIDTH-1 downto 0);
+    data_write_enable : out std_logic;
+    data_write_data   : out std_logic_vector(WORD_WIDTH-1 downto 0);
+    data_grant        : in  std_logic;
 
     -- destination register
-    destination_register_input  : in  std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-    destination_register_output : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+    destination_register    : in  std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+    destination_register_wb : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
 
     -- pipeline control signals
-    ex_ready : out std_logic;
-    wb_ready : in  std_logic);
+    ready_id : out std_logic;
+    ready    : in  std_logic);
 
 end entity ex_stage;
 
 architecture behavioural of ex_stage is
   component alu is
     port (
-      alu_operand_a_input  : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      alu_operand_b_input  : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      alu_operator_input   : in  std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
-      alu_result_output    : out std_logic_vector(WORD_WIDTH-1 downto 0);
-      alu_carry_out_output : out std_logic);
+      alu_operand_a : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      alu_operand_b : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      alu_operator  : in  std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
+      alu_result    : out std_logic_vector(WORD_WIDTH-1 downto 0);
+      alu_carry_out : out std_logic);
   end component alu;
 
-  signal alu_operand_a_input  : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal alu_operand_b_input  : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal alu_operator         : std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
-  signal alu_result_output    : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal alu_carry_out_output : std_logic;
+  signal alu_operand_a_i : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal alu_operand_b_i : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal alu_operator_i  : std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
+  signal alu_result      : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal alu_carry_out   : std_logic;
 begin  -- architecture behavioural
 
-  ex_ready            <= wb_ready and data_grant_input;
-  write_data_z_output <= alu_result_output;
+  ready_id        <= ready and data_grant;
+  write_data_z_id <= alu_result;
 
   alu_1 : entity lib_vhdl.alu
     port map (
-      alu_operand_a_input  => alu_operand_a_input,
-      alu_operand_b_input  => alu_operand_b_input,
-      alu_operator_input   => alu_operator,
-      alu_result_output    => alu_result_output,
-      alu_carry_out_output => alu_carry_out_output);
+      alu_operand_a => alu_operand_a_i,
+      alu_operand_b => alu_operand_b_i,
+      alu_operator  => alu_operator_i,
+      alu_result    => alu_result,
+      alu_carry_out => alu_carry_out);
 
   sequential : process (clk, rst_n) is
   begin  -- process sequential
     if rst_n = '0' then                 -- asynchronous reset (active low)
       -- alu
-      alu_operand_a_input <= (others => '0');
-      alu_operand_b_input <= (others => '0');
-      alu_operator        <= ALU_ADD;
+      alu_operand_a_i <= (others => '0');
+      alu_operand_b_i <= (others => '0');
+      alu_operator_i  <= ALU_ADD;
 
       -- gpr
-      write_enable_z_output  <= '0';
-      write_address_z_output <= (others => '0');
+      write_enable_z_id  <= '0';
+      write_address_z_id <= (others => '0');
 
       -- memory
-      data_requisition_output  <= '0';
-      data_address_output      <= (others => '0');
-      data_write_enable_output <= '0';
-      data_write_data_output   <= (others => '0');
+      data_requisition  <= '0';
+      data_address      <= (others => '0');
+      data_write_enable <= '0';
+      data_write_data   <= (others => '0');
 
       -- destination register
-      destination_register_output <= (others => '0');
+      destination_register_wb <= (others => '0');
     elsif clk'event and clk = '1' then  -- rising clock edge
       -- alu
-      alu_operand_a_input <= alu_input_a_input;
-      alu_operand_b_input <= alu_input_b_input;
-      alu_operator        <= alu_operator_input;
+      alu_operand_a_i <= alu_operand_a;
+      alu_operand_b_i <= alu_operand_b;
+      alu_operator_i  <= alu_operator;
 
       -- gpr
-      write_enable_z_output  <= '1';
-      write_address_z_output <= destination_register_input;
+      write_enable_z_id  <= '1';
+      write_address_z_id <= destination_register;
 
       -- memory
-      data_requisition_output  <= '0';
-      data_address_output      <= alu_result_output;
-      data_write_enable_output <= '0';
-      data_write_data_output   <= (others => '0');
+      data_requisition  <= '0';
+      data_address      <= alu_result;
+      data_write_enable <= '0';
+      data_write_data   <= (others => '0');
 
       -- destination register
-      destination_register_output <= destination_register_input;
+      destination_register_wb <= destination_register;
     end if;
   end process sequential;
 
