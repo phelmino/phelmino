@@ -12,7 +12,6 @@ architecture test of test_id_stage is
   -- component ports
   signal clk                            : std_logic                                      := '1';
   signal rst_n                          : std_logic                                      := '0';
-  signal instr_reqvalid_input           : std_logic                                      := '0';
   signal instr_reqdata_input            : std_logic_vector(WORD_WIDTH-1 downto 0)        := (others => '0');
   signal ex_alu_input_a_output          : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal ex_alu_input_b_output          : std_logic_vector(WORD_WIDTH-1 downto 0);
@@ -27,6 +26,8 @@ architecture test of test_id_stage is
   signal write_address_z_input          : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0) := (others => '0');
   signal write_data_z_input             : std_logic_vector(WORD_WIDTH-1 downto 0)        := (others => '0');
   signal pc_id_input                    : std_logic_vector(31 downto 0)                  := (others => '0');
+  signal id_ready                       : std_logic                                      := '0';
+  signal ex_ready                       : std_logic                                      := '0';
 
 begin  -- architecture test
 
@@ -35,7 +36,6 @@ begin  -- architecture test
     port map (
       clk                            => clk,
       rst_n                          => rst_n,
-      instr_reqvalid_input           => instr_reqvalid_input,
       instr_reqdata_input            => instr_reqdata_input,
       ex_alu_input_a_output          => ex_alu_input_a_output,
       ex_alu_input_b_output          => ex_alu_input_b_output,
@@ -49,7 +49,9 @@ begin  -- architecture test
       write_enable_z_input           => write_enable_z_input,
       write_address_z_input          => write_address_z_input,
       write_data_z_input             => write_data_z_input,
-      pc_id_input                    => pc_id_input);
+      pc_id_input                    => pc_id_input,
+      id_ready                       => id_ready,
+      ex_ready                       => ex_ready);
 
   -- clock generation
   clk   <= not clk after 5 ns;
@@ -61,15 +63,13 @@ begin  -- architecture test
     wait for 20 ns;
     wait until falling_edge(clk);
 
-    pc_id_input          <= (0 => '1', others => '0');
-    instr_reqvalid_input <= '1';
-    instr_reqdata_input  <= nop;
+    pc_id_input         <= (0 => '1', others => '0');
+    instr_reqdata_input <= nop;
 
     wait until falling_edge(clk);
 
-    pc_id_input          <= (0 => '1', others => '0');
-    instr_reqvalid_input <= '1';
-    instr_reqdata_input  <= add_r1_plus_r2;
+    pc_id_input         <= (0 => '1', others => '0');
+    instr_reqdata_input <= add_r1_plus_r2;
 
     wait until falling_edge(clk);
     wait;

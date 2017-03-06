@@ -6,7 +6,7 @@ function compile {
     if [ $has_error = 0 ]; then
         vcom -work ${bench_lib} $1 > tmp
         cat tmp
-        if [ `cat tmp | grep "** error" | wc -l` != 0 ]; then
+        if [ `cat tmp | grep "** Error" | wc -l` != 0 ]; then
             has_error=1
         fi
         rm tmp

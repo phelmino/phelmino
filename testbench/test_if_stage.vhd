@@ -20,10 +20,10 @@ architecture behavioural of test_if_stage is
       instr_grant_input        : in  std_logic;
       instr_reqvalid_input     : in  std_logic;
       instr_reqdata_input      : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      instr_reqvalid_id_output : out std_logic;
       instr_reqdata_id_output  : out std_logic_vector(WORD_WIDTH-1 downto 0);
       branch_active_input      : in  std_logic;
-      branch_destination_input : in  std_logic_vector(WORD_WIDTH-1 downto 0));
+      branch_destination_input : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      id_ready                 : in  std_logic);
   end component if_stage;
 
   signal clk                        : std_logic                               := '0';
@@ -33,11 +33,11 @@ architecture behavioural of test_if_stage is
   signal instr_grant_input          : std_logic                               := '0';
   signal instruction_reqvalid_input : std_logic                               := '0';
   signal instr_reqdata_input        : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
-  signal instr_reqvalid_id_output   : std_logic                               := '0';
   signal instr_reqdata_id_output    : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
   signal next_grant                 : std_logic                               := '0';
   signal branch_active_input        : std_logic                               := '0';
   signal branch_destination_input   : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
+  signal id_ready                   : std_logic                               := '0';
 
 begin  -- architecture behavioural
 
@@ -54,10 +54,10 @@ begin  -- architecture behavioural
       instr_grant_input        => instr_grant_input,
       instr_reqvalid_input     => instruction_reqvalid_input,
       instr_reqdata_input      => instr_reqdata_input,
-      instr_reqvalid_id_output => instr_reqvalid_id_output,
       instr_reqdata_id_output  => instr_reqdata_id_output,
       branch_active_input      => branch_active_input,
-      branch_destination_input => branch_destination_input);
+      branch_destination_input => branch_destination_input,
+      id_ready                 => id_ready);
 
   -- purpose: emulate the memory
   proc_memory : process (clk, rst_n) is

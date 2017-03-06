@@ -20,14 +20,15 @@ entity if_stage is
     instr_reqdata_input      : in  std_logic_vector(WORD_WIDTH-1 downto 0);
 
     -- data output to id stage
-    instr_reqvalid_id_output        : out std_logic;
     instr_reqdata_id_output         : out std_logic_vector(WORD_WIDTH-1 downto 0);
     instr_program_counter_id_output : out std_logic_vector(WORD_WIDTH-1 downto 0);
 
     -- branch signals
     branch_active_input      : in std_logic;
-    branch_destination_input : in std_logic_vector(WORD_WIDTH-1 downto 0)
-    );
+    branch_destination_input : in std_logic_vector(WORD_WIDTH-1 downto 0);
+
+    -- pipeline control signals
+    id_ready : in std_logic);
 
 end entity if_stage;
 
@@ -110,7 +111,6 @@ begin  -- architecture behavioural
       fifo_rst                <= '0';
 
       instr_requisition_output        <= '0';
-      instr_reqvalid_id_output        <= '0';
       instr_reqdata_id_output         <= NOP;
       instr_program_counter_id_output <= (others => '0');
     elsif clk'event and clk = '1' then  -- rising clock edge
@@ -121,21 +121,21 @@ begin  -- architecture behavioural
       current_instr_grant     <= instr_grant_input;
       current_instr_reqvalid  <= instr_reqvalid_input;
       current_instr_reqdata   <= instr_reqdata_input;
-      fifo_input              <= std_logic_vector(unsigned(current_program_counter) - WORD_WIDTH_IN_BYTES) & instr_reqdata_input;
-      fifo_rst                <= not branch_active_input;
+
+      fifo_input <= std_logic_vector(unsigned(current_program_counter) - WORD_WIDTH_IN_BYTES) & instr_reqdata_input;
+      fifo_rst   <= not branch_active_input;
 
       instr_requisition_output <= next_instr_requisition;
       case data_valid is
         when '1' =>
-          instr_reqvalid_id_output        <= '1';
           instr_program_counter_id_output <= fifo_output(2*WORD_WIDTH-1 downto word_width);
           instr_reqdata_id_output         <= fifo_output(WORD_WIDTH-1 downto 0);
 
         when others =>
-          instr_reqvalid_id_output        <= '0';
           instr_program_counter_id_output <= (others => '0');
           instr_reqdata_id_output         <= NOP;
       end case;
+
     end if;
   end process sequentialprocess;
 
@@ -146,7 +146,7 @@ begin  -- architecture behavioural
   combinationalprocess : process (branch_active_input,
                                   branch_destination_input,
                                   current_instr_grant, current_program_counter,
-                                  current_state, full) is
+                                  current_state, full, id_ready) is
   begin  -- process combinationalprocess
     case current_state is
       when init =>
@@ -159,9 +159,14 @@ begin  -- architecture behavioural
 
       when requisition =>
         instr_address_output <= current_program_counter;
-        next_read_enable     <= '1';
         next_write_enable    <= '0';
         next_state           <= requisition;
+
+        -- can not read fifo if id_stage is not ready.
+        case id_ready is
+          when '1'    => next_read_enable <= '1';
+          when others => next_read_enable <= '0';
+        end case;
 
         if (branch_active_input = '1') then
           next_program_counter <= branch_destination_input;
