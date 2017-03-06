@@ -2,18 +2,18 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library lib_VHDL;
-use lib_VHDL.phelmino_definitions.all;
+library lib_vhdl;
+use lib_vhdl.phelmino_definitions.all;
 
 entity alu is
 
   port (
-    -- ALU Inputs
+    -- alu inputs
     alu_operand_a_input : in std_logic_vector(WORD_WIDTH-1 downto 0);
     alu_operand_b_input : in std_logic_vector(WORD_WIDTH-1 downto 0);
     alu_operator_input  : in std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
 
-    -- ALU Outputs
+    -- alu outputs
     alu_result_output    : out std_logic_vector(WORD_WIDTH-1 downto 0);
     alu_carry_out_output : out std_logic
     );
@@ -26,7 +26,6 @@ architecture behavioural of alu is
   signal alu_operand_b_input_unsigned : unsigned(WORD_WIDTH-1 downto 0);
   signal alu_result_output_unsigned   : unsigned(WORD_WIDTH downto 0);
 
-
 begin  -- architecture behavioural
 
   alu_operand_a_input_unsigned <= unsigned(alu_operand_a_input);
@@ -34,7 +33,7 @@ begin  -- architecture behavioural
   alu_result_output            <= std_logic_vector(alu_result_output_unsigned(WORD_WIDTH-1 downto 0));
   alu_carry_out_output         <= std_logic(alu_result_output_unsigned(WORD_WIDTH));
 
-  -- purpose: Combinational process in order to choose ALU operator
+  -- purpose: combinational process in order to choose alu operator
   -- type   : combinational
   -- inputs : alu_operand_a_input_unsigned
   -- outputs: alu_result_output

@@ -1,28 +1,30 @@
-BENCH_PATH=`cd ../../; pwd`
-BENCH_LIB=lib_BENCH
-HAS_ERROR=0
+bench_path=`cd ../../; pwd`
+bench_lib=lib_BENCH
+has_error=0
 
 function compile {
-    if [ $HAS_ERROR = 0 ]; then
-        vcom -work ${BENCH_LIB} $1 > TMP
-        cat TMP
-        if [ `cat TMP | grep "** Error" | wc -l` != 0 ]; then
-            HAS_ERROR=1
+    if [ $has_error = 0 ]; then
+        vcom -work ${bench_lib} $1 > tmp
+        cat tmp
+        if [ `cat tmp | grep "** error" | wc -l` != 0 ]; then
+            has_error=1
         fi
-        rm TMP
+        rm tmp
     fi
 }
 
-if [ ! -e $BENCH_PATH ]; then
-    mkdir -p $BENCH_PATH
+if [ ! -e $bench_path ]; then
+    mkdir -p $bench_path
 fi
 
-vdel -lib  ${BENCH_PATH}/libs/${BENCH_LIB} -all
+vdel -lib  ${bench_path}/libs/${bench_lib} -all
 
-vlib ${BENCH_PATH}/libs/${BENCH_LIB}
+vlib ${bench_path}/libs/${bench_lib}
 
-vmap ${BENCH_LIB} ${BENCH_PATH}/libs/${BENCH_LIB}
+vmap ${bench_lib} ${bench_path}/libs/${bench_lib}
 
 compile test_general_purpose_registers.vhd
 compile test_if_stage.vhd
+compile test_id_stage.vhd 
 compile test_fifo.vhd 
+compile test_phelmino_core.vhd 

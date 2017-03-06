@@ -1,33 +1,36 @@
-PHELMINO_PATH=`cd ../../; pwd`
-PHELMINO_LIB=lib_VHDL
-HAS_ERROR=0
+phelmino_path=`cd ../../; pwd`
+phelmino_lib=lib_VHDL
+has_error=0
 
 function compile {
-    if [ $HAS_ERROR = 0 ]; then
-        vcom -work ${PHELMINO_LIB} $1 > TMP
-        cat TMP
-        if [ `cat TMP | grep "** Error" | wc -l` != 0 ]; then
-            HAS_ERROR=1
+    if [ $has_error = 0 ]; then
+        vcom -work ${phelmino_lib} $1 > tmp
+        cat tmp
+        if [ `cat tmp | grep "** error" | wc -l` != 0 ]; then
+            has_error=1
         fi
-        rm TMP
+        rm tmp
     fi
 }
 
-if [ ! -e $PHELMINO_PATH ]; then
-    mkdir -p $PHELMINO_PATH
+if [ ! -e $phelmino_path ]; then
+    mkdir -p $phelmino_path
 fi
 
-vdel -lib ${PHELMINO_PATH}/libs/${PHELMINO_LIB} -all
+vdel -lib ${phelmino_path}/libs/${phelmino_lib} -all
 
-vlib ${PHELMINO_PATH}/libs/${PHELMINO_LIB}
+vlib ${phelmino_path}/libs/${phelmino_lib}
 
-vmap ${PHELMINO_LIB} ${PHELMINO_PATH}/libs/${PHELMINO_LIB}
+vmap ${phelmino_lib} ${phelmino_path}/libs/${phelmino_lib}
 
 compile ../include/phelmino_definitions.vhd 
+compile decoder.vhd 
 compile general_purpose_registers.vhd
 compile fifo.vhd
 compile alu.vhd 
+compile sign_extender.vhd 
 compile if_stage.vhd
 compile id_stage.vhd
 compile ex_stage.vhd
 compile wb_stage.vhd 
+compile phelmino_core.vhd 

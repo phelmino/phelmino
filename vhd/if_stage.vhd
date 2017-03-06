@@ -2,160 +2,188 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library lib_VHDL;
-use lib_VHDL.phelmino_definitions.all;
+library lib_vhdl;
+use lib_vhdl.phelmino_definitions.all;
 
-entity IF_Stage is
+entity if_stage is
 
   port (
-    -- Clock and reset signals
-    CLK   : in std_logic;
-    RST_n : in std_logic;
+    -- clock and reset signals
+    clk   : in std_logic;
+    rst_n : in std_logic;
 
-    -- Instruction interface signals
-    Instr_Requisition_Output : out std_logic;
-    Instr_Address_Output     : out std_logic_vector(WORD_WIDTH-1 downto 0);
-    Instr_Grant_Input        : in  std_logic;
-    Instr_ReqValid_Input     : in  std_logic;
-    Instr_ReqData_Input      : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+    -- instruction interface signals
+    instr_requisition_output : out std_logic;
+    instr_address_output     : out std_logic_vector(WORD_WIDTH-1 downto 0);
+    instr_grant_input        : in  std_logic;
+    instr_reqvalid_input     : in  std_logic;
+    instr_reqdata_input      : in  std_logic_vector(WORD_WIDTH-1 downto 0);
 
-    -- Data output to ID stage
-    Instr_ReqValid_ID_Output : out std_logic;
-    Instr_ReqData_ID_Output  : out std_logic_vector(WORD_WIDTH-1 downto 0);
+    -- data output to id stage
+    instr_reqvalid_id_output        : out std_logic;
+    instr_reqdata_id_output         : out std_logic_vector(WORD_WIDTH-1 downto 0);
+    instr_program_counter_id_output : out std_logic_vector(WORD_WIDTH-1 downto 0);
 
-    -- Branch signals
-    Branch_Active_Input      : in std_logic;
-    Branch_Destination_Input : in std_logic_vector(WORD_WIDTH-1 downto 0)
+    -- branch signals
+    branch_active_input      : in std_logic;
+    branch_destination_input : in std_logic_vector(WORD_WIDTH-1 downto 0)
     );
 
-end entity IF_Stage;
+end entity if_stage;
 
-architecture Behavioural of IF_Stage is
-  type IF_State is (INIT, REQUISITION);
+architecture behavioural of if_stage is
+  type if_state is (init, requisition);
 
-  signal Current_State           : IF_State                                := INIT;
-  signal Next_State              : IF_State                                := INIT;
-  signal Current_Program_Counter : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
-  signal Next_Program_Counter    : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
-  signal Current_Write_Enable    : std_logic                               := '0';
-  signal Next_Write_Enable       : std_logic                               := '0';
-  signal Current_Read_Enable     : std_logic                               := '0';
-  signal Next_Read_Enable        : std_logic                               := '0';
-  signal Next_Instr_Requisition  : std_logic                               := '0';
+  signal current_state           : if_state                                := init;
+  signal next_state              : if_state                                := init;
+  signal current_program_counter : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
+  signal next_program_counter    : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
+  signal current_write_enable    : std_logic                               := '0';
+  signal next_write_enable       : std_logic                               := '0';
+  signal current_read_enable     : std_logic                               := '0';
+  signal next_read_enable        : std_logic                               := '0';
+  signal next_instr_requisition  : std_logic                               := '0';
 
-  -- Memorizes the signals that come from memory. 
-  signal Current_Instr_Grant    : std_logic                               := '0';
-  signal Current_Instr_ReqValid : std_logic                               := '0';
-  signal Current_Instr_ReqData  : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
+  -- memorizes the signals that come from memory. 
+  signal current_instr_grant    : std_logic                               := '0';
+  signal current_instr_reqvalid : std_logic                               := '0';
+  signal current_instr_reqdata  : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
 
-  signal Empty : std_logic := '0';
-  signal Full  : std_logic := '0';
+  signal empty               : std_logic                               := '0';
+  signal full                : std_logic                               := '0';
+  signal data_valid          : std_logic                               := '0';
+  signal fifo_rst            : std_logic                               := '0';
+  signal current_instruction : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
 
-  component FIFO is
+  component fifo is
     generic (
-      ADDR_WIDTH : natural;
-      DATA_WIDTH : natural);
+      addr_width : natural;
+      data_width : natural);
     port (
-      CLK          : in  std_logic;
-      RST_n        : in  std_logic;
-      Write_Enable : in  std_logic;
-      Data_Input   : in  std_logic_vector(DATA_WIDTH-1 downto 0);
-      Read_Enable  : in  std_logic;
-      Data_Output  : out std_logic_vector(DATA_WIDTH-1 downto 0);
-      Empty        : out std_logic;
-      Full         : out std_logic);
-  end component FIFO;
+      clk          : in  std_logic;
+      rst_n        : in  std_logic;
+      write_enable : in  std_logic;
+      data_input   : in  std_logic_vector(data_width-1 downto 0);
+      read_enable  : in  std_logic;
+      data_output  : out std_logic_vector(data_width-1 downto 0);
+      data_valid   : out std_logic;
+      empty        : out std_logic;
+      full         : out std_logic);
+  end component fifo;
 
-begin  -- architecture Behavioural
+  -- fifo should store the instruction and its pc.
+  signal fifo_input  : std_logic_vector(2*WORD_WIDTH-1 downto 0) := (others => '0');
+  signal fifo_output : std_logic_vector(2*WORD_WIDTH-1 downto 0) := (others => '0');
 
-  -- Propagates Valid signal to ID stage
-  Instr_ReqValid_ID_Output <= Instr_ReqValid_Input;
-
-  -- instance "Prefetch_Buffer"
-  Prefetch_Buffer : entity lib_VHDL.FIFO
+begin  -- architecture behavioural
+  -- instance "prefetch_buffer"
+  prefetch_buffer : entity lib_vhdl.fifo
     generic map (
-      ADDR_WIDTH => PREFETCH_ADDRESS_WIDTH,
-      DATA_WIDTH => WORD_WIDTH)
+      addr_width => PREFETCH_ADDRESS_WIDTH,
+      data_width => 2 * WORD_WIDTH)
     port map (
-      CLK          => CLK,
-      RST_n        => RST_n,
-      Write_Enable => Current_Write_Enable,
-      Data_Input   => Current_Instr_ReqData,
-      Read_Enable  => Current_Read_Enable,
-      Data_Output  => Instr_ReqData_ID_Output,
-      Empty        => Empty,
-      Full         => Full);
+      clk          => clk,
+      rst_n        => fifo_rst,
+      write_enable => current_write_enable,
+      data_input   => fifo_input,
+      read_enable  => current_read_enable,
+      data_output  => fifo_output,
+      data_valid   => data_valid,
+      empty        => empty,
+      full         => full);
 
-  -- purpose: Updates current state and current Program Counter
+  -- purpose: updates current state and current program counter
   -- type   : sequential
-  -- inputs : CLK, RST_n, Next_State, Next_Program_Counter, Next_Read_Enable, Next_Write_Enable
-  -- outputs: Current_State, Current_Program_Counter, Current_Read_Enable, Current_Write_Enable
-  SequentialProcess : process (CLK, RST_n) is
-  begin  -- process SequentialProcess
-    if RST_n = '0' then                 -- asynchronous reset (active low)
-      Current_State            <= INIT;
-      Current_Program_Counter  <= (others => '0');
-      Current_Read_Enable      <= '0';
-      Current_Write_Enable     <= '0';
-      Current_Instr_Grant      <= '0';
-      Current_Instr_ReqValid   <= '0';
-      Current_Instr_ReqData    <= (others => '0');
-      Instr_Requisition_Output <= '0';
-    elsif CLK'event and CLK = '1' then  -- rising clock edge
-      Current_State            <= Next_State;
-      Current_Program_Counter  <= Next_Program_Counter;
-      Current_Read_Enable      <= Next_Read_Enable;
-      Current_Write_Enable     <= Next_Write_Enable;
-      Current_Instr_Grant      <= Instr_Grant_Input;
-      Current_Instr_ReqValid   <= Instr_ReqValid_Input;
-      Current_Instr_ReqData    <= Instr_ReqData_Input;
-      Instr_Requisition_Output <= Next_Instr_Requisition;
+  -- inputs : clk, rst_n, next_state, next_program_counter, next_read_enable, next_write_enable
+  -- outputs: current_state, current_program_counter, current_read_enable, current_write_enable
+  sequentialprocess : process (clk, rst_n) is
+  begin  -- process sequentialprocess
+    if rst_n = '0' then                 -- asynchronous reset (active low)
+      current_state           <= init;
+      current_program_counter <= (others => '0');
+      current_read_enable     <= '0';
+      current_write_enable    <= '0';
+      current_instr_grant     <= '0';
+      current_instr_reqvalid  <= '0';
+      current_instr_reqdata   <= (others => '0');
+      fifo_input              <= (others => '0');
+      fifo_rst                <= '0';
+
+      instr_requisition_output        <= '0';
+      instr_reqvalid_id_output        <= '0';
+      instr_reqdata_id_output         <= NOP;
+      instr_program_counter_id_output <= (others => '0');
+    elsif clk'event and clk = '1' then  -- rising clock edge
+      current_state           <= next_state;
+      current_program_counter <= next_program_counter;
+      current_read_enable     <= next_read_enable;
+      current_write_enable    <= next_write_enable and instr_reqvalid_input;
+      current_instr_grant     <= instr_grant_input;
+      current_instr_reqvalid  <= instr_reqvalid_input;
+      current_instr_reqdata   <= instr_reqdata_input;
+      fifo_input              <= std_logic_vector(unsigned(current_program_counter) - WORD_WIDTH_IN_BYTES) & instr_reqdata_input;
+      fifo_rst                <= not branch_active_input;
+
+      instr_requisition_output <= next_instr_requisition;
+      case data_valid is
+        when '1' =>
+          instr_reqvalid_id_output        <= '1';
+          instr_program_counter_id_output <= fifo_output(2*WORD_WIDTH-1 downto word_width);
+          instr_reqdata_id_output         <= fifo_output(WORD_WIDTH-1 downto 0);
+
+        when others =>
+          instr_reqvalid_id_output        <= '0';
+          instr_program_counter_id_output <= (others => '0');
+          instr_reqdata_id_output         <= NOP;
+      end case;
     end if;
-  end process SequentialProcess;
+  end process sequentialprocess;
 
-  -- purpose: Calculates next state and next Program Counter
+  -- purpose: calculates next state and next program counter
   -- type   : combinational
-  -- inputs : Current_State, Current_Program_Counter, Full, Instr_Grant_Input
-  -- outputs: Next_State, Next_Program_Counter, Next_Read_Enable, Next_Write_Enable
-  CombinationalProcess : process (Current_Instr_Grant, Current_Program_Counter,
-                                  Current_State, Full) is
-  begin  -- process CombinationalProcess
-    case Current_State is
-      when INIT =>
-        Next_Instr_Requisition <= '0';
-        Instr_Address_Output   <= (others => '0');
-        Next_Program_Counter   <= (others => '0');
-        Next_Read_Enable       <= '0';
-        Next_Write_Enable      <= '0';
-        Next_State             <= REQUISITION;
+  -- inputs : current_state, current_program_counter, full, instr_grant_input
+  -- outputs: next_state, next_program_counter, next_read_enable, next_write_enable
+  combinationalprocess : process (branch_active_input,
+                                  branch_destination_input,
+                                  current_instr_grant, current_program_counter,
+                                  current_state, full) is
+  begin  -- process combinationalprocess
+    case current_state is
+      when init =>
+        next_instr_requisition <= '0';
+        instr_address_output   <= (others => '0');
+        next_program_counter   <= (others => '0');
+        next_read_enable       <= '0';
+        next_write_enable      <= '0';
+        next_state             <= requisition;
 
-      when REQUISITION =>
-        Instr_Address_Output <= Current_Program_Counter;
-        Next_Read_Enable     <= '0';
-        Next_Write_Enable    <= '0';
-        Next_State           <= REQUISITION;
+      when requisition =>
+        instr_address_output <= current_program_counter;
+        next_read_enable     <= '1';
+        next_write_enable    <= '0';
+        next_state           <= requisition;
 
-        if (Branch_Active_Input = '1') then
-          Next_Program_Counter <= Branch_Destination_Input;
-        elsif (Full = '0' and Current_Instr_Grant = '1') then
-          Next_Program_Counter <= std_logic_vector(unsigned(Current_Program_Counter) + 1);
+        if (branch_active_input = '1') then
+          next_program_counter <= branch_destination_input;
+        elsif (full = '0' and current_instr_grant = '1') then
+          next_program_counter <= std_logic_vector(unsigned(current_program_counter) + WORD_WIDTH_IN_BYTES);
         else
-          Next_Program_Counter <= Current_Program_Counter;
+          next_program_counter <= current_program_counter;
         end if;
 
-        if (Full = '1' or Current_Instr_Grant = '0' or Branch_Active_Input = '1') then
-          Next_Write_Enable <= '0';
+        if (full = '1' or current_instr_grant = '0' or branch_active_input = '1') then
+          next_write_enable <= '0';
         else
-          Next_Write_Enable <= '1';
+          next_write_enable <= '1';
         end if;
 
-        if (Full = '1') then
-          Next_Instr_Requisition <= '0';
+        if (full = '1') then
+          next_instr_requisition <= '0';
         else
-          Next_Instr_Requisition <= '1';
+          next_instr_requisition <= '1';
         end if;
 
     end case;
-  end process CombinationalProcess;
+  end process combinationalprocess;
 
-end architecture Behavioural;
+end architecture behavioural;
