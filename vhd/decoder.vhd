@@ -101,6 +101,7 @@ begin  -- architecture behavioural
 
       when others =>
         instruction_valid     <= '0';
+        is_requisition        <= '0';
         mux_controller_a      <= ALU_SOURCE_ZERO;
         mux_controller_b      <= ALU_SOURCE_ZERO;
         mux_controller_branch <= BRANCH_MUX_NOT_IN_A_BRANCH;

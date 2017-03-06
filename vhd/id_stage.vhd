@@ -190,8 +190,12 @@ begin  -- architecture behavioural
                                   current_mux_controller_a,
                                   current_mux_controller_b,
                                   current_mux_controller_branch,
-                                  data_read_from_memory, read_data_a,
-                                  read_data_b) is
+                                  data_read_from_memory, mux_controller_a,
+                                  mux_controller_b, mux_controller_branch,
+                                  read_address_a, read_address_b, read_data_a,
+                                  read_data_b, write_address_y,
+                                  write_address_z, write_enable_y,
+                                  write_enable_z) is
   begin  -- process combinationalprocess
     -- mux to define origin of signal alu_a_ex
     case current_mux_controller_a is
@@ -234,43 +238,38 @@ begin  -- architecture behavioural
       a_less_than_b <= '0';
     end if;
 
+
     -- Controlling mux A. May choose to forward.
+    next_mux_controller_a <= mux_controller_a;
     if ((write_enable_z = '1') and (unsigned(write_address_z) /= 0) and (mux_controller_a = ALU_SOURCE_FROM_REGISTER) and (read_address_a = write_address_z)) then
       next_mux_controller_a <= ALU_SOURCE_FROM_ALU;
     elsif ((write_enable_y = '1') and (unsigned(write_address_y) /= 0) and (mux_controller_a = ALU_SOURCE_FROM_REGISTER) and (read_address_a = write_address_y)) then
       next_mux_controller_a <= ALU_SOURCE_FROM_WB_STAGE;
-    else
-      next_mux_controller_a <= mux_controller_a;
     end if;
 
     -- Controlling mux B. May choose to forward.
+    next_mux_controller_b <= mux_controller_b;
     if ((write_enable_z = '1') and (unsigned(write_address_z) /= 0) and (mux_controller_b = ALU_SOURCE_FROM_REGISTER) and (read_address_b = write_address_z)) then
       next_mux_controller_b <= ALU_SOURCE_FROM_ALU;
     elsif ((write_enable_y = '1') and (unsigned(write_address_y) /= 0) and (mux_controller_b = ALU_SOURCE_FROM_REGISTER) and (read_address_b = write_address_y)) then
       next_mux_controller_b <= ALU_SOURCE_FROM_WB_STAGE;
-    else
-      next_mux_controller_b <= mux_controller_b;
     end if;
 
     -- Can not branch if has not finished calculating the needed values.
-    if ((write_enable_z = '1') and (unsigned(write_address_z) /= 0) and (mux_controller_branch /= BRANCH_MUX_NOT_IN_A_BRANCH)) then
-      if ((read_address_a = write_address_z) or (read_address_b = write_address_z)) then
-        stall                      <= '1';
-        next_mux_controller_branch <= BRANCH_MUX_NOT_IN_A_BRANCH;
-      else
-        stall                      <= '0';
-        next_mux_controller_branch <= mux_controller_branch;
-      end if;
-    elsif ((write_enable_y = '1') and (unsigned(write_address_y) /= 0) and (mux_controller_branch /= BRANCH_MUX_NOT_IN_A_BRANCH)) then
-      if ((read_address_a = write_address_y) or (read_address_b = write_address_y)) then
-        stall                      <= '1';
-        next_mux_controller_branch <= BRANCH_MUX_NOT_IN_A_BRANCH;
-      else
-        stall                      <= '0';
-        next_mux_controller_branch <= mux_controller_branch;
-      end if;
-    else
-      next_mux_controller_branch <= mux_controller_branch;
+    stall                      <= '0';
+    next_mux_controller_branch <= mux_controller_branch;
+    if ((write_enable_z = '1') and
+        (unsigned(write_address_z) /= 0) and
+        (mux_controller_branch /= BRANCH_MUX_NOT_IN_A_BRANCH) and
+        ((read_address_a = write_address_z) or (read_address_b = write_address_z))) then
+      stall                      <= '1';
+      next_mux_controller_branch <= BRANCH_MUX_NOT_IN_A_BRANCH;
+    elsif ((write_enable_y = '1') and
+           (unsigned(write_address_y) /= 0) and
+           (mux_controller_branch /= BRANCH_MUX_NOT_IN_A_BRANCH) and
+           ((read_address_a = write_address_y) or (read_address_b = write_address_y))) then
+      stall                      <= '1';
+      next_mux_controller_branch <= BRANCH_MUX_NOT_IN_A_BRANCH;
     end if;
 
   end process combinationalprocess;
