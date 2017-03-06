@@ -1,4 +1,4 @@
-phelmino_path=`cd ../../; pwd`
+phelmino_path=`cd ../; pwd`
 phelmino_lib=lib_VHDL
 has_error=0
 
@@ -23,7 +23,7 @@ vlib ${phelmino_path}/libs/${phelmino_lib}
 
 vmap ${phelmino_lib} ${phelmino_path}/libs/${phelmino_lib}
 
-compile ../include/phelmino_definitions.vhd 
+compile phelmino_definitions.vhd 
 compile decoder.vhd 
 compile general_purpose_registers.vhd
 compile fifo.vhd
