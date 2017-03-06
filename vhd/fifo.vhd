@@ -28,13 +28,13 @@ architecture behavioural of fifo is
   constant depth : integer := 2**addr_width;
 
   type registerarray is array (0 to depth-1) of std_logic_vector(data_width-1 downto 0);
-  signal fifo : registerarray := (others => (others => '0'));
+  signal fifo : registerarray;
 
-  signal read_pointer  : std_logic_vector(addr_width-1 downto 0) := (others => '0');
-  signal write_pointer : std_logic_vector(addr_width-1 downto 0) := (others => '0');
+  signal read_pointer  : std_logic_vector(addr_width-1 downto 0);
+  signal write_pointer : std_logic_vector(addr_width-1 downto 0);
 
   -- difference between the number of writes and the number of reads
-  signal status_counter : std_logic_vector(addr_width downto 0) := (others => '0');
+  signal status_counter : std_logic_vector(addr_width downto 0);
 begin  -- architecture behavioural
 
   -- empty if number of reads equals number of writes
