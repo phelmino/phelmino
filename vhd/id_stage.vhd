@@ -174,14 +174,14 @@ begin  -- architecture behavioural
           branch_destination_if         <= next_branch_destination;
 
         when others =>
-          -- if ex_stage is not ready, creates a bubble.
-          current_mux_controller_a      <= ALU_SOURCE_ZERO;
-          current_mux_controller_b      <= ALU_SOURCE_ZERO;
-          current_mux_controller_branch <= BRANCH_MUX_NOT_IN_A_BRANCH;
-          alu_operator_ex               <= ALU_ADD;
-          is_requisition_ex             <= '0';
-          destination_register_ex       <= (others => '0');
-          branch_destination_if         <= (others => '0');
+          -- if ex_stage is not ready, maintains outputs.
+          current_mux_controller_a      <= current_mux_controller_a;
+          current_mux_controller_b      <= current_mux_controller_b;
+          current_mux_controller_branch <= current_mux_controller_branch;
+          alu_operator_ex               <= alu_operator;
+          is_requisition_ex             <= is_requisition;
+          destination_register_ex       <= destination_register;
+          branch_destination_if         <= next_branch_destination;
       end case;
     end if;
   end process sequentialprocess;
