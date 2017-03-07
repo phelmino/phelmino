@@ -69,23 +69,17 @@ begin  -- architecture behavioural
 
   -- purpose: emulate the memory
   proc_memory : process (clk, rst_n) is
+    variable counter : std_logic_vector(4 downto 0) := (others => '0');
   begin  -- process proc_memory
     if rst_n = '0' then                 -- asynchronous reset (active low)
       instr_grant    <= '0';
       instr_reqdata  <= (others => '0');
       instr_reqvalid <= '0';
     elsif clk'event and clk = '0' then  -- falling clock edge
-      if (instr_grant = '1') then
-        instr_grant    <= '0';
-        instr_reqvalid <= '1';
-        instr_reqdata  <= BEQ_R1_R2;
-      elsif (instr_reqvalid = '1') then
-        instr_reqvalid <= '0';
-        instr_reqdata  <= (others => '0');
-      else
-        instr_grant   <= instr_next_grant;
-        instr_reqdata <= (others => '0');
-      end if;
+      instr_grant    <= '1';
+      instr_reqvalid <= '1';
+      instr_reqdata  <= "0000000" & std_logic_vector(unsigned(counter) + 1) & counter & "000" & std_logic_vector(unsigned(counter) + 2) & "0110011";
+      counter        := std_logic_vector(unsigned(counter) + 1);
 
       if (data_grant = '1') then
         data_grant    <= '0';

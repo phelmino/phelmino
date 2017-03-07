@@ -52,7 +52,9 @@ architecture behavioural of if_stage is
   signal full                : std_logic;
   signal data_valid          : std_logic;
   signal fifo_rst            : std_logic;
-  signal current_instruction : std_logic_vector(WORD_WIDTH-1 downto 0);
+
+  signal last_instruction : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal last_pc          : std_logic_vector(WORD_WIDTH-1 downto 0);
 
   component fifo is
     generic (
@@ -97,7 +99,7 @@ begin  -- architecture behavioural
   -- type   : sequential
   -- inputs : clk, rst_n, next_state, next_program_counter, next_read_enable, next_write_enable
   -- outputs: current_state, current_program_counter, current_read_enable, current_write_enable
-  sequentialprocess : process (clk, rst_n) is
+  sequentialprocess : process (clk, ready, rst_n) is
   begin  -- process sequentialprocess
     if rst_n = '0' then                 -- asynchronous reset (active low)
       current_state           <= init;
@@ -110,6 +112,8 @@ begin  -- architecture behavioural
       instr_requisition <= '0';
       instruction_id    <= NOP;
       pc_id             <= (others => '0');
+      last_instruction  <= NOP;
+      last_pc           <= (others => '0');
     elsif clk'event and clk = '1' then  -- rising clock edge
       current_state           <= next_state;
       current_program_counter <= next_program_counter;
@@ -117,17 +121,27 @@ begin  -- architecture behavioural
       current_write_enable    <= next_write_enable and instr_reqvalid;
       current_instr_grant     <= instr_grant;
 
-      fifo_input <= std_logic_vector(unsigned(current_program_counter) - WORD_WIDTH_IN_BYTES) & instr_reqdata;
+      fifo_input <= std_logic_vector(unsigned(current_program_counter)) & instr_reqdata;
 
       instr_requisition <= next_instr_requisition;
       case data_valid is
         when '1' =>
-          pc_id          <= fifo_output(2*WORD_WIDTH-1 downto word_width);
-          instruction_id <= fifo_output(WORD_WIDTH-1 downto 0);
+          pc_id            <= fifo_output(2*WORD_WIDTH-1 downto word_width);
+          instruction_id   <= fifo_output(WORD_WIDTH-1 downto 0);
+          last_pc          <= fifo_output(2*WORD_WIDTH-1 downto word_width);
+          last_instruction <= fifo_output(WORD_WIDTH-1 downto 0);
 
         when others =>
-          instruction_id <= NOP;
-          pc_id          <= (others => '0');
+          -- data is not valid
+          -- but stage id is ready. so must send a bubble.
+          if (ready = '1') then
+            pc_id          <= (others => '0');
+            instruction_id <= NOP;
+          -- and stage id is not ready. must maintain the same output.
+          else
+            pc_id          <= last_pc;
+            instruction_id <= last_instruction;
+          end if;
       end case;
 
     end if;
