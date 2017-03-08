@@ -59,8 +59,12 @@ architecture behavioural of ex_stage is
   signal alu_carry_out   : std_logic;
 begin  -- architecture behavioural
 
-  ready_id        <= ready when (is_requisition = '0') else ready and data_grant;
-  write_data_z_id <= alu_result;
+  ready_id <= ready when (is_requisition = '0') else ready and data_grant;
+
+  -- gpr
+  write_enable_z_id  <= '1';
+  write_address_z_id <= destination_register;
+  write_data_z_id    <= alu_result;
 
   -- todo voir quels sont les signaux qui doivent etre relies a l'alu.
   -- registre, non registre, etc. ca c'est la cause de la boucle
@@ -83,10 +87,6 @@ begin  -- architecture behavioural
       alu_operator_i  <= ALU_ADD;
       alu_result_id   <= (others => '0');
 
-      -- gpr
-      write_enable_z_id  <= '0';
-      write_address_z_id <= (others => '0');
-
       -- memory
       data_requisition  <= '0';
       data_address      <= (others => '0');
@@ -101,10 +101,6 @@ begin  -- architecture behavioural
       alu_operand_b_i <= alu_operand_b;
       alu_operator_i  <= alu_operator;
       alu_result_id   <= alu_result;
-
-      -- gpr
-      write_enable_z_id  <= '1';
-      write_address_z_id <= destination_register;
 
       -- memory
       data_requisition  <= '0';

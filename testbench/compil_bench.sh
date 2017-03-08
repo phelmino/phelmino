@@ -9,6 +9,9 @@ function compile {
         if [ `cat tmp | grep "** Error" | wc -l` != 0 ]; then
             has_error=1
         fi
+        if [ `cat tmp | grep "** Warning:" | wc -l` != 0 ]; then
+            has_error=1
+        fi
         rm tmp
     fi
 }
