@@ -60,14 +60,17 @@ architecture behavioural of ex_stage is
 begin  -- architecture behavioural
 
   ready_id        <= ready when (is_requisition = '0') else ready and data_grant;
-  alu_result_id   <= alu_result;
   write_data_z_id <= alu_result;
+
+  -- todo voir quels sont les signaux qui doivent etre relies a l'alu.
+  -- registre, non registre, etc. ca c'est la cause de la boucle
+  -- combinationelle que l'on a trouve.
 
   alu_1 : entity lib_vhdl.alu
     port map (
-      alu_operand_a => alu_operand_a_i,
-      alu_operand_b => alu_operand_b_i,
-      alu_operator  => alu_operator_i,
+      alu_operand_a => alu_operand_a,
+      alu_operand_b => alu_operand_b,
+      alu_operator  => alu_operator,
       alu_result    => alu_result,
       alu_carry_out => alu_carry_out);
 
@@ -78,6 +81,7 @@ begin  -- architecture behavioural
       alu_operand_a_i <= (others => '0');
       alu_operand_b_i <= (others => '0');
       alu_operator_i  <= ALU_ADD;
+      alu_result_id   <= (others => '0');
 
       -- gpr
       write_enable_z_id  <= '0';
@@ -96,6 +100,7 @@ begin  -- architecture behavioural
       alu_operand_a_i <= alu_operand_a;
       alu_operand_b_i <= alu_operand_b;
       alu_operator_i  <= alu_operator;
+      alu_result_id   <= alu_result;
 
       -- gpr
       write_enable_z_id  <= '1';
