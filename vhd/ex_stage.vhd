@@ -52,11 +52,8 @@ architecture behavioural of ex_stage is
       alu_carry_out : out std_logic);
   end component alu;
 
-  signal alu_operand_a_i : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal alu_operand_b_i : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal alu_operator_i  : std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
-  signal alu_result      : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal alu_carry_out   : std_logic;
+  signal alu_result    : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal alu_carry_out : std_logic;
 begin  -- architecture behavioural
 
   ready_id <= ready when (is_requisition = '0') else ready and data_grant;
@@ -82,10 +79,7 @@ begin  -- architecture behavioural
   begin  -- process sequential
     if rst_n = '0' then                 -- asynchronous reset (active low)
       -- alu
-      alu_operand_a_i <= (others => '0');
-      alu_operand_b_i <= (others => '0');
-      alu_operator_i  <= ALU_ADD;
-      alu_result_id   <= (others => '0');
+      alu_result_id <= (others => '0');
 
       -- memory
       data_requisition  <= '0';
@@ -97,10 +91,7 @@ begin  -- architecture behavioural
       destination_register_wb <= (others => '0');
     elsif clk'event and clk = '1' then  -- rising clock edge
       -- alu
-      alu_operand_a_i <= alu_operand_a;
-      alu_operand_b_i <= alu_operand_b;
-      alu_operator_i  <= alu_operator;
-      alu_result_id   <= alu_result;
+      alu_result_id <= alu_result;
 
       -- memory
       data_requisition  <= '0';
