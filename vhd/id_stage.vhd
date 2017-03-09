@@ -21,6 +21,7 @@ entity id_stage is
     alu_operand_b_ex        : out std_logic_vector(WORD_WIDTH-1 downto 0);
     alu_operator_ex         : out std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
     destination_register_ex : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+    is_requisition_ex       : out std_logic;
 
     -- branch destination
     branch_active_if      : out std_logic;
@@ -35,6 +36,10 @@ entity id_stage is
     write_enable_y  : in std_logic;
     write_address_y : in std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
     write_data_y    : in std_logic_vector(WORD_WIDTH-1 downto 0);
+
+    -- forwarding signals
+    alu_result            : in std_logic_vector(WORD_WIDTH-1 downto 0);
+    data_read_from_memory : in std_logic_vector(WORD_WIDTH-1 downto 0);
 
     -- program counter (pc)
     pc : in std_logic_vector(WORD_WIDTH-1 downto 0);
@@ -73,28 +78,25 @@ architecture behavioural of id_stage is
     port (
       instruction           : in  std_logic_vector(WORD_WIDTH-1 downto 0);
       instruction_valid     : out std_logic;
+      is_requisition        : out std_logic;
       read_address_a        : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       read_address_b        : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       alu_operator          : out std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
       mux_controller_a      : out std_logic_vector(1 downto 0);
       mux_controller_b      : out std_logic_vector(1 downto 0);
       mux_controller_branch : out std_logic_vector(2 downto 0);
-      destination_register  : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0));
+      destination_register  : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+      immediate_extension   : out std_logic_vector(WORD_WIDTH-1 downto 0));
   end component decoder;
   signal instruction_valid       : std_logic;
+  signal is_requisition          : std_logic;
   signal alu_operator            : std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
   signal mux_controller_a        : std_logic_vector(1 downto 0);
   signal mux_controller_b        : std_logic_vector(1 downto 0);
   signal mux_controller_branch   : std_logic_vector(2 downto 0);
   signal destination_register    : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+  signal immediate_extension     : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal next_branch_destination : std_logic_vector(WORD_WIDTH-1 downto 0);
-
-  component sign_extender is
-    port (
-      instruction         : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      immediate_extension : out std_logic_vector(WORD_WIDTH-1 downto 0));
-  end component sign_extender;
-  signal immediate_extension : std_logic_vector(WORD_WIDTH-1 downto 0);
 
   -- comparison signals
   signal a_equal_b     : std_logic;
@@ -112,7 +114,6 @@ architecture behavioural of id_stage is
   signal stall : std_logic;
 begin  -- architecture behavioural
 
-  stall    <= '0';
   ready_if <= ready and not stall;
 
   -- calculates next branch destination
@@ -140,18 +141,15 @@ begin  -- architecture behavioural
     port map (
       instruction           => instruction,
       instruction_valid     => instruction_valid,
+      is_requisition        => is_requisition,
       read_address_a        => read_address_a,
       read_address_b        => read_address_b,
       alu_operator          => alu_operator,
       mux_controller_a      => mux_controller_a,
       mux_controller_b      => mux_controller_b,
       mux_controller_branch => mux_controller_branch,
-      destination_register  => destination_register);
-
-  signextender : entity lib_vhdl.sign_extender
-    port map (
-      instruction         => instruction,
-      immediate_extension => immediate_extension);
+      destination_register  => destination_register,
+      immediate_extension   => immediate_extension);
 
   sequentialprocess : process (clk, rst_n) is
   begin  -- process sequentialprocess
@@ -160,41 +158,51 @@ begin  -- architecture behavioural
       current_mux_controller_b      <= ALU_SOURCE_ZERO;
       current_mux_controller_branch <= BRANCH_MUX_NOT_IN_A_BRANCH;
       alu_operator_ex               <= ALU_ADD;
+      is_requisition_ex             <= '0';
       destination_register_ex       <= (others => '0');
       branch_destination_if         <= (others => '0');
     elsif clk'event and clk = '1' then  -- rising clock edge
       case ready is
         when '1' =>
           -- ex_stage is ready
-          current_mux_controller_a      <= mux_controller_a;
-          current_mux_controller_b      <= mux_controller_b;
-          current_mux_controller_branch <= mux_controller_branch;
+          current_mux_controller_a      <= next_mux_controller_a;
+          current_mux_controller_b      <= next_mux_controller_b;
+          current_mux_controller_branch <= next_mux_controller_branch;
           alu_operator_ex               <= alu_operator;
+          is_requisition_ex             <= is_requisition;
           destination_register_ex       <= destination_register;
           branch_destination_if         <= next_branch_destination;
 
         when others =>
-          -- if ex_stage is not ready, creates a bubble.
-          current_mux_controller_a      <= ALU_SOURCE_ZERO;
-          current_mux_controller_b      <= ALU_SOURCE_ZERO;
-          current_mux_controller_branch <= BRANCH_MUX_NOT_IN_A_BRANCH;
-          alu_operator_ex               <= ALU_ADD;
-          destination_register_ex       <= (others => '0');
-          branch_destination_if         <= (others => '0');
+          -- if ex_stage is not ready, maintains outputs.
+          current_mux_controller_a      <= current_mux_controller_a;
+          current_mux_controller_b      <= current_mux_controller_b;
+          current_mux_controller_branch <= current_mux_controller_branch;
+          alu_operator_ex               <= alu_operator;
+          is_requisition_ex             <= is_requisition;
+          destination_register_ex       <= destination_register;
+          branch_destination_if         <= next_branch_destination;
       end case;
     end if;
   end process sequentialprocess;
 
-  combinationalprocess : process (a_equal_b, a_less_than_b,
+  combinationalprocess : process (a_equal_b, a_less_than_b, alu_result,
                                   current_mux_controller_a,
                                   current_mux_controller_b,
-                                  current_mux_controller_branch, read_data_a,
-                                  read_data_b) is
+                                  current_mux_controller_branch,
+                                  data_read_from_memory, mux_controller_a,
+                                  mux_controller_b, mux_controller_branch,
+                                  read_address_a, read_address_b, read_data_a,
+                                  read_data_b, write_address_y,
+                                  write_address_z, write_enable_y,
+                                  write_enable_z) is
   begin  -- process combinationalprocess
     -- mux to define origin of signal alu_a_ex
     case current_mux_controller_a is
       when ALU_SOURCE_ZERO          => alu_operand_a_ex <= (others => '0');
       when ALU_SOURCE_FROM_REGISTER => alu_operand_a_ex <= read_data_a;
+      when ALU_SOURCE_FROM_ALU      => alu_operand_a_ex <= alu_result;
+      when ALU_SOURCE_FROM_WB_STAGE => alu_operand_a_ex <= data_read_from_memory;
       when others                   => alu_operand_a_ex <= (others => '0');
     end case;
 
@@ -202,6 +210,8 @@ begin  -- architecture behavioural
     case current_mux_controller_b is
       when ALU_SOURCE_ZERO          => alu_operand_b_ex <= (others => '0');
       when ALU_SOURCE_FROM_REGISTER => alu_operand_b_ex <= read_data_b;
+      when ALU_SOURCE_FROM_ALU      => alu_operand_b_ex <= alu_result;
+      when ALU_SOURCE_FROM_WB_STAGE => alu_operand_b_ex <= data_read_from_memory;
       when others                   => alu_operand_b_ex <= (others => '0');
     end case;
 
@@ -227,6 +237,41 @@ begin  -- architecture behavioural
     else
       a_less_than_b <= '0';
     end if;
+
+
+    -- Controlling mux A. May choose to forward.
+    next_mux_controller_a <= mux_controller_a;
+    if ((write_enable_z = '1') and (unsigned(write_address_z) /= 0) and (mux_controller_a = ALU_SOURCE_FROM_REGISTER) and (read_address_a = write_address_z)) then
+      next_mux_controller_a <= ALU_SOURCE_FROM_ALU;
+    elsif ((write_enable_y = '1') and (unsigned(write_address_y) /= 0) and (mux_controller_a = ALU_SOURCE_FROM_REGISTER) and (read_address_a = write_address_y)) then
+      next_mux_controller_a <= ALU_SOURCE_FROM_WB_STAGE;
+    end if;
+
+    -- Controlling mux B. May choose to forward.
+    next_mux_controller_b <= mux_controller_b;
+    if ((write_enable_z = '1') and (unsigned(write_address_z) /= 0) and (mux_controller_b = ALU_SOURCE_FROM_REGISTER) and (read_address_b = write_address_z)) then
+      next_mux_controller_b <= ALU_SOURCE_FROM_ALU;
+    elsif ((write_enable_y = '1') and (unsigned(write_address_y) /= 0) and (mux_controller_b = ALU_SOURCE_FROM_REGISTER) and (read_address_b = write_address_y)) then
+      next_mux_controller_b <= ALU_SOURCE_FROM_WB_STAGE;
+    end if;
+
+    -- Can not branch if has not finished calculating the needed values.
+    stall                      <= '0';
+    next_mux_controller_branch <= mux_controller_branch;
+    if ((write_enable_z = '1') and
+        (unsigned(write_address_z) /= 0) and
+        (mux_controller_branch /= BRANCH_MUX_NOT_IN_A_BRANCH) and
+        ((read_address_a = write_address_z) or (read_address_b = write_address_z))) then
+      stall                      <= '1';
+      next_mux_controller_branch <= BRANCH_MUX_NOT_IN_A_BRANCH;
+    elsif ((write_enable_y = '1') and
+           (unsigned(write_address_y) /= 0) and
+           (mux_controller_branch /= BRANCH_MUX_NOT_IN_A_BRANCH) and
+           ((read_address_a = write_address_y) or (read_address_b = write_address_y))) then
+      stall                      <= '1';
+      next_mux_controller_branch <= BRANCH_MUX_NOT_IN_A_BRANCH;
+    end if;
+
   end process combinationalprocess;
 
 end architecture behavioural;

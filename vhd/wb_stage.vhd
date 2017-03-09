@@ -11,6 +11,9 @@ entity wb_stage is
     clk   : in std_logic;
     rst_n : in std_logic;
 
+    -- forwarding
+    data_read_from_memory_id : out std_logic_vector(WORD_WIDTH-1 downto 0);
+
     -- destination register
     destination_register : in std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
 
@@ -34,8 +37,13 @@ architecture behavioural of wb_stage is
   signal next_data_y          : std_logic_vector(WORD_WIDTH-1 downto 0);
 begin  -- architecture behavioural
 
-  -- Ready if memory transaction finished.
-  ready_ex <= data_reqvalid;
+  -- ready if memory transaction finished.
+  -- todo reactivate this
+  -- ready_ex                 <= data_reqvalid;
+  ready_ex <= '1';
+
+  -- forwards data from memory directly to id stage
+  data_read_from_memory_id <= data_reqdata;
 
   sequential_process : process (clk, rst_n) is
   begin  -- process sequential_process
@@ -50,7 +58,8 @@ begin  -- architecture behavioural
     end if;
   end process sequential_process;
 
-  combinational_process : process (data_reqvalid, destination_register) is
+  combinational_process : process (data_reqdata, data_reqvalid,
+                                   destination_register) is
   begin  -- process combinational_process
     -- todo: this is nothing.
     next_write_enable_y  <= '0';
@@ -60,7 +69,7 @@ begin  -- architecture behavioural
     if (data_reqvalid = '1') then
       next_write_enable_y  <= '1';
       next_write_address_y <= destination_register;
-      next_data_y          <= (others => '0');
+      next_data_y          <= data_reqdata;
     end if;
   end process combinational_process;
 

@@ -9,6 +9,9 @@ function compile {
         if [ `cat tmp | grep "** Error" | wc -l` != 0 ]; then
             has_error=1
         fi
+        if [ `cat tmp | grep "** Warning:" | wc -l` != 0 ]; then
+            has_error=1
+        fi
         rm tmp
     fi
 }
@@ -28,7 +31,6 @@ compile decoder.vhd
 compile general_purpose_registers.vhd
 compile fifo.vhd
 compile alu.vhd 
-compile sign_extender.vhd 
 compile if_stage.vhd
 compile id_stage.vhd
 compile ex_stage.vhd

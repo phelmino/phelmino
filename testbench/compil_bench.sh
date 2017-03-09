@@ -9,6 +9,9 @@ function compile {
         if [ `cat tmp | grep "** Error" | wc -l` != 0 ]; then
             has_error=1
         fi
+        if [ `cat tmp | grep "** Warning:" | wc -l` != 0 ]; then
+            has_error=1
+        fi
         rm tmp
     fi
 }
@@ -24,7 +27,8 @@ vlib ${bench_path}/libs/${bench_lib}
 vmap ${bench_lib} ${bench_path}/libs/${bench_lib}
 
 compile test_general_purpose_registers.vhd
+compile test_fifo.vhd 
+compile test_alu.vhd 
 compile test_if_stage.vhd
 compile test_id_stage.vhd 
-compile test_fifo.vhd 
 compile test_phelmino_core.vhd 

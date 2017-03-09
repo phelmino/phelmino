@@ -36,7 +36,7 @@ entity general_purpose_registers is
 end entity general_purpose_registers;
 
 architecture behavioural of general_purpose_registers is
-  type register_array is array (0 to 2**n-1) of std_logic_vector(w-1 downto 0);
+  type   register_array is array (0 to 2**n-1) of std_logic_vector(w-1 downto 0);
   signal gpr : register_array;
 
   signal next_read_data_a : std_logic_vector(w-1 downto 0);
@@ -57,8 +57,10 @@ begin  -- architecture behavioural
 
       -- clears register bank
       for i in 0 to 2**n-1 loop
-        gpr(i) <= (others => '0');
+        gpr(i)    <= (others => '0');
+        gpr(i)(0) <= '1';
       end loop;
+      gpr(0) <= (others => '0');
     elsif clk'event and clk = '1' then  -- rising clock edge
       -- clears outputs
       read_data_a <= next_read_data_a;
