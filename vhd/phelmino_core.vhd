@@ -58,11 +58,12 @@ architecture behavioural of phelmino_core is
       instruction             : in  std_logic_vector(WORD_WIDTH-1 downto 0);
       alu_operand_a_ex        : out std_logic_vector(WORD_WIDTH-1 downto 0);
       alu_operand_b_ex        : out std_logic_vector(WORD_WIDTH-1 downto 0);
-      alu_operator_ex         : out std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
+      alu_operator_ex         : out alu_operation;
       destination_register_ex : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       is_requisition_ex       : out std_logic;
-      branch_active_if        : out std_logic;
+      is_branch_ex            : out std_logic;
       branch_destination_if   : out std_logic_vector(WORD_WIDTH-1 downto 0);
+      branch_active           : in  std_logic;
       write_enable_z          : in  std_logic;
       write_address_z         : in  std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       write_data_z            : in  std_logic_vector(WORD_WIDTH-1 downto 0);
@@ -78,11 +79,11 @@ architecture behavioural of phelmino_core is
   signal instruction             : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal alu_operand_a_ex        : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal alu_operand_b_ex        : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal alu_operator_ex         : std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
+  signal alu_operator_ex         : alu_operation;
+  signal is_branch_ex            : std_logic;
+  signal branch_destination_if   : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal destination_register_ex : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
   signal is_requisition_ex       : std_logic;
-  signal branch_active_if        : std_logic;
-  signal branch_destination_if   : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal pc                      : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal ready_if                : std_logic;
 
@@ -92,7 +93,10 @@ architecture behavioural of phelmino_core is
       rst_n                   : in  std_logic;
       alu_operand_a           : in  std_logic_vector(WORD_WIDTH-1 downto 0);
       alu_operand_b           : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      alu_operator            : in  std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
+      alu_operator            : in  alu_operation;
+      is_branch               : in  std_logic;
+      branch_active_if        : out std_logic;
+      branch_active_id        : out std_logic;
       alu_result_id           : out std_logic_vector(WORD_WIDTH-1 downto 0);
       write_enable_z_id       : out std_logic;
       write_address_z_id      : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
@@ -109,6 +113,8 @@ architecture behavioural of phelmino_core is
       ready                   : in  std_logic);
   end component ex_stage;
   signal alu_result_id           : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal branch_active_if        : std_logic;
+  signal branch_active_id        : std_logic;
   signal write_enable_z_id       : std_logic;
   signal write_address_z_id      : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
   signal write_data_z_id         : std_logic_vector(WORD_WIDTH-1 downto 0);
@@ -161,8 +167,9 @@ begin  -- architecture behavioural
       alu_operator_ex         => alu_operator_ex,
       destination_register_ex => destination_register_ex,
       is_requisition_ex       => is_requisition_ex,
-      branch_active_if        => branch_active_if,
+      is_branch_ex            => is_branch_ex,
       branch_destination_if   => branch_destination_if,
+      branch_active           => branch_active_id,
       write_enable_z          => write_enable_z_id,
       write_address_z         => write_address_z_id,
       write_data_z            => write_data_z_id,
@@ -182,6 +189,9 @@ begin  -- architecture behavioural
       alu_operand_a           => alu_operand_a_ex,
       alu_operand_b           => alu_operand_b_ex,
       alu_operator            => alu_operator_ex,
+      is_branch               => is_branch_ex,
+      branch_active_if        => branch_active_if,
+      branch_active_id        => branch_active_id,
       alu_result_id           => alu_result_id,
       write_enable_z_id       => write_enable_z_id,
       write_address_z_id      => write_address_z_id,

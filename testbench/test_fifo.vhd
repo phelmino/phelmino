@@ -15,6 +15,7 @@ architecture behavioural of test_fifo is
     port (
       clk          : in  std_logic;
       rst_n        : in  std_logic;
+      clear        : in  std_logic;
       write_enable : in  std_logic;
       data_input   : in  std_logic_vector(data_width-1 downto 0);
       read_enable  : in  std_logic;
@@ -26,6 +27,7 @@ architecture behavioural of test_fifo is
 
   signal clk          : std_logic                     := '0';
   signal rst_n        : std_logic                     := '0';
+  signal clear        : std_logic                     := '0';
   signal write_enable : std_logic                     := '0';
   signal data_input   : std_logic_vector(31 downto 0) := (others => '0');
   signal read_enable  : std_logic                     := '0';
@@ -44,6 +46,7 @@ begin  -- architecture behavioural
     port map (
       clk          => clk,
       rst_n        => rst_n,
+      clear        => clear,
       write_enable => write_enable,
       data_input   => data_input,
       read_enable  => read_enable,
