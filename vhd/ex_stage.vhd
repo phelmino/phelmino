@@ -14,7 +14,12 @@ entity ex_stage is
     -- alu signals
     alu_operand_a : in std_logic_vector(WORD_WIDTH-1 downto 0);
     alu_operand_b : in std_logic_vector(WORD_WIDTH-1 downto 0);
-    alu_operator  : in std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
+    alu_operator  : in alu_operation;
+
+    -- branches
+    is_branch        : in  std_logic;
+    branch_active_if : out std_logic;
+    branch_active_id : out std_logic;
 
     -- forwarding
     alu_result_id : out std_logic_vector(WORD_WIDTH-1 downto 0);
@@ -45,18 +50,21 @@ end entity ex_stage;
 architecture behavioural of ex_stage is
   component alu is
     port (
-      alu_operand_a : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      alu_operand_b : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      alu_operator  : in  std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
-      alu_result    : out std_logic_vector(WORD_WIDTH-1 downto 0);
-      alu_carry_out : out std_logic);
+      alu_operand_a : in std_logic_vector(WORD_WIDTH-1 downto 0);
+      alu_operand_b : in std_logic_vector(WORD_WIDTH-1 downto 0);
+      alu_operator  : in alu_operation);
   end component alu;
 
-  signal alu_result    : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal alu_carry_out : std_logic;
+  signal alu_result                   : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal branch_active                : std_logic;
+  signal next_branch_active           : std_logic;
+  signal next_destination_register_wb : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+  
 begin  -- architecture behavioural
 
-  ready_id <= ready when (is_requisition = '0') else ready and data_grant;
+  ready_id         <= ready when (is_requisition = '0') else ready and data_grant;
+  branch_active_if <= branch_active;
+  branch_active_id <= branch_active;
 
   -- gpr
   write_enable_z_id  <= '1';
@@ -72,8 +80,7 @@ begin  -- architecture behavioural
       alu_operand_a => alu_operand_a,
       alu_operand_b => alu_operand_b,
       alu_operator  => alu_operator,
-      alu_result    => alu_result,
-      alu_carry_out => alu_carry_out);
+      alu_result    => alu_result);
 
   sequential : process (clk, rst_n) is
   begin  -- process sequential
@@ -89,6 +96,10 @@ begin  -- architecture behavioural
 
       -- destination register
       destination_register_wb <= (others => '0');
+
+      -- branch
+      branch_active <= '0';
+
     elsif clk'event and clk = '1' then  -- rising clock edge
       -- alu
       alu_result_id <= alu_result;
@@ -100,8 +111,27 @@ begin  -- architecture behavioural
       data_write_data   <= (others => '0');
 
       -- destination register
-      destination_register_wb <= destination_register;
+      destination_register_wb <= next_destination_register_wb;
+
+      -- branch
+      branch_active <= next_branch_active;
     end if;
   end process sequential;
+
+  combinational : process (alu_result, branch_active, destination_register,
+                           is_branch)
+  begin  -- process combinational
+
+    case branch_active is
+      when '1' =>
+        next_destination_register_wb <= (others => '0');
+        next_branch_active           <= '0';
+
+      when others =>
+        next_destination_register_wb <= destination_register;
+        next_branch_active           <= is_branch and alu_result(0);
+    end case;
+
+  end process combinational;
 
 end architecture behavioural;

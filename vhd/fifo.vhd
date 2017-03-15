@@ -14,6 +14,7 @@ entity fifo is
   port (
     clk          : in  std_logic;
     rst_n        : in  std_logic;
+    clear        : in  std_logic;
     write_enable : in  std_logic;
     data_input   : in  std_logic_vector(data_width-1 downto 0);
     read_enable  : in  std_logic;
@@ -53,16 +54,23 @@ begin  -- architecture behavioural
       read_pointer <= (others => '0');
       data_valid   <= '0';
     elsif clk'event and clk = '1' then  -- rising clock edge
-      read_pointer <= read_pointer;
-      data_output  <= (others => '0');
-      data_valid   <= '0';
+      case clear is
+        when '1' => read_pointer <= (others => '0');
+                    data_output <= (others => '0');
+                    data_valid  <= '0';
 
-      -- reads, if not empty.
-      if ((read_enable = '1') and (unsigned(status_counter) /= 0)) then
-        data_output  <= fifo(to_integer(unsigned(read_pointer)));
-        read_pointer <= std_logic_vector(unsigned(read_pointer) + 1);
-        data_valid   <= '1';
-      end if;
+        when others =>
+          read_pointer <= read_pointer;
+          data_output  <= (others => '0');
+          data_valid   <= '0';
+
+          -- reads, if not empty.
+          if ((read_enable = '1') and (unsigned(status_counter) /= 0)) then
+            data_output  <= fifo(to_integer(unsigned(read_pointer)));
+            read_pointer <= std_logic_vector(unsigned(read_pointer) + 1);
+            data_valid   <= '1';
+          end if;
+      end case;
     end if;
   end process readproc;
 
@@ -77,13 +85,19 @@ begin  -- architecture behavioural
       fifo          <= (others => (others => '0'));
 
     elsif clk'event and clk = '1' then  -- rising clock edge
-      write_pointer <= write_pointer;
+      case clear is
+        when '1' =>
+          write_pointer <= (others => '0');
 
-      -- writes, if not full.
-      if ((write_enable = '1') and (unsigned(status_counter) /= depth)) then
-        fifo(to_integer(unsigned(write_pointer))) <= data_input;
-        write_pointer                             <= std_logic_vector(unsigned(write_pointer) + 1);
-      end if;
+        when others =>
+          write_pointer <= write_pointer;
+
+          -- writes, if not full.
+          if ((write_enable = '1') and (unsigned(status_counter) /= depth)) then
+            fifo(to_integer(unsigned(write_pointer))) <= data_input;
+            write_pointer                             <= std_logic_vector(unsigned(write_pointer) + 1);
+          end if;
+      end case;
     end if;
   end process writeproc;
 
@@ -96,28 +110,32 @@ begin  -- architecture behavioural
     if rst_n = '0' then                 -- asynchronous reset (active low)
       status_counter <= (others => '0');
     elsif clk'event and clk = '1' then  -- rising clock edge
-      -- default assignemnt.
-      status_counter <= status_counter;
+      case clear is
+        when '1' => status_counter <= (others => '0');
+        when others =>
+          -- default assignemnt.
+          status_counter <= status_counter;
 
-      -- only reading, and it is not empty.
-      if ((read_enable = '1') and (write_enable = '0') and (unsigned(status_counter) /= 0)) then
-        status_counter <= std_logic_vector(unsigned(status_counter) - 1);
-      end if;
+          -- only reading, and it is not empty.
+          if ((read_enable = '1') and (write_enable = '0') and (unsigned(status_counter) /= 0)) then
+            status_counter <= std_logic_vector(unsigned(status_counter) - 1);
+          end if;
 
-      -- trying to read and write when full: only reads.
-      if ((read_enable = '1') and (write_enable = '1') and (unsigned(status_counter) = depth)) then
-        status_counter <= std_logic_vector(unsigned(status_counter) - 1);
-      end if;
+          -- trying to read and write when full: only reads.
+          if ((read_enable = '1') and (write_enable = '1') and (unsigned(status_counter) = depth)) then
+            status_counter <= std_logic_vector(unsigned(status_counter) - 1);
+          end if;
 
-      -- only writing, and it is not full.
-      if ((read_enable = '0') and (write_enable = '1') and (unsigned(status_counter) /= depth)) then
-        status_counter <= std_logic_vector(unsigned(status_counter) + 1);
-      end if;
+          -- only writing, and it is not full.
+          if ((read_enable = '0') and (write_enable = '1') and (unsigned(status_counter) /= depth)) then
+            status_counter <= std_logic_vector(unsigned(status_counter) + 1);
+          end if;
 
-      -- trying to read and write when empty: only writes.
-      if ((read_enable = '1') and (write_enable = '1') and (unsigned(status_counter) = 0)) then
-        status_counter <= std_logic_vector(unsigned(status_counter) + 1);
-      end if;
+          -- trying to read and write when empty: only writes.
+          if ((read_enable = '1') and (write_enable = '1') and (unsigned(status_counter) = 0)) then
+            status_counter <= std_logic_vector(unsigned(status_counter) + 1);
+          end if;
+      end case;
     end if;
   end process statuscounterproc;
 
