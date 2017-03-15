@@ -8,17 +8,17 @@ use lib_vhdl.phelmino_definitions.all;
 entity decoder is
 
   port (
-    instruction           : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-    instruction_valid     : out std_logic;
-    read_address_a        : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-    read_address_b        : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-    alu_operator          : out std_logic_vector(ALU_OPERATOR_WIDTH-1 downto 0);
-    mux_controller_a      : out std_logic_vector(1 downto 0);
-    mux_controller_b      : out std_logic_vector(1 downto 0);
-    mux_controller_branch : out std_logic_vector(2 downto 0);
-    is_requisition        : out std_logic;
-    destination_register  : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-    immediate_extension   : out std_logic_vector(WORD_WIDTH-1 downto 0));
+    instruction          : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+    instruction_valid    : out std_logic;
+    read_address_a       : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+    read_address_b       : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+    alu_operator         : out alu_operation;
+    mux_controller_a     : out alu_source;
+    mux_controller_b     : out alu_source;
+    is_requisition       : out std_logic;
+    is_branch            : out std_logic;
+    destination_register : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+    immediate_extension  : out std_logic_vector(WORD_WIDTH-1 downto 0));
 
 end entity decoder;
 
@@ -38,15 +38,15 @@ begin  -- architecture behavioural
   begin  -- process decoder_process 
     case opcode is
       when OPCODE_ALU_REGISTER_REGISTER =>
-        read_address_a        <= rsource1;
-        read_address_b        <= rsource2;
-        mux_controller_a      <= ALU_SOURCE_FROM_REGISTER;
-        mux_controller_b      <= ALU_SOURCE_FROM_REGISTER;
-        mux_controller_branch <= BRANCH_MUX_NOT_IN_A_BRANCH;
-        instruction_valid     <= '1';
-        is_requisition        <= '0';
-        destination_register  <= rdestination;
-        alu_operator          <= ALU_ADD;
+        read_address_a       <= rsource1;
+        read_address_b       <= rsource2;
+        mux_controller_a     <= ALU_SOURCE_FROM_REGISTER;
+        mux_controller_b     <= ALU_SOURCE_FROM_REGISTER;
+        instruction_valid    <= '1';
+        is_requisition       <= '0';
+        is_branch            <= '0';
+        destination_register <= rdestination;
+        alu_operator         <= ALU_ADD;
 
         case func3 is
           when "000" =>
@@ -88,27 +88,26 @@ begin  -- architecture behavioural
         mux_controller_b     <= ALU_SOURCE_FROM_REGISTER;
         instruction_valid    <= '1';
         is_requisition       <= '0';
+        is_branch            <= '1';
 
         case func3 is
-          when "000" => mux_controller_branch <= BRANCH_MUX_EQUAL;
-          when "001" => mux_controller_branch <= BRANCH_MUX_UNEQUAL;
-          when "100" => mux_controller_branch <= BRANCH_MUX_LESS_THAN;
-          when "101" => mux_controller_branch <= BRANCH_MUX_GREATER_OR_EQUAL;
-          when others =>
-            mux_controller_branch <= BRANCH_MUX_NOT_IN_A_BRANCH;
-            instruction_valid     <= '0';
+          when "000"  => alu_operator      <= ALU_EQ;
+          when "001"  => alu_operator      <= ALU_NE;
+          when "110"  => alu_operator      <= ALU_LTU;
+          when "111"  => alu_operator      <= ALU_GEU;
+          when others => instruction_valid <= '0';
         end case;
 
       when others =>
-        instruction_valid     <= '0';
-        is_requisition        <= '0';
-        mux_controller_a      <= ALU_SOURCE_ZERO;
-        mux_controller_b      <= ALU_SOURCE_ZERO;
-        mux_controller_branch <= BRANCH_MUX_NOT_IN_A_BRANCH;
-        read_address_a        <= (others => '0');
-        read_address_b        <= (others => '0');
-        alu_operator          <= ALU_ADD;
-        destination_register  <= (others => '0');
+        instruction_valid    <= '0';
+        is_requisition       <= '0';
+        is_branch            <= '0';
+        mux_controller_a     <= ALU_SOURCE_ZERO;
+        mux_controller_b     <= ALU_SOURCE_ZERO;
+        read_address_a       <= (others => '0');
+        read_address_b       <= (others => '0');
+        alu_operator         <= ALU_ADD;
+        destination_register <= (others => '0');
     end case;
   end process decoder_process;
 
@@ -126,7 +125,7 @@ begin  -- architecture behavioural
     immediate_type_sb := instruction(31) & instruction(7) & instruction(30 downto 25) & instruction(11 downto 8) & '0';
 
     case opcode is
-      when opcode_alu_immediate_register =>
+      when OPCODE_ALU_IMMEDIATE_REGISTER =>
         if sign_bit = '0' then
           immediate_extension <= filled_zero & immediate_type_i;
         else

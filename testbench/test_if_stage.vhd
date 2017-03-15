@@ -67,8 +67,8 @@ begin  -- architecture behavioural
     variable counter : unsigned(WORD_WIDTH-1 downto 0) := (others => '0');
   begin  -- process proc_memory
     if rst_n = '0' then                 -- asynchronous reset (active low)
-      instr_grant   <= '0';
-      instr_reqdata <= (others => '0');
+      instr_grant    <= '0';
+      instr_reqdata  <= NOP;
       instr_reqvalid <= '0';
     elsif clk'event and clk = '1' then  -- rising clock edge
       branch_active      <= '0';
@@ -87,10 +87,10 @@ begin  -- architecture behavioural
         instr_reqdata  <= instr_address;
       elsif (instr_reqvalid = '1') then
         instr_reqvalid <= '0';
-        instr_reqdata  <= (others => '0');
+        instr_reqdata  <= NOP;
       else
         instr_grant   <= next_grant;
-        instr_reqdata <= (others => '0');
+        instr_reqdata <= NOP;
       end if;
     end if;
   end process proc_memory;

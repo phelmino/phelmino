@@ -33,28 +33,30 @@ entity if_stage is
 end entity if_stage;
 
 architecture behavioural of if_stage is
-  type if_state is (init, requisition);
+  signal current_pc                 : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal current_waiting_pc         : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal current_branch_destination : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal write_enable               : std_logic;
+  signal read_enable                : std_logic;
 
-  signal current_state           : if_state;
-  signal next_state              : if_state;
-  signal current_program_counter : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal next_program_counter    : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal current_write_enable    : std_logic;
-  signal next_write_enable       : std_logic;
-  signal current_read_enable     : std_logic;
-  signal next_read_enable        : std_logic;
-  signal next_instr_requisition  : std_logic;
+  signal next_pc                : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal next_waiting_pc        : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal next_instr_requisition : std_logic;
 
-  -- memorizes the signals that come from memory. 
-  signal current_instr_grant : std_logic;
+  signal current_waiting_for_memory : std_logic;
+  signal next_waiting_for_memory    : std_logic;
 
-  signal empty               : std_logic;
-  signal full                : std_logic;
-  signal data_valid          : std_logic;
-  signal fifo_rst            : std_logic;
+  signal empty : std_logic;
+  signal full  : std_logic;
 
-  signal last_instruction : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal last_pc          : std_logic_vector(WORD_WIDTH-1 downto 0);
+  type origin_instruction is (from_fifo, from_last_instruction, bubble);
+  signal current_origin_instruction : origin_instruction;
+  signal next_origin_instruction    : origin_instruction;
+
+  signal last_instruction      : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal last_pc               : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal next_last_instruction : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal next_last_pc          : std_logic_vector(WORD_WIDTH-1 downto 0);
 
   component fifo is
     generic (
@@ -63,11 +65,11 @@ architecture behavioural of if_stage is
     port (
       clk          : in  std_logic;
       rst_n        : in  std_logic;
+      clear        : in  std_logic;
       write_enable : in  std_logic;
       data_input   : in  std_logic_vector(data_width-1 downto 0);
       read_enable  : in  std_logic;
       data_output  : out std_logic_vector(data_width-1 downto 0);
-      data_valid   : out std_logic;
       empty        : out std_logic;
       full         : out std_logic);
   end component fifo;
@@ -77,7 +79,8 @@ architecture behavioural of if_stage is
   signal fifo_output : std_logic_vector(2*WORD_WIDTH-1 downto 0);
 
 begin  -- architecture behavioural
-  fifo_rst <= rst_n and not branch_active;
+  instr_address <= current_pc;
+  fifo_input    <= current_waiting_pc & instr_reqdata;
 
   -- instance "prefetch_buffer"
   prefetch_buffer : entity lib_vhdl.fifo
@@ -86,116 +89,115 @@ begin  -- architecture behavioural
       data_width => 2 * WORD_WIDTH)
     port map (
       clk          => clk,
-      rst_n        => fifo_rst,
-      write_enable => current_write_enable,
+      rst_n        => rst_n,
+      clear        => branch_active,
+      write_enable => write_enable,
       data_input   => fifo_input,
-      read_enable  => current_read_enable,
+      read_enable  => read_enable,
       data_output  => fifo_output,
-      data_valid   => data_valid,
       empty        => empty,
       full         => full);
 
-  -- purpose: updates current state and current program counter
-  -- type   : sequential
-  -- inputs : clk, rst_n, next_state, next_program_counter, next_read_enable, next_write_enable
-  -- outputs: current_state, current_program_counter, current_read_enable, current_write_enable
-  sequentialprocess : process (clk, ready, rst_n) is
-  begin  -- process sequentialprocess
+  sequential : process (clk, rst_n) is
+  begin  -- process sequential
     if rst_n = '0' then                 -- asynchronous reset (active low)
-      current_state           <= init;
-      current_program_counter <= (others => '0');
-      current_read_enable     <= '0';
-      current_write_enable    <= '0';
-      current_instr_grant     <= '0';
-      fifo_input              <= (others => '0');
+      current_pc                 <= (others => '0');
+      current_waiting_pc         <= (others => '0');
+      current_waiting_for_memory <= '0';
+      current_origin_instruction <= bubble;
+      current_branch_destination <= (others => '0');
+      instr_requisition          <= '0';
 
-      instr_requisition <= '0';
-      instruction_id    <= NOP;
-      pc_id             <= (others => '0');
-      last_instruction  <= NOP;
-      last_pc           <= (others => '0');
+      last_pc          <= (others => '0');
+      last_instruction <= NOP;
+
     elsif clk'event and clk = '1' then  -- rising clock edge
-      current_state           <= next_state;
-      current_program_counter <= next_program_counter;
-      current_read_enable     <= next_read_enable;
-      current_write_enable    <= next_write_enable and instr_reqvalid;
-      current_instr_grant     <= instr_grant;
+      current_pc                 <= next_pc;
+      current_waiting_pc         <= next_waiting_pc;
+      current_waiting_for_memory <= next_waiting_for_memory;
+      current_origin_instruction <= next_origin_instruction;
+      current_branch_destination <= branch_destination;
+      instr_requisition          <= next_instr_requisition;
 
-      fifo_input <= std_logic_vector(unsigned(current_program_counter)) & instr_reqdata;
-
-      instr_requisition <= next_instr_requisition;
-      case data_valid is
-        when '1' =>
-          pc_id            <= fifo_output(2*WORD_WIDTH-1 downto word_width);
-          instruction_id   <= fifo_output(WORD_WIDTH-1 downto 0);
-          last_pc          <= fifo_output(2*WORD_WIDTH-1 downto word_width);
-          last_instruction <= fifo_output(WORD_WIDTH-1 downto 0);
-
-        when others =>
-          -- data is not valid
-          -- but stage id is ready. so must send a bubble.
-          if (ready = '1') then
-            pc_id          <= (others => '0');
-            instruction_id <= NOP;
-          -- and stage id is not ready. must maintain the same output.
-          else
-            pc_id          <= last_pc;
-            instruction_id <= last_instruction;
-          end if;
-      end case;
-
+      last_instruction <= next_last_instruction;
+      last_pc          <= next_last_pc;
     end if;
-  end process sequentialprocess;
+  end process sequential;
 
-  -- purpose: calculates next state and next program counter
-  -- type   : combinational
-  -- inputs : current_state, current_program_counter, full, instr_grant_input
-  -- outputs: next_state, next_program_counter, next_read_enable, next_write_enable
-  combinationalprocess : process (branch_active, branch_destination,
-                                  current_instr_grant, current_program_counter,
-                                  current_state, full, ready) is
-  begin  -- process combinationalprocess
-    case current_state is
-      when init =>
-        next_instr_requisition <= '0';
-        instr_address          <= (others => '0');
-        next_program_counter   <= (others => '0');
-        next_read_enable       <= '0';
-        next_write_enable      <= '0';
-        next_state             <= requisition;
+  combinational : process (branch_active, current_branch_destination,
+                           current_origin_instruction, current_pc,
+                           current_waiting_for_memory, current_waiting_pc,
+                           empty, fifo_output, full,
+                           instr_grant, instr_reqvalid, last_instruction,
+                           last_pc, ready) is
+  begin  -- process combinational
+    -- output to stage id
+    case current_origin_instruction is
+      when bubble =>
+        pc_id                 <= (others => '0');
+        instruction_id        <= NOP;
+        next_last_instruction <= last_instruction;
+        next_last_pc          <= last_pc;
 
-      when requisition =>
-        instr_address     <= current_program_counter;
-        next_write_enable <= '0';
-        next_state        <= requisition;
+      when from_last_instruction =>
+        pc_id                 <= last_pc;
+        instruction_id        <= last_instruction;
+        next_last_instruction <= last_instruction;
+        next_last_pc          <= last_pc;
 
-        -- can not read fifo if id_stage is not ready.
-        case ready is
-          when '1'    => next_read_enable <= '1';
-          when others => next_read_enable <= '0';
-        end case;
-
-        if (branch_active = '1') then
-          next_program_counter <= branch_destination;
-        elsif (full = '0' and current_instr_grant = '1') then
-          next_program_counter <= std_logic_vector(unsigned(current_program_counter) + WORD_WIDTH_IN_BYTES);
-        else
-          next_program_counter <= current_program_counter;
-        end if;
-
-        if (full = '1' or current_instr_grant = '0' or branch_active = '1') then
-          next_write_enable <= '0';
-        else
-          next_write_enable <= '1';
-        end if;
-
-        if (full = '1') then
-          next_instr_requisition <= '0';
-        else
-          next_instr_requisition <= '1';
-        end if;
-
+      when from_fifo =>
+        pc_id                 <= fifo_output(2*WORD_WIDTH-1 downto WORD_WIDTH);
+        instruction_id        <= fifo_output(WORD_WIDTH-1 downto 0);
+        next_last_pc          <= fifo_output(2*WORD_WIDTH-1 downto WORD_WIDTH);
+        next_last_instruction <= fifo_output(WORD_WIDTH-1 downto 0);
     end case;
-  end process combinationalprocess;
 
+    case branch_active is
+      when '1' =>
+        next_pc                 <= current_branch_destination;
+        next_waiting_pc         <= current_branch_destination;
+        next_origin_instruction <= bubble;
+        next_instr_requisition  <= '1';
+        read_enable             <= '0';
+        write_enable            <= '0';
+        next_waiting_for_memory <= '0';
+      when others =>
+        next_instr_requisition <= '1';
+
+        -- received a grant, starts new requisition after a cycle
+        if (full = '0' and instr_grant = '1') then
+          next_pc                 <= std_logic_vector(unsigned(current_pc) + WORD_WIDTH_IN_BYTES);
+          next_waiting_for_memory <= '1';
+        -- still no grant, maintains request
+        else
+          next_pc                 <= current_pc;
+          next_waiting_for_memory <= current_waiting_for_memory;
+        end if;
+
+        -- received valid, can store new instruction in fifo
+        if (full = '0' and instr_reqvalid = '1' and current_waiting_for_memory = '1') then
+          next_waiting_pc <= current_pc;
+          write_enable    <= '1';
+        -- still waiting for a valid, maintains counter.
+        else
+          next_waiting_pc <= current_waiting_pc;
+          write_enable    <= '0';
+        end if;
+
+        -- stage id is ready and fifo is not empty. 
+        if (ready = '1' and empty = '0') then
+          read_enable             <= '1';
+          next_origin_instruction <= from_fifo;
+        -- stage id is ready, but fifo is empty. sends a bubble.
+        elsif (ready = '1' and empty = '1') then
+          read_enable             <= '0';
+          next_origin_instruction <= bubble;
+        -- stage id is not ready. maintains same instruction.
+        else
+          read_enable             <= '0';
+          next_origin_instruction <= from_last_instruction;
+        end if;
+    end case;
+
+  end process combinational;
 end architecture behavioural;

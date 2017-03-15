@@ -2,15 +2,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 package phelmino_definitions is
-  -- ALU
-  constant ALU_OPERATOR_WIDTH : integer := 6;
-
   -- ALU Operations
-  constant ALU_ADD : std_logic_vector             := "000000";
-  constant ALU_SUB : std_logic_vector(5 downto 0) := "000010";
-  constant ALU_XOR : std_logic_vector(5 downto 0) := "100000";
-  constant ALU_OR  : std_logic_vector(5 downto 0) := "110000";
-  constant ALU_AND : std_logic_vector(5 downto 0) := "111000";
+  type alu_operation is (ALU_ADD, ALU_SUB, ALU_XOR, ALU_OR, ALU_AND, ALU_LTU, ALU_GEU, ALU_EQ, ALU_NE);
 
   -- GPR
   constant WORD_WIDTH          : natural := 32;
@@ -43,17 +36,7 @@ package phelmino_definitions is
   constant IMMEDIATE_SB_LENGTH : natural := 13;
 
   -- Controls of MUX generating ALU Operands
-  constant ALU_SOURCE_ZERO          : std_logic_vector(1 downto 0) := "00";
-  constant ALU_SOURCE_FROM_REGISTER : std_logic_vector(1 downto 0) := "01";
-  constant ALU_SOURCE_FROM_ALU      : std_logic_vector(1 downto 0) := "10";
-  constant ALU_SOURCE_FROM_WB_STAGE : std_logic_vector(1 downto 0) := "11";
-
-  -- Controls of MUX deciding whether there is or not a branch
-  constant BRANCH_MUX_NOT_IN_A_BRANCH  : std_logic_vector(2 downto 0) := "111";
-  constant BRANCH_MUX_EQUAL            : std_logic_vector(2 downto 0) := "000";
-  constant BRANCH_MUX_UNEQUAL          : std_logic_vector(2 downto 0) := "001";
-  constant BRANCH_MUX_LESS_THAN        : std_logic_vector(2 downto 0) := "100";
-  constant BRANCH_MUX_GREATER_OR_EQUAL : std_logic_vector(2 downto 0) := "101";
+  type alu_source is (ALU_SOURCE_ZERO, ALU_SOURCE_FROM_REGISTER, ALU_SOURCE_FROM_ALU, ALU_SOURCE_FROM_WB_STAGE);
 
   -- OPCODEs from ISA
   constant OPCODE_ALU_REGISTER_REGISTER  : std_logic_vector(OPCODE_LENGTH-1 downto 0) := "0110011";
@@ -63,7 +46,7 @@ package phelmino_definitions is
   -- Some instructions
   constant NOP            : std_logic_vector(WORD_WIDTH-1 downto 0) := "0000000" & "00000" & "00000" & "000" & "00000" & "0110011";
   constant ADD_R1_PLUS_R2 : std_logic_vector(WORD_WIDTH-1 downto 0) := "0000000" & "00010" & "00001" & "000" & "11111" & "0110011";
-  constant BEQ_R1_R2      : std_logic_vector(WORD_WIDTH-1 downto 0) := "1111111" & "00010" & "00001" & "000" & "11111" & "1100011";
-  constant BNE_R1_R2      : std_logic_vector(WORD_WIDTH-1 downto 0) := "1111111" & "00010" & "00001" & "001" & "11111" & "1100011";
+  constant BEQ_R1_R2      : std_logic_vector(WORD_WIDTH-1 downto 0) := "0000000" & "00010" & "00001" & "000" & "00000" & "1100011";
+  constant BNE_R1_R2      : std_logic_vector(WORD_WIDTH-1 downto 0) := "0000000" & "00010" & "00001" & "001" & "00000" & "1100011";
 
 end package phelmino_definitions;
