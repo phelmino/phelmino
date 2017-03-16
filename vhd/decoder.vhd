@@ -54,7 +54,7 @@ begin  -- architecture behavioural
               when "0000000" => alu_operator      <= ALU_ADD;
               when "0100000" => alu_operator      <= ALU_SUB;
               when others    => instruction_valid <= '0';
-            end case;
+            end case; 
 
           when "100" =>
             case func7 is
@@ -98,6 +98,32 @@ begin  -- architecture behavioural
           when others => instruction_valid <= '0';
         end case;
 
+     -- Adding LOAD WORD instruction case 
+     when OPCODE_LOAD =>
+        read_address_a       <= rsource1;
+        read_address_b       <= (others => '0');
+        mux_controller_a     <= ALU_SOURCE_FROM_REGISTER;
+        mux_controller_b     <= ALU_SOURCE_FROM_IMM;
+        instruction_valid    <= '1';
+        is_requisition       <= '1';
+        is_branch            <= '0';
+        destination_register <= rdestination;
+        alu_operator         <= ALU_ADD;
+
+	
+     -- Adding STORE WORD instruction  case 
+     when OPCODE_STORE =>
+        read_address_a       <= rsource1;
+        read_address_b       <= (others => '0');
+        mux_controller_a     <= ALU_SOURCE_FROM_REGISTER;
+        mux_controller_b     <= ALU_SOURCE_FROM_IMM;
+        instruction_valid    <= '1';
+        is_requisition       <= '1';
+        is_branch            <= '0';
+        destination_register <= rdestination;
+        alu_operator         <= ALU_ADD;
+	
+	
       when others =>
         instruction_valid    <= '0';
         is_requisition       <= '0';
@@ -117,13 +143,15 @@ begin  -- architecture behavioural
     alias sign_bit is instruction(WORD_WIDTH-1);
     alias opcode is instruction(OPCODE_BEGIN downto OPCODE_END);
     alias immediate_type_i is instruction(IMMEDIATE_I_BEGIN downto IMMEDIATE_I_END);
+    variable immediate_type_s  : std_logic_vector(IMMEDIATE_S_LENGTH-1 downto 0);
     variable immediate_type_sb : std_logic_vector(IMMEDIATE_SB_LENGTH-1 downto 0);
 
     constant filled_one  : std_logic_vector(WORD_WIDTH-13 downto 0) := (others => '1');
     constant filled_zero : std_logic_vector(WORD_WIDTH-13 downto 0) := (others => '0');
   begin  -- process signextension
     immediate_type_sb := instruction(31) & instruction(7) & instruction(30 downto 25) & instruction(11 downto 8) & '0';
-
+    immediate_type_s := instruction(31 downto 25) & instruction(11 downto 7);
+    
     case opcode is
       when OPCODE_ALU_IMMEDIATE_REGISTER =>
         if sign_bit = '0' then
@@ -137,6 +165,20 @@ begin  -- architecture behavioural
           immediate_extension <= filled_zero(WORD_WIDTH-13 downto 1) & immediate_type_sb;
         else
           immediate_extension <= filled_one(WORD_WIDTH-13 downto 1) & immediate_type_sb;
+        end if;
+
+      when OPCODE_LOAD =>
+        if sign_bit = '0' then
+          immediate_extension <= filled_zero & immediate_type_i;
+        else
+          immediate_extension <= filled_one & immediate_type_i;
+        end if;
+     
+      when OPCODE_STORE =>
+        if sign_bit = '0' then
+          immediate_extension <= filled_zero & immediate_type_s;
+        else
+          immediate_extension <= filled_one & immediate_type_s;
         end if;
 
       when others => immediate_extension <= (others => '0');

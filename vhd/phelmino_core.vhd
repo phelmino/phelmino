@@ -24,9 +24,9 @@ entity phelmino_core is
     data_address      : out std_logic_vector(WORD_WIDTH-1 downto 0);
     data_write_enable : out std_logic;
     data_write_data   : out std_logic_vector(WORD_WIDTH-1 downto 0);
-    data_reqdata      : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+    data_read_data      : in  std_logic_vector(WORD_WIDTH-1 downto 0);
     data_grant        : in  std_logic;
-    data_reqvalid     : in  std_logic);
+    data_read_data_valid     : in  std_logic);
 
 end entity phelmino_core;
 
@@ -127,8 +127,8 @@ architecture behavioural of phelmino_core is
       rst_n                    : in  std_logic;
       data_read_from_memory_id : out std_logic_vector(WORD_WIDTH-1 downto 0);
       destination_register     : in  std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-      data_reqdata             : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      data_reqvalid            : in  std_logic;
+      data_read_data             : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      data_read_data_valid            : in  std_logic;
       write_enable_y_id        : out std_logic;
       write_address_y_id       : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       write_data_y_id          : out std_logic_vector(WORD_WIDTH-1 downto 0);
@@ -213,8 +213,8 @@ begin  -- architecture behavioural
       rst_n                    => rst_n,
       data_read_from_memory_id => data_read_from_memory_id,
       destination_register     => destination_register_wb,
-      data_reqdata             => data_reqdata,
-      data_reqvalid            => data_reqvalid,
+      data_read_data           => data_read_data,
+      data_read_data_valid     => data_read_data_valid,
       write_enable_y_id        => write_enable_y_id,
       write_address_y_id       => write_address_y_id,
       write_data_y_id          => write_data_y_id,

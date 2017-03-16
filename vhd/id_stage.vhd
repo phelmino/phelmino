@@ -212,6 +212,7 @@ begin  -- architecture behavioural
       when ALU_SOURCE_FROM_REGISTER => alu_operand_b <= read_data_b;
       when ALU_SOURCE_FROM_ALU      => alu_operand_b <= alu_result;
       when ALU_SOURCE_FROM_WB_STAGE => alu_operand_b <= data_read_from_memory;
+      when ALU_SOURCE_FROM_IMM      => alu_operand_b <= immediate_extension;
       when others                   => alu_operand_b <= (others => '0');
     end case;
 
