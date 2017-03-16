@@ -97,6 +97,7 @@ begin  -- architecture behavioural
       alu_result_id <= (others => '0');
 
       -- memory
+      is_requisition_wb <= '0';
       data_requisition  <= '0';
       data_address      <= (others => '0');
       data_write_enable <= '0';
