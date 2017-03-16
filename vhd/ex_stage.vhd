@@ -31,6 +31,9 @@ entity ex_stage is
 
     -- data memory interface
     is_requisition    : in  std_logic;
+    is_requisition_wb : out std_logic;
+    is_write          : in  std_logic;
+    is_write_data     : in  std_logic_vector(WORD_WIDTH-1 downto 0);
     data_requisition  : out std_logic;
     data_address      : out std_logic_vector(WORD_WIDTH-1 downto 0);
     data_write_enable : out std_logic;
@@ -63,6 +66,7 @@ architecture behavioural of ex_stage is
   signal next_data_requisition  : std_logic;
   signal next_data_write_enable : std_logic;
   signal next_data_write_data   : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal next_is_requisition_wb : std_logic;
   
 begin  -- architecture behavioural
 
@@ -109,6 +113,7 @@ begin  -- architecture behavioural
       alu_result_id <= alu_result;
 
       -- memory
+      is_requisition_wb <= next_is_requisition_wb;
       data_requisition  <= next_data_requisition;
       data_address      <= alu_result;
       data_write_enable <= next_data_write_enable;
@@ -123,8 +128,9 @@ begin  -- architecture behavioural
     end if;
   end process sequential;
 
-  combinational : process (alu_result, branch_active, destination_register,
-                           is_branch, data_grant, is_requisition)
+  combinational : process (alu_result, branch_active, data_grant,
+			   destination_register, is_branch, is_requisition,
+			   is_write, is_write_data)
   begin  -- process combinational
 
     case branch_active is
@@ -137,14 +143,16 @@ begin  -- architecture behavioural
         next_branch_active           <= is_branch and alu_result(0);
     end case;
 
+    next_is_requisition_wb <= is_requisition;
+    
     if data_grant = '1' then
       next_data_requisition <= '0';
       next_data_write_enable <= '0';
       next_data_write_data  <= (others => '0');
     elsif is_requisition = '1' then
       next_data_requisition <= '1';
-      next_data_write_enable <= '0';
-      next_data_write_data  <= (others => '0');
+      next_data_write_enable <= is_write;
+      next_data_write_data  <= is_write_data;
     else
       next_data_requisition <= '0';
       next_data_write_enable <= '0';
