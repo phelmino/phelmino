@@ -20,8 +20,6 @@ end entity alu;
 
 architecture behavioural of alu is
 
-  signal alu_operand_a_signed   : signed(WORD_WIDTH-1 downto 0);
-  signal alu_operand_b_signed   : signed(WORD_WIDTH-1 downto 0);
   signal alu_operand_a_unsigned : unsigned(WORD_WIDTH-1 downto 0);
   signal alu_operand_b_unsigned : unsigned(WORD_WIDTH-1 downto 0);
   signal alu_result_unsigned    : unsigned(WORD_WIDTH downto 0);
