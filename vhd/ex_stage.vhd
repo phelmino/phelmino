@@ -63,7 +63,7 @@ architecture behavioural of ex_stage is
   signal next_branch_active           : std_logic;
   signal next_destination_register_wb : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
 
-  signal next_data_requisition  : std_logic;
+ -- signal next_data_requisition  : std_logic;
   signal next_data_write_enable : std_logic;
   signal next_data_write_data   : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal next_is_requisition_wb : std_logic;
@@ -115,7 +115,7 @@ begin  -- architecture behavioural
 
       -- memory
       is_requisition_wb <= next_is_requisition_wb;
-      data_requisition  <= next_data_requisition;
+      --data_requisition  <= next_data_requisition;
       data_address      <= alu_result;
       data_write_enable <= next_data_write_enable;
       data_write_data   <= next_data_write_data;
@@ -140,22 +140,25 @@ begin  -- architecture behavioural
         next_branch_active           <= '0';
 
       when others =>
+	-- TODO: add 'and data_grant'? or make
+	-- destination_register_wb <= destination_register?
         next_destination_register_wb <= destination_register;
         next_branch_active           <= is_branch and alu_result(0);
     end case;
 
-    next_is_requisition_wb <= is_requisition;
+    next_is_requisition_wb <= is_requisition and data_grant;
+    data_requisition <= is_requisition;
     
     if data_grant = '1' then
-      next_data_requisition <= '0';
+    --  next_data_requisition <= '0';
       next_data_write_enable <= '0';
       next_data_write_data  <= (others => '0');
     elsif is_requisition = '1' then
-      next_data_requisition <= '1';
+     -- next_data_requisition <= '1';
       next_data_write_enable <= is_write;
       next_data_write_data  <= is_write_data;
     else
-      next_data_requisition <= '0';
+     -- next_data_requisition <= '0';
       next_data_write_enable <= '0';
       next_data_write_data <= (others => '0');
     end if;
