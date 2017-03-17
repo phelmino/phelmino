@@ -30,3 +30,4 @@ compile memory_definitions.vhd
 compile rom.vhd
 compile ram.vhd
 compile seven_segments.vhd 
+compile memory_controller.vhd 

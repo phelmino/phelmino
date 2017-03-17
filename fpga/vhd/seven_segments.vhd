@@ -9,15 +9,15 @@ use lib_fpga.memory_definitions.all;
 library lib_vhdl;
 use lib_vhdl.phelmino_definitions.all;
 
-entity rom_digit is
+entity seven_segments is
 
   port (
     digit  : in  std_logic_vector(3 downto 0);
     output : out std_logic_vector(6 downto 0));
 
-end entity rom_digit;
+end entity seven_segments;
 
-architecture behavioural of rom_digit is
+architecture behavioural of seven_segments is
 
   type tab_7seg is array (0 to 15) of bit_vector(7 downto 0);
   constant conversion_table : tab_7seg :=
