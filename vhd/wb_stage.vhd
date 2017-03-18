@@ -60,10 +60,10 @@ begin  -- architecture behavioural
   end process sequential_process;
 
   combinational_process : process (data_read_data, data_read_data_valid,
-                                   destination_register) is
+                                   destination_register, is_requisition) is
   begin  -- process combinational_process
-
-    if (data_read_data_valid = '1') then
+    -- todo: consider when ready do not come in one cycle
+    if (is_requisition = '1' and data_read_data_valid = '1') then
       next_write_enable_y  <= '1';
       next_write_address_y <= destination_register;
       next_data_y          <= data_read_data;
@@ -72,6 +72,7 @@ begin  -- architecture behavioural
       next_write_address_y <= (others => '0');
       next_data_y          <= (others => '0');
     end if;
+    
   end process combinational_process;
 
 end architecture behavioural;
