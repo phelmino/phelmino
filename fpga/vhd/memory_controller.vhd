@@ -193,7 +193,7 @@ begin  -- architecture behavioural
           next_data_grant   <= '1';
           next_write_enable <= data_write_enable;
           next_ram_input    <= data_write_data;
-          next_ram_address  <= data_address_real;
+          next_ram_address  <= std_logic_vector(unsigned(data_address_real) - RAM_BEGIN);
         else
           next_data_grant   <= '0';
           next_write_enable <= '0';
