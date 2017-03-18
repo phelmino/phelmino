@@ -36,7 +36,7 @@ entity general_purpose_registers is
 end entity general_purpose_registers;
 
 architecture behavioural of general_purpose_registers is
-  type   register_array is array (0 to 2**n-1) of std_logic_vector(w-1 downto 0);
+  type register_array is array (0 to 2**n-1) of std_logic_vector(w-1 downto 0);
   signal gpr : register_array;
 
   signal next_read_data_a : std_logic_vector(w-1 downto 0);
