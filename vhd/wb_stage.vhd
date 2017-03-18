@@ -8,7 +8,7 @@ entity wb_stage is
 
   port (
     -- clock and reset signals
-    clk	  : in std_logic;
+    clk   : in std_logic;
     rst_n : in std_logic;
 
     -- forwarding
@@ -18,8 +18,8 @@ entity wb_stage is
     destination_register : in std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
 
     -- data interface signals
-    is_requisition	 : in std_logic;
-    data_read_data	 : in std_logic_vector(WORD_WIDTH-1 downto 0);
+    is_requisition       : in std_logic;
+    data_read_data       : in std_logic_vector(WORD_WIDTH-1 downto 0);
     data_read_data_valid : in std_logic;
 
     -- gpr interface
@@ -35,7 +35,7 @@ end entity wb_stage;
 architecture behavioural of wb_stage is
   signal next_write_enable_y  : std_logic;
   signal next_write_address_y : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-  signal next_data_y	      : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal next_data_y          : std_logic_vector(WORD_WIDTH-1 downto 0);
 begin  -- architecture behavioural
 
   -- ready if memory transaction finished.
@@ -47,30 +47,30 @@ begin  -- architecture behavioural
   data_read_from_memory_id <= data_read_data;
 
   sequential_process : process (clk, rst_n) is
-  begin	 -- process sequential_process
-    if rst_n = '0' then			-- asynchronous reset (active low)
-      write_enable_y_id	 <= '0';
+  begin  -- process sequential_process
+    if rst_n = '0' then                 -- asynchronous reset (active low)
+      write_enable_y_id  <= '0';
       write_address_y_id <= (others => '0');
-      write_data_y_id	 <= (others => '0');
-    elsif clk'event and clk = '1' then	-- rising clock edge
-      write_enable_y_id	 <= next_write_enable_y;
-      write_data_y_id	 <= next_data_y;
+      write_data_y_id    <= (others => '0');
+    elsif clk'event and clk = '1' then  -- rising clock edge
+      write_enable_y_id  <= next_write_enable_y;
+      write_data_y_id    <= next_data_y;
       write_address_y_id <= next_write_address_y;
     end if;
   end process sequential_process;
 
   combinational_process : process (data_read_data, data_read_data_valid,
-				   destination_register) is
-  begin	 -- process combinational_process
+                                   destination_register) is
+  begin  -- process combinational_process
 
     if (data_read_data_valid = '1') then
       next_write_enable_y  <= '1';
       next_write_address_y <= destination_register;
-      next_data_y	   <= data_read_data;
+      next_data_y          <= data_read_data;
     else
       next_write_enable_y  <= '0';
       next_write_address_y <= (others => '0');
-      next_data_y	   <= (others => '0');
+      next_data_y          <= (others => '0');
     end if;
   end process combinational_process;
 

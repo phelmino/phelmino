@@ -24,7 +24,7 @@ end entity rom;
 
 architecture behavioural of rom is
 
-  type rom_data_type is array (0 to ROM_DEPTH) of std_logic_vector(width-1 downto 0);
+  type rom_data_type is array (0 to 2**MEMORY_DEPTH-1) of std_logic_vector(width-1 downto 0);
   constant rom_data : rom_data_type :=
     (0      => x"00100093",             -- li x1, 1
      1      => x"08102023",             -- sw x1, 512(x0)

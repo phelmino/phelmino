@@ -24,8 +24,8 @@ architecture behavioural of alu is
   signal alu_operand_b_unsigned : unsigned(WORD_WIDTH-1 downto 0);
   signal alu_result_unsigned    : unsigned(WORD_WIDTH downto 0);
 
-  signal comp_equal              : std_logic_vector(0 downto 0);
-  signal comp_less_than          : std_logic_vector(0 downto 0);
+  signal comp_equal     : std_logic_vector(0 downto 0);
+  signal comp_less_than : std_logic_vector(0 downto 0);
 
 begin  -- architecture behavioural
 
