@@ -83,9 +83,10 @@ begin  -- architecture behavioural
   ready_id         <= ready when (waiting_for_memory = '0') else ready and data_grant;
   branch_active_if <= branch_active;
   branch_active_id <= branch_active;
+  alu_result_id    <= alu_result;
 
   -- gpr
-  write_enable_z_id  <= '1';
+  write_enable_z_id  <= not next_data_requisition;
   write_address_z_id <= destination_register;
   write_data_z_id    <= alu_result;
 
@@ -99,9 +100,6 @@ begin  -- architecture behavioural
   sequential : process (clk, rst_n) is
   begin  -- process sequential
     if rst_n = '0' then                 -- asynchronous reset (active low)
-      -- alu
-      alu_result_id <= (others => '0');
-
       -- destination register
       destination_register_wb <= (others => '0');
 
@@ -117,9 +115,6 @@ begin  -- architecture behavioural
       is_requisition_wb         <= '0';
 
     elsif clk'event and clk = '1' then  -- rising clock edge
-      -- alu
-      alu_result_id <= alu_result;
-
       -- destination register
       destination_register_wb <= next_destination_register_wb;
 
@@ -182,7 +177,7 @@ begin  -- architecture behavioural
           next_data_write_data    <= is_write_data;
           next_waiting_for_memory <= not data_grant;
           next_is_requisition_wb  <= data_grant;
-        elsif (is_requisition = '1' and waiting_for_memory = '1') then
+        elsif (waiting_for_memory = '1') then
           data_requisition        <= last_data_requisition;
           data_address            <= last_data_address;
           data_write_enable       <= last_data_write_enable;
