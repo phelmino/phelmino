@@ -67,6 +67,7 @@ architecture behavioural of ex_stage is
   --signal next_data_requisition  : std_logic;
   signal next_data_write_enable : std_logic;
   signal next_data_write_data	: std_logic_vector(WORD_WIDTH-1 downto 0);
+  
   --signal next_is_requisition_wb : std_logic;
 
 begin  -- architecture behavioural
@@ -86,6 +87,8 @@ begin  -- architecture behavioural
   
   data_requisition <= is_requisition;
   data_address <= alu_result;
+  data_write_enable <= is_write and (is_requisition);
+  data_write_data <= is_write_data;
 
   is_requisition_wb <= is_requisition and data_grant;
 
@@ -100,16 +103,8 @@ begin  -- architecture behavioural
   begin	 -- process sequential
     if rst_n = '0' then			-- asynchronous reset (active low)
       -- alu
-    --  alu_result <= (others => '0');
       alu_result_id <= (others => '0');
-
-      -- memory
---      is_requisition_wb <= '0';
---      data_requisition	<= '0';
---      data_address	<= (others => '0');
-      data_write_enable <= '0';
-      data_write_data	<= (others => '0');
-
+    
       -- destination register
       destination_register_wb <= (others => '0');
 
@@ -120,13 +115,6 @@ begin  -- architecture behavioural
       -- alu
       alu_result_id <= alu_result;
 
-      -- memory
-  --    is_requisition_wb <= next_is_requisition_wb;
-  --    data_requisition	<= is_requisition;  --next_data_requisition;
-  --    data_address	<= alu_result;
-      data_write_enable <= next_data_write_enable;
-      data_write_data	<= next_data_write_data;
-
       -- destination register
       destination_register_wb <= next_destination_register_wb;
 
@@ -136,9 +124,8 @@ begin  -- architecture behavioural
     end if;
   end process sequential;
 
-  combinational : process (alu_result, branch_active, data_grant,
-			   destination_register, is_branch, is_requisition,
-			   is_write, is_write_data)
+  combinational : process (alu_result(0), branch_active, destination_register,
+			   is_branch)
   begin	 -- process combinational
 
     case branch_active is
@@ -152,23 +139,6 @@ begin  -- architecture behavioural
 	next_destination_register_wb <= destination_register;
 	next_branch_active	     <= is_branch and alu_result(0);
     end case;
-
---    next_is_requisition_wb <= is_requisition and data_grant;
---    data_requisition	   <= is_requisition;
-
-    if data_grant = '1' then
-      -- next_data_requisition <= '0';
-      next_data_write_enable <= '0';
-      next_data_write_data   <= (others => '0');
-    elsif is_requisition = '1' then
-      -- next_data_requisition <= '1';
-      next_data_write_enable <= is_write;
-      next_data_write_data   <= is_write_data;
-    else
-      -- next_data_requisition <= '0';
-      next_data_write_enable <= '0';
-      next_data_write_data   <= (others => '0');
-    end if;
 
   end process combinational;
 
