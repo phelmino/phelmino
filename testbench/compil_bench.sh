@@ -33,3 +33,4 @@ compile test_if_stage.vhd
 compile test_id_stage.vhd
 compile test_ex_stage.vhd
 compile test_phelmino_core.vhd 
+compile test_phelmino.vhd 
