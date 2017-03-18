@@ -93,12 +93,14 @@ architecture behavioural of id_stage is
   signal instruction_valid	 : std_logic;
   signal is_requisition		 : std_logic;
   signal is_write		 : std_logic;
+  signal next_is_write_data_ex	 : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal is_branch		 : std_logic;
   signal alu_operand_a		 : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal alu_operand_b		 : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal alu_operator		 : alu_operation;
   signal mux_controller_a	 : alu_source;
   signal mux_controller_b	 : alu_source;
+  -- signal mux_controller_c	 : alu_source;
   signal destination_register	 : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
   signal immediate_extension	 : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal next_branch_destination : std_logic_vector(WORD_WIDTH-1 downto 0);
@@ -106,6 +108,7 @@ architecture behavioural of id_stage is
   -- mux signals
   signal current_mux_controller_a : alu_source;
   signal current_mux_controller_b : alu_source;
+  signal current_mux_controller_c : alu_source;
 
   -- stall detection
   signal stall : std_logic;
@@ -116,7 +119,7 @@ begin  -- architecture behavioural
 
   -- calculates next branch destination
   next_branch_destination <= std_logic_vector(unsigned(pc) + unsigned(immediate_extension));
-  
+
   gpr : entity lib_vhdl.general_purpose_registers
     generic map (
       w => WORD_WIDTH,
@@ -158,6 +161,7 @@ begin  -- architecture behavioural
       alu_operator_ex	      <= ALU_ADD;
       is_requisition_ex	      <= '0';
       is_write_ex	      <= '0';
+      is_write_data_ex	      <= (others => '0');
       is_branch_ex	      <= '0';
       destination_register_ex <= (others => '0');
       branch_destination_if   <= (others => '0');
@@ -169,6 +173,7 @@ begin  -- architecture behavioural
 	alu_operator_ex		<= ALU_ADD;
 	is_requisition_ex	<= '0';
 	is_write_ex		<= '0';
+	is_write_data_ex	<= (others => '0');
 	is_branch_ex		<= '0';
 	destination_register_ex <= (others => '0');
 	branch_destination_if	<= (others => '0');
@@ -178,6 +183,7 @@ begin  -- architecture behavioural
 	alu_operator_ex		<= alu_operator;
 	is_requisition_ex	<= is_requisition;
 	is_write_ex		<= is_write;
+	is_write_data_ex	<= next_is_write_data_ex;
 	destination_register_ex <= destination_register;
 	branch_destination_if	<= next_branch_destination;
 	is_branch_ex		<= is_branch;
@@ -214,6 +220,16 @@ begin  -- architecture behavioural
       when others		    => alu_operand_b <= (others => '0');
     end case;
 
+    -- mux c
+    case current_mux_controller_c is
+      when ALU_SOURCE_ZERO	    => next_is_write_data_ex <= (others => '0');
+      when ALU_SOURCE_FROM_REGISTER => next_is_write_data_ex <= read_data_b;
+      when ALU_SOURCE_FROM_ALU	    => next_is_write_data_ex <= alu_result;
+      when ALU_SOURCE_FROM_WB_STAGE => next_is_write_data_ex <= data_read_from_memory;
+      when ALU_SOURCE_FROM_IMM	    => next_is_write_data_ex <= immediate_extension;
+      when others		    => next_is_write_data_ex <= (others => '0');
+    end case;
+
     -- Controlling mux A. May choose to forward.
     current_mux_controller_a <= mux_controller_a;
     if ((write_enable_z = '1') and (unsigned(write_address_z) /= 0) and (mux_controller_a = ALU_SOURCE_FROM_REGISTER) and (read_address_a = write_address_z)) then
@@ -232,13 +248,13 @@ begin  -- architecture behavioural
 
     -- mux C
     if ((write_enable_z = '1') and (unsigned(write_address_z) /= 0) and (read_address_b = write_address_z)) then
-      is_write_data_ex <= alu_result;
+      current_mux_controller_c <= ALU_SOURCE_FROM_ALU;
     elsif ((write_enable_y = '1') and (unsigned(write_address_y) /= 0) and (read_address_b = write_address_y)) then
-      is_write_data_ex <= data_read_from_memory;
+      current_mux_controller_c <= ALU_SOURCE_FROM_WB_STAGE;
     else
-      is_write_data_ex <= read_data_b;
+      current_mux_controller_c <= ALU_SOURCE_FROM_REGISTER;
     end if;
-    
+
     -- Can not branch if has not finished calculating the needed values.
     stall <= '0';
     if ((write_enable_z = '1') and
