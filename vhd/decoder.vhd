@@ -80,6 +80,35 @@ begin  -- architecture behavioural
             instruction_valid <= '0';
         end case;
 
+      when OPCODE_ALU_IMMEDIATE_REGISTER =>
+        read_address_a       <= rsource1;
+        read_address_b       <= rsource2;
+        mux_controller_a     <= ALU_SOURCE_FROM_REGISTER;
+        mux_controller_b     <= ALU_SOURCE_FROM_IMM;
+        instruction_valid    <= '1';
+        is_requisition       <= '0';
+        is_branch            <= '0';
+        destination_register <= rdestination;
+        alu_operator         <= ALU_ADD;
+        is_write             <= '0';
+
+        case func3 is
+          when "000" =>
+            alu_operator <= ALU_ADD;
+
+          when "100" =>
+            alu_operator <= ALU_XOR;
+
+          when "110" =>
+            alu_operator <= ALU_OR;
+
+          when "111" =>
+            alu_operator <= ALU_AND;
+
+          when others =>
+            instruction_valid <= '0';
+        end case;
+
       when OPCODE_BRANCH =>
         -- adds rs1 and rs2 and stores in rs0. this has no effect on the gpr.
         read_address_a       <= rsource1;
@@ -141,8 +170,8 @@ begin  -- architecture behavioural
     end case;
   end process decoder_process;
 
-  -- purpose: sign extension of immediates
-  -- type   : combinational
+-- purpose: sign extension of immediates
+-- type   : combinational
   signextension : process (instruction) is
     alias sign_bit is instruction(WORD_WIDTH-1);
     alias opcode is instruction(OPCODE_BEGIN downto OPCODE_END);
