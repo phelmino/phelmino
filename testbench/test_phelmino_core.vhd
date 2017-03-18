@@ -24,9 +24,9 @@ architecture behavioural of test_phelmino_core is
       data_address      : out std_logic_vector(WORD_WIDTH-1 downto 0);
       data_write_enable : out std_logic;
       data_write_data   : out std_logic_vector(WORD_WIDTH-1 downto 0);
-      data_reqdata      : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      data_read_data    : in  std_logic_vector(WORD_WIDTH-1 downto 0);
       data_grant        : in  std_logic;
-      data_reqvalid     : in  std_logic);
+      data_read_data_valid     : in  std_logic);
   end component phelmino_core;
 
   signal clk               : std_logic                               := '1';
@@ -40,9 +40,9 @@ architecture behavioural of test_phelmino_core is
   signal data_address      : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
   signal data_write_enable : std_logic                               := '0';
   signal data_write_data   : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
-  signal data_reqdata      : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
+  signal data_read_data      : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
   signal data_grant        : std_logic                               := '0';
-  signal data_reqvalid     : std_logic                               := '0';
+  signal data_read_data_valid     : std_logic                               := '0';
 
   signal next_instruction : std_logic_vector(WORD_WIDTH-1 downto 0) := BEQ_R1_R2;
 
@@ -68,9 +68,9 @@ begin  -- architecture behavioural
       data_address      => data_address,
       data_write_enable => data_write_enable,
       data_write_data   => data_write_data,
-      data_reqdata      => data_reqdata,
+      data_read_data      => data_read_data,
       data_grant        => data_grant,
-      data_reqvalid     => data_reqvalid);
+      data_read_data_valid     => data_read_data_valid);
 
   -- purpose: emulate the memory
   proc_memory : process (clk, rst_n) is
@@ -83,8 +83,8 @@ begin  -- architecture behavioural
       instr_reqdata  <= (others => '0');
       instr_reqvalid <= '0';
       data_grant     <= '0';
-      data_reqdata   <= (others => '0');
-      data_reqvalid  <= '0';
+      data_read_data   <= (others => '0');
+      data_read_data_valid  <= '0';
     elsif clk'event and clk = '0' then  -- falling clock edge
       instr_grant <= '0';
       if (instr_reqvalid = '1') then
@@ -99,14 +99,14 @@ begin  -- architecture behavioural
       end if;
 
       data_grant <= '0';
-      if (data_reqvalid = '1') then
+      if (data_read_data_valid = '1') then
         accepted_request_data := false;
       end if;
 
       if (accepted_request_data = false and data_requisition = '1' and data_address'quiet(min_stable_time)) then
         data_grant            <= '1';
-        data_reqvalid         <= '1'             after delay_valid, '0' after delay_valid + clock_period;
-        data_reqdata          <= (others => '1') after delay_valid, (others => '0') after delay_valid + clock_period;
+        data_read_data_valid         <= '1'             after delay_valid, '0' after delay_valid + clock_period;
+        data_read_data          <= (others => '1') after delay_valid, (others => '0') after delay_valid + clock_period;
         accepted_request_data := true;
       end if;
 
