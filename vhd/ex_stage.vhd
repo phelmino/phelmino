@@ -156,7 +156,7 @@ begin  -- architecture behavioural
     end case;
 
     case ready_id_copy is
-      when '1' => data_requisition <= is_requisition;
+      when '0' => data_requisition <= is_requisition;
 		  data_address		 <= alu_result;
 		  data_write_enable	 <= is_write and (is_requisition);
 		  data_write_data	 <= is_write_data;
@@ -176,50 +176,50 @@ begin  -- architecture behavioural
     end case;
 
 
-    -- case is_requisition is
-    --   when '1' =>
-    -- 	case ready is
-    -- 	  when '1' =>
-    -- 	    data_requisition	   <= is_requisition;
-    -- 	    data_address	   <= alu_result;
-    -- 	    data_write_enable	   <= is_write and (is_requisition);
-    -- 	    data_write_data	   <= is_write_data;
-    -- 	    next_data_requisition  <= is_requisition;
-    -- 	    next_data_address	   <= alu_result;
-    -- 	    next_data_write_enable <= is_write and (is_requisition);
-    -- 	    next_data_write_data   <= is_write_data;
-    -- 	  when others =>
-    -- 	    data_requisition	   <= last_data_requisition;
-    -- 	    data_address	   <= last_data_address;
-    -- 	    data_write_enable	   <= last_data_write_enable;
-    -- 	    data_write_data	   <= last_data_write_data;
-    -- 	    next_data_requisition  <= last_data_requisition;
-    -- 	    next_data_address	   <= last_data_address;
-    -- 	    next_data_write_enable <= last_data_write_enable;
-    -- 	    next_data_write_data   <= last_data_write_data;
-    -- 	end case;
-    --   when others =>
-    -- 	case (ready and data_grant) is
-    -- 	  when '0' =>
-    -- 	    data_requisition	   <= is_requisition;
-    -- 	    data_address	   <= alu_result;
-    -- 	    data_write_enable	   <= is_write and (is_requisition);
-    -- 	    data_write_data	   <= is_write_data;
-    -- 	    next_data_requisition  <= is_requisition;
-    -- 	    next_data_address	   <= alu_result;
-    -- 	    next_data_write_enable <= is_write and (is_requisition);
-    -- 	    next_data_write_data   <= is_write_data;
-    -- 	  when others =>
-    -- 	    data_requisition	   <= last_data_requisition;
-    -- 	    data_address	   <= last_data_address;
-    -- 	    data_write_enable	   <= last_data_write_enable;
-    -- 	    data_write_data	   <= last_data_write_data;
-    -- 	    next_data_requisition  <= last_data_requisition;
-    -- 	    next_data_address	   <= last_data_address;
-    -- 	    next_data_write_enable <= last_data_write_enable;
-    -- 	    next_data_write_data   <= last_data_write_data;
-    -- 	end case;
-    -- end case;
+  -- case is_requisition is
+  --   when '1' =>
+  --	case ready is
+  --	  when '1' =>
+  --	    data_requisition	   <= is_requisition;
+  --	    data_address	   <= alu_result;
+  --	    data_write_enable	   <= is_write and (is_requisition);
+  --	    data_write_data	   <= is_write_data;
+  --	    next_data_requisition  <= is_requisition;
+  --	    next_data_address	   <= alu_result;
+  --	    next_data_write_enable <= is_write and (is_requisition);
+  --	    next_data_write_data   <= is_write_data;
+  --	  when others =>
+  --	    data_requisition	   <= last_data_requisition;
+  --	    data_address	   <= last_data_address;
+  --	    data_write_enable	   <= last_data_write_enable;
+  --	    data_write_data	   <= last_data_write_data;
+  --	    next_data_requisition  <= last_data_requisition;
+  --	    next_data_address	   <= last_data_address;
+  --	    next_data_write_enable <= last_data_write_enable;
+  --	    next_data_write_data   <= last_data_write_data;
+  --	end case;
+  --   when others =>
+  --	case (ready and data_grant) is
+  --	  when '0' =>
+  --	    data_requisition	   <= is_requisition;
+  --	    data_address	   <= alu_result;
+  --	    data_write_enable	   <= is_write and (is_requisition);
+  --	    data_write_data	   <= is_write_data;
+  --	    next_data_requisition  <= is_requisition;
+  --	    next_data_address	   <= alu_result;
+  --	    next_data_write_enable <= is_write and (is_requisition);
+  --	    next_data_write_data   <= is_write_data;
+  --	  when others =>
+  --	    data_requisition	   <= last_data_requisition;
+  --	    data_address	   <= last_data_address;
+  --	    data_write_enable	   <= last_data_write_enable;
+  --	    data_write_data	   <= last_data_write_data;
+  --	    next_data_requisition  <= last_data_requisition;
+  --	    next_data_address	   <= last_data_address;
+  --	    next_data_write_enable <= last_data_write_enable;
+  --	    next_data_write_data   <= last_data_write_data;
+  --	end case;
+  -- end case;
   end process combinational;
 
 end architecture behavioural;
