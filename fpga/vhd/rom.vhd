@@ -25,7 +25,7 @@ end entity rom;
 architecture behavioural of rom is
 
   type rom_data_type is array (0 to 2**MEMORY_DEPTH-1) of std_logic_vector(width-1 downto 0);
-  constant rom_data : rom_data_type :=
+  constant fibonacci : rom_data_type :=
     (0      => x"01400f13",             -- li t5, 20
      1      => x"20000f93",             -- li t6, 512
      2      => x"00100093",             -- li ra, 1
@@ -34,7 +34,7 @@ architecture behavioural of rom is
      5      => x"00100113",             -- li sp, 1
      6      => x"002fa023",             -- sw sp, 0(t6)
      7      => x"004f8f93",             -- addi t6, t6, 4
-                             -- <loop>
+     -- <loop>
      8      => x"ff8fa083",             -- lw ra, -8(t6)
      9      => x"ffcfa103",             -- lw sp, -4(t6)
      10     => x"002081b3",             -- add gp, ra, sp
@@ -42,6 +42,13 @@ architecture behavioural of rom is
      12     => x"004f8f93",             -- addi t6, t6, 4
      13     => x"ffff0f13",             -- addi t5, t5, -1
      14     => x"fe0f04e3",             -- beqz t5, 20 <loop>
+     others => NOP);
+
+  constant test_hazard : rom_data_type :=
+    (0      => x"00100093",             -- li ra, 1
+     1      => x"00108133",             -- add sp, ra, ra
+     2      => x"002101b3",             -- add gp, sp, sp
+     3      => x"00318233",             -- add tp, gp, gp
      others => NOP);
 
   signal next_output : std_logic_vector(width-1 downto 0);
@@ -59,7 +66,7 @@ begin  -- architecture behavioural
 
   combinational : process (address) is
   begin  -- process combinational
-    next_output <= rom_data(to_integer(unsigned(address)));
+    next_output <= test_hazard(to_integer(unsigned(address)));
   end process combinational;
 
 end architecture behavioural;
