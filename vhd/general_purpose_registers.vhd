@@ -56,11 +56,7 @@ begin  -- architecture behavioural
       read_data_b <= (others => '0');
 
       -- clears register bank
-      for i in 0 to 2**n-1 loop
-        gpr(i)    <= (others => '0');
-        gpr(i)(0) <= '1';
-      end loop;
-      gpr(0) <= (others => '0');
+      gpr <= (others => (others => '0'));
     elsif clk'event and clk = '1' then  -- rising clock edge
       -- clears outputs
       read_data_a <= next_read_data_a;
