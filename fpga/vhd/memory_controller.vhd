@@ -46,13 +46,11 @@ architecture behavioural of memory_controller is
   signal current_instr_grant : std_logic;
   signal next_instr_grant    : std_logic;
   signal next_instr_reqvalid : std_logic;
-  signal next_instr_reqdata  : std_logic_vector(width-1 downto 0);
   signal next_rom_address    : std_logic_vector(depth-1 downto 0);
 
   signal current_data_grant : std_logic;
   signal next_data_grant    : std_logic;
   signal next_data_reqvalid : std_logic;
-  signal next_data_reqdata  : std_logic_vector(width-1 downto 0);
   signal next_ram_address   : std_logic_vector(depth-1 downto 0);
 
   signal current_rom_address : std_logic_vector(depth-1 downto 0);
@@ -122,11 +120,9 @@ begin  -- architecture behavioural
     if rst_n = '0' then                 -- asynchronous reset (active low)
       instr_grant    <= '0';
       instr_reqvalid <= '0';
-      instr_reqdata  <= (others => '0');
 
       data_grant    <= '0';
       data_reqvalid <= '0';
-      data_reqdata  <= (others => '0');
 
       current_instr_grant  <= '0';
       current_data_grant   <= '0';
@@ -134,14 +130,14 @@ begin  -- architecture behavioural
       current_ram_input    <= (others => '0');
       current_rom_address  <= (others => '0');
       current_ram_address  <= (others => '0');
+
+      core_output <= (others => '0');
     elsif clk'event and clk = '1' then  -- rising clock edge
       instr_grant    <= next_instr_grant;
       instr_reqvalid <= next_instr_reqvalid;
-      instr_reqdata  <= next_instr_reqdata;
 
       data_grant    <= next_data_grant;
       data_reqvalid <= next_data_reqvalid;
-      data_reqdata  <= next_data_reqdata;
 
       current_instr_grant  <= next_instr_grant;
       current_data_grant   <= next_data_grant;
@@ -149,12 +145,17 @@ begin  -- architecture behavioural
       current_ram_input    <= next_ram_input;
       current_rom_address  <= next_rom_address;
       current_ram_address  <= next_ram_address;
+
+      core_output <= (others => '0');
     end if;
   end process sequential;
 
-  combinational : process (current_instr_grant, instr_requisition) is
-    alias instr_address_real is instr_address(depth-1 downto 0);
-    alias data_address_real is data_address(depth-1 downto 0);
+  combinational : process (current_data_grant, current_instr_grant,
+                           data_requisition, data_write_data,
+                           data_write_enable, instr_requisition,
+                           instr_address, data_address) is
+    alias instr_address_real is instr_address(depth-1+2 downto 2);
+    alias data_address_real is data_address(depth-1+2 downto 2);
   begin  -- process combinational
     case instr_requisition is
       when '0' =>
@@ -178,8 +179,11 @@ begin  -- architecture behavioural
 
     case data_requisition is
       when '0' =>
-        next_data_grant  <= '0';
-        next_ram_address <= (others => '0');
+        next_data_grant   <= '0';
+        next_ram_address  <= (others => '0');
+        next_write_enable <= '0';
+        next_data_grant   <= '0';
+        next_ram_input    <= (others => '0');
       when others =>
         -- verify if it is in the good range
         if (unsigned(data_address_real) >= RAM_BEGIN and unsigned(data_address_real) <= RAM_END) then
