@@ -31,5 +31,5 @@ compile test_fifo.vhd
 compile test_alu.vhd 
 compile test_if_stage.vhd
 compile test_id_stage.vhd
-compile ex_stage_tb.vhd
+compile test_ex_stage.vhd
 compile test_phelmino_core.vhd 
