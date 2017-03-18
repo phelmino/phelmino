@@ -52,5 +52,6 @@ package phelmino_definitions is
   constant BEQ_R1_R2      : std_logic_vector(WORD_WIDTH-1 downto 0) := "0000000" & "00010" & "00001" & "000" & "00000" & "1100011";
   constant BNE_R1_R2      : std_logic_vector(WORD_WIDTH-1 downto 0) := "0000000" & "00010" & "00001" & "001" & "00000" & "1100011";
   constant LW_R1_0        : std_logic_vector(WORD_WIDTH-1 downto 0) := "000000000000" & "00001" & "010" & "00000" & "0000011";
+  constant SW_R2_0 : std_logic_vector(WORD_WIDTH-1 downto 0) := "0000000" & "00010" & "00001" & "010" & "00000" & "0100011";
 
 end package phelmino_definitions;
