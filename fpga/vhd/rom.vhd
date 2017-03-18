@@ -26,7 +26,11 @@ architecture behavioural of rom is
 
   type rom_data_type is array (0 to ROM_DEPTH) of std_logic_vector(width-1 downto 0);
   constant rom_data : rom_data_type :=
-    (others => x"FFFF");
+    (0      => x"00100093",             -- li x1, 1
+     1      => x"08102023",             -- sw x1, 512(x0)
+     2      => x"00100113",             -- li x2, 1
+     3      => x"08202223",             -- sw x2, 516(x0)
+     others => x"0000FFFF");
 
   signal next_output : std_logic_vector(width-1 downto 0);
 

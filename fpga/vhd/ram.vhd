@@ -49,7 +49,7 @@ begin  -- architecture behavioural
     end if;
   end process sequential;
 
-  combinational : process (address) is
+  combinational : process (address, ram_data) is
   begin  -- process combinational
     next_output <= ram_data(to_integer(unsigned(address)));
   end process combinational;
