@@ -148,17 +148,41 @@ begin  -- architecture test_ex_stage
   begin
     -- insert signal assignments here
 
+--    wait for 7 ns;
+--    alu_operand_a <= (others => '0');	--imm
+--    alu_operand_b <= x"00000001";	--rs1
+--    alu_operator  <= ALU_ADD;
+
+--    is_branch		 <= '0';	-- not branching
+--    is_requisition	 <= '1';
+--    is_write		 <= '0';
+--    is_write_data	 <= (others => '0');
+--    destination_register <= "00000";	-- rd
+ 
+--    wait for 8 ns;
+
+--    data_grant <= '1';
+--    wait for 10 ns;
+--    data_grant <= '0';
+--    is_requisition <= '0';
+--    wait for 20 ns;
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+   -- rst_n <= '0';
     wait for 7 ns;
-    alu_operand_a <= (others => '0');	--imm
-    alu_operand_b <= x"00000001";	--rs1
+   -- rst_n <= '1';
+
+    alu_operand_a <= x"00000001";	--imm
+    alu_operand_b <= (others => '0');	--imm
     alu_operator  <= ALU_ADD;
 
     is_branch		 <= '0';	-- not branching
     is_requisition	 <= '1';
-    is_write		 <= '0';
-    is_write_data	 <= (others => '0');
-    destination_register <= "00000";	-- rd
- 
+    is_write		 <= '1';
+    is_write_data	 <= x"00000002";
+    destination_register <= "00000";	-- useless
+
     wait for 8 ns;
 
     data_grant <= '1';
@@ -166,6 +190,7 @@ begin  -- architecture test_ex_stage
     data_grant <= '0';
     is_requisition <= '0';
     wait for 20 ns;
+     
   end process WaveGen_Proc;
 
 end architecture test_ex_stage;
