@@ -52,15 +52,15 @@ begin  -- architecture behavioural
 
     if rst_n = '0' then                 -- asynchronous reset (active low)
       -- clears outputs
-     -- read_data_a <= (others => '0');
-     -- read_data_b <= (others => '0');
+     read_data_a <= (others => '0');
+     read_data_b <= (others => '0');
 
       -- clears register bank
       gpr <= (others => (others => '0'));
     elsif clk'event and clk = '1' then  -- rising clock edge
       -- clears outputs
-     -- read_data_a <= next_read_data_a;
-     -- read_data_b <= next_read_data_b;
+     read_data_a <= next_read_data_a;
+     read_data_b <= next_read_data_b;
 
       -- rewrites specific address in register bank
       -- can not rewrite register r0
@@ -85,8 +85,8 @@ begin  -- architecture behavioural
   -- outputs: next_read_data_a, next_read_data_b
   comb_proc : process (gpr, read_address_a, read_address_b) is
   begin  -- process comb_proc
-    read_data_a <= gpr(to_integer(unsigned(read_address_a)));
-    read_data_b <= gpr(to_integer(unsigned(read_address_b)));
+    next_read_data_a <= gpr(to_integer(unsigned(read_address_a)));
+    next_read_data_b <= gpr(to_integer(unsigned(read_address_b)));
   end process comb_proc;
 
 end architecture behavioural;

@@ -156,37 +156,36 @@ begin  -- architecture behavioural
   sequentialprocess : process (clk, rst_n) is
   begin  -- process sequentialprocess
     if rst_n = '0' then                 -- asynchronous reset (active low).
-      alu_operand_a_ex        <= (others => '0');
-      alu_operand_b_ex        <= (others => '0');
-      alu_operator_ex         <= ALU_ADD;
-      is_requisition_ex       <= '0';
-      is_write_ex             <= '0';
-      is_write_data_ex        <= (others => '0');
-      is_branch_ex            <= '0';
-      destination_register_ex <= (others => '0');
-      branch_destination_if   <= (others => '0');
-
+      alu_operand_a_ex         <= (others => '0');
+      alu_operand_b_ex         <= (others => '0');
+      alu_operator_ex          <= ALU_ADD;
+      is_requisition_ex        <= '0';
+      is_write_ex              <= '0';
+      is_write_data_ex         <= (others => '0');
+      is_branch_ex             <= '0';
+      destination_register_ex  <= (others => '0');
+      branch_destination_if    <= (others => '0');
     elsif clk'event and clk = '1' then  -- rising clock edge
       if (branch_active = '1') then     -- synchronous reset (active high)
-        alu_operand_a_ex        <= (others => '0');
-        alu_operand_b_ex        <= (others => '0');
-        alu_operator_ex         <= ALU_ADD;
-        is_requisition_ex       <= '0';
-        is_write_ex             <= '0';
-        is_write_data_ex        <= (others => '0');
-        is_branch_ex            <= '0';
-        destination_register_ex <= (others => '0');
-        branch_destination_if   <= (others => '0');
+        alu_operand_a_ex         <= (others => '0');
+        alu_operand_b_ex         <= (others => '0');
+        alu_operator_ex          <= ALU_ADD;
+        is_requisition_ex        <= '0';
+        is_write_ex              <= '0';
+        is_write_data_ex         <= (others => '0');
+        is_branch_ex             <= '0';
+        destination_register_ex  <= (others => '0');
+        branch_destination_if    <= (others => '0');
       else
-        alu_operand_a_ex        <= alu_operand_a;
-        alu_operand_b_ex        <= alu_operand_b;
-        alu_operator_ex         <= alu_operator;
-        is_requisition_ex       <= is_requisition;
-        is_write_ex             <= is_write;
-        is_write_data_ex        <= next_is_write_data_ex;
-        destination_register_ex <= destination_register;
-        branch_destination_if   <= next_branch_destination;
-        is_branch_ex            <= is_branch;
+        alu_operand_a_ex         <= alu_operand_a;
+        alu_operand_b_ex         <= alu_operand_b;
+        alu_operator_ex          <= alu_operator;
+        is_requisition_ex        <= is_requisition;
+        is_write_ex              <= is_write;
+        is_write_data_ex         <= next_is_write_data_ex;
+        destination_register_ex  <= destination_register;
+        branch_destination_if    <= next_branch_destination;
+        is_branch_ex             <= is_branch;
       end if;
     end if;
   end process sequentialprocess;
