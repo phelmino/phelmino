@@ -73,7 +73,7 @@ begin  -- architecture behavioural
 
   combinational : process (address) is
   begin	 -- process combinational
-    next_output <= fibonacci(to_integer(unsigned(address)));
+    next_output <= baby(to_integer(unsigned(address)));
   end process combinational;
 
 end architecture behavioural;
