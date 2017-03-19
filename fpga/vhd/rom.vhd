@@ -35,13 +35,13 @@ architecture behavioural of rom is
      6      => x"002fa023",             -- sw sp, 0(t6)
      7      => x"004f8f93",             -- addi t6, t6, 4
      -- <loop>
-     8      => x"ff8fa083",             -- lw ra, -8(t6)
-     9      => x"ffcfa103",             -- lw sp, -4(t6)
+     9      => x"ff8fa083",             -- lw ra, -8(t6)
      10     => x"002081b3",             -- add gp, ra, sp
      11     => x"003fa023",             -- sw gp, 0(t6)
      12     => x"004f8f93",             -- addi t6, t6, 4
      13     => x"ffff0f13",             -- addi t5, t5, -1
-     14     => x"fe0f14e3",             -- bnez t5, 20 <loop>
+     14     => x"00018113",             -- mv sp, gp
+     15     => x"fe0f12e3",             -- bnez t5, 20 <loop>
      others => NOP);
 
   constant baby : rom_data_type :=
