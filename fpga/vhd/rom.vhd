@@ -41,7 +41,7 @@ architecture behavioural of rom is
      11     => x"003fa023",             -- sw gp, 0(t6)
      12     => x"004f8f93",             -- addi t6, t6, 4
      13     => x"ffff0f13",             -- addi t5, t5, -1
-     14     => x"fe0f04e3",             -- beqz t5, 20 <loop>
+     14     => x"fe0f14e3",             -- bnez t5, 20 <loop>
      others => NOP);
 
   constant baby : rom_data_type :=
@@ -50,12 +50,19 @@ architecture behavioural of rom is
      2      => x"001fa023",             -- sw ra, 0(t6)
      others => NOP);
 
-
   constant test_hazard : rom_data_type :=
     (0      => x"00100093",             -- li ra, 1
      1      => x"00108133",             -- add sp, ra, ra
      2      => x"002101b3",             -- add gp, sp, sp
      3      => x"00318233",             -- add tp, gp, gp
+     4      => x"004202b3",             -- add t0, tp, tp
+     5      => x"00528333",             -- add t1, t0, t0
+     others => NOP);
+
+  constant mini : rom_data_type :=
+    (0      => x"00100093",             -- li ra, 1
+     1      => x"08000f93",             -- li t6, 128
+     5      => x"181fa023",             -- sw ra, 384(t6)
      others => NOP);
 
   signal next_output : std_logic_vector(width-1 downto 0);
@@ -73,7 +80,7 @@ begin  -- architecture behavioural
 
   combinational : process (address) is
   begin  -- process combinational
-    next_output <= test_hazard(to_integer(unsigned(address)));
+    next_output <= fibonacci(to_integer(unsigned(address)));
   end process combinational;
 
 end architecture behavioural;
