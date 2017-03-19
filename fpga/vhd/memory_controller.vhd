@@ -98,6 +98,7 @@ architecture behavioural of memory_controller is
   signal data_address_real  : std_logic_vector(MEMORY_DEPTH-1 downto 0);
 
   type origin_output is (output_MEM, output_IO, output_NONE);
+  signal last_origin_output    : origin_output;
   signal current_origin_output : origin_output;
   signal next_origin_output    : origin_output;
 begin  -- architecture behavioural
@@ -143,6 +144,7 @@ begin  -- architecture behavioural
       current_rom_address   <= (others => '0');
       current_ram_address   <= (others => '0');
       current_origin_output <= output_NONE;
+      last_origin_output    <= output_NONE;
 
       core_output <= (others => '0');
     elsif clk'event and clk = '1' then  -- rising clock edge
@@ -159,16 +161,17 @@ begin  -- architecture behavioural
       current_rom_address   <= next_rom_address;
       current_ram_address   <= next_ram_address;
       current_origin_output <= next_origin_output;
+      last_origin_output    <= current_origin_output;
 
       core_output <= next_core_output;
     end if;
   end process sequential;
 
   combinational : process (core_input, current_data_grant, current_instr_grant,
-                           current_origin_output, current_ram_output,
-                           data_address_real, data_requisition,
-                           data_write_data, data_write_enable,
-                           instr_address_real, instr_requisition) is
+                           current_ram_output, data_address_real,
+                           data_requisition, data_write_data,
+                           data_write_enable, instr_address_real,
+                           instr_requisition, last_origin_output) is
   begin  -- process combinational
     case instr_requisition is
       when '0' =>
@@ -190,7 +193,7 @@ begin  -- architecture behavioural
       when others => next_instr_reqvalid <= '1';
     end case;
 
-    case current_origin_output is
+    case last_origin_output is
       when output_MEM  => data_read_data <= current_ram_output;
       when output_IO   => data_read_data <= core_input;
       when output_NONE => data_read_data <= (others => '0');

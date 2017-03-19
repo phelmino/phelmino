@@ -153,39 +153,39 @@ begin  -- architecture behavioural
       destination_register => destination_register,
       immediate_extension  => immediate_extension);
 
-  sequentialprocess : process (clk, rst_n) is
+  sequentialprocess : process (clk, ready, rst_n) is
   begin  -- process sequentialprocess
     if rst_n = '0' then                 -- asynchronous reset (active low).
-      alu_operand_a_ex         <= (others => '0');
-      alu_operand_b_ex         <= (others => '0');
-      alu_operator_ex          <= ALU_ADD;
-      is_requisition_ex        <= '0';
-      is_write_ex              <= '0';
-      is_write_data_ex         <= (others => '0');
-      is_branch_ex             <= '0';
-      destination_register_ex  <= (others => '0');
-      branch_destination_if    <= (others => '0');
-    elsif clk'event and clk = '1' then  -- rising clock edge
+      alu_operand_a_ex        <= (others => '0');
+      alu_operand_b_ex        <= (others => '0');
+      alu_operator_ex         <= ALU_ADD;
+      is_requisition_ex       <= '0';
+      is_write_ex             <= '0';
+      is_write_data_ex        <= (others => '0');
+      is_branch_ex            <= '0';
+      destination_register_ex <= (others => '0');
+      branch_destination_if   <= (others => '0');
+    elsif clk'event and clk = '1' and ready = '1' then  -- rising clock edge
       if (branch_active = '1') then     -- synchronous reset (active high)
-        alu_operand_a_ex         <= (others => '0');
-        alu_operand_b_ex         <= (others => '0');
-        alu_operator_ex          <= ALU_ADD;
-        is_requisition_ex        <= '0';
-        is_write_ex              <= '0';
-        is_write_data_ex         <= (others => '0');
-        is_branch_ex             <= '0';
-        destination_register_ex  <= (others => '0');
-        branch_destination_if    <= (others => '0');
+        alu_operand_a_ex        <= (others => '0');
+        alu_operand_b_ex        <= (others => '0');
+        alu_operator_ex         <= ALU_ADD;
+        is_requisition_ex       <= '0';
+        is_write_ex             <= '0';
+        is_write_data_ex        <= (others => '0');
+        is_branch_ex            <= '0';
+        destination_register_ex <= (others => '0');
+        branch_destination_if   <= (others => '0');
       else
-        alu_operand_a_ex         <= alu_operand_a;
-        alu_operand_b_ex         <= alu_operand_b;
-        alu_operator_ex          <= alu_operator;
-        is_requisition_ex        <= is_requisition;
-        is_write_ex              <= is_write;
-        is_write_data_ex         <= next_is_write_data_ex;
-        destination_register_ex  <= destination_register;
-        branch_destination_if    <= next_branch_destination;
-        is_branch_ex             <= is_branch;
+        alu_operand_a_ex        <= alu_operand_a;
+        alu_operand_b_ex        <= alu_operand_b;
+        alu_operator_ex         <= alu_operator;
+        is_requisition_ex       <= is_requisition;
+        is_write_ex             <= is_write;
+        is_write_data_ex        <= next_is_write_data_ex;
+        destination_register_ex <= destination_register;
+        branch_destination_if   <= next_branch_destination;
+        is_branch_ex            <= is_branch;
       end if;
     end if;
   end process sequentialprocess;
@@ -193,11 +193,11 @@ begin  -- architecture behavioural
   combinationalprocess : process (alu_result, current_mux_controller_a,
                                   current_mux_controller_b,
                                   current_mux_controller_c,
-                                  data_read_from_memory, immediate_extension,
-                                  is_branch, mux_controller_a,
-                                  mux_controller_b, read_address_a,
-                                  read_address_b, read_data_a, read_data_b,
-                                  write_address_y, write_address_z,
+                                  immediate_extension, is_branch,
+                                  mux_controller_a, mux_controller_b,
+                                  read_address_a, read_address_b, read_data_a,
+                                  read_data_b, write_address_y,
+                                  write_address_z, write_data_y,
                                   write_enable_y, write_enable_z) is
   begin  -- process combinationalprocess
     -- mux to define origin of signal alu_operand_a
@@ -205,7 +205,7 @@ begin  -- architecture behavioural
       when ALU_SOURCE_ZERO          => alu_operand_a <= (others => '0');
       when ALU_SOURCE_FROM_REGISTER => alu_operand_a <= read_data_a;
       when ALU_SOURCE_FROM_ALU      => alu_operand_a <= alu_result;
-      when ALU_SOURCE_FROM_WB_STAGE => alu_operand_a <= data_read_from_memory;
+      when ALU_SOURCE_FROM_WB_STAGE => alu_operand_a <= write_data_y;
       when ALU_SOURCE_FROM_IMM      => alu_operand_a <= immediate_extension;
       when others                   => alu_operand_a <= (others => '0');
     end case;
@@ -215,7 +215,7 @@ begin  -- architecture behavioural
       when ALU_SOURCE_ZERO          => alu_operand_b <= (others => '0');
       when ALU_SOURCE_FROM_REGISTER => alu_operand_b <= read_data_b;
       when ALU_SOURCE_FROM_ALU      => alu_operand_b <= alu_result;
-      when ALU_SOURCE_FROM_WB_STAGE => alu_operand_b <= data_read_from_memory;
+      when ALU_SOURCE_FROM_WB_STAGE => alu_operand_b <= write_data_y;
       when ALU_SOURCE_FROM_IMM      => alu_operand_b <= immediate_extension;
       when others                   => alu_operand_b <= (others => '0');
     end case;
@@ -225,7 +225,7 @@ begin  -- architecture behavioural
       when ALU_SOURCE_ZERO          => next_is_write_data_ex <= (others => '0');
       when ALU_SOURCE_FROM_REGISTER => next_is_write_data_ex <= read_data_b;
       when ALU_SOURCE_FROM_ALU      => next_is_write_data_ex <= alu_result;
-      when ALU_SOURCE_FROM_WB_STAGE => next_is_write_data_ex <= data_read_from_memory;
+      when ALU_SOURCE_FROM_WB_STAGE => next_is_write_data_ex <= write_data_y;
       when ALU_SOURCE_FROM_IMM      => next_is_write_data_ex <= immediate_extension;
       when others                   => next_is_write_data_ex <= (others => '0');
     end case;
