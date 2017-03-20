@@ -8,43 +8,40 @@ use lib_vhdl.phelmino_definitions.all;
 library lib_fpga;
 use lib_fpga.memory_definitions.all;
 
+--library lib_synth_fpga;
+--use lib_synth_fpga.all;
+
 entity test_phelmino is
 
 end entity test_phelmino;
 
 architecture behavioural of test_phelmino is
 
-  component phelmino
+  component system
     port (
-      clk           : in  std_logic;
-      rst_n         : in  std_logic;
-      core_input    : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      core_output   : out std_logic_vector(WORD_WIDTH-1 downto 0);
-      hex_display_1 : out std_logic_vector(6 downto 0);
-      hex_display_2 : out std_logic_vector(6 downto 0);
-      hex_display_3 : out std_logic_vector(6 downto 0);
-      hex_display_4 : out std_logic_vector(6 downto 0)); 
+      CLOCK_50               : in  std_logic;
+      RESET                  : in  std_logic;
+      core_output            : out std_logic_vector(WORD_WIDTH-1 downto 0);
+      HEX0, HEX1, HEX2, HEX3 : out std_logic_vector(6 downto 0)); 
   end component;
-  signal clk           : std_logic                               := '0';
-  signal rst_n         : std_logic                               := '0';
-  signal core_input    : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
-  signal core_output   : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
-  signal hex_display_1 : std_logic_vector(6 downto 0)            := (others => '0');
-  signal hex_display_2 : std_logic_vector(6 downto 0)            := (others => '0');
-  signal hex_display_3 : std_logic_vector(6 downto 0)            := (others => '0');
-  signal hex_display_4 : std_logic_vector(6 downto 0)            := (others => '0');
-
+  signal CLOCK_50               : std_logic := '0';
+  signal RESET                  : std_logic := '0';
+  signal core_output            : std_logic_vector(31 downto 0);
+  signal HEX0, HEX1, HEX2, HEX3 : std_logic_vector(6 downto 0);
+  
 begin  -- architecture behavioural
 
-  clk   <= not clk after 5 ns;
-  rst_n <= '1'     after 7 ns;
+  CLOCK_50 <= not CLOCK_50 after 10 ns;
+  RESET    <= '1'          after 15 ns;
 
-  dut : entity lib_fpga.phelmino
+  dut : system
     port map (
-      clk         => clk,
-      rst_n       => rst_n,
-      core_input  => core_input,
-      core_output => core_output);
-
+      CLOCK_50    => CLOCK_50,
+      RESET       => RESET,
+      core_output => core_output,
+      HEX0        => HEX0,
+      HEX1        => HEX1,
+      HEX2        => HEX2,
+      HEX3        => HEX3); 
 
 end architecture behavioural;

@@ -71,6 +71,7 @@ architecture behavioural of phelmino_core is
       write_address_y         : in  std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       write_data_y            : in  std_logic_vector(WORD_WIDTH-1 downto 0);
       alu_result              : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      data_read_from_memory   : in  std_logic_vector(WORD_WIDTH-1 downto 0);
       pc                      : in  std_logic_vector(WORD_WIDTH-1 downto 0);
       ready_if                : out std_logic;
       ready                   : in  std_logic);
@@ -131,6 +132,7 @@ architecture behavioural of phelmino_core is
       destination_register     : in  std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       is_requisition           : in  std_logic;
       data_read_data           : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      data_read_from_memory_id : out std_logic_vector(WORD_WIDTH-1 downto 0);
       data_read_data_valid     : in  std_logic;
       write_enable_y_id        : out std_logic;
       write_address_y_id       : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
@@ -140,6 +142,7 @@ architecture behavioural of phelmino_core is
   signal write_enable_y_id        : std_logic;
   signal write_address_y_id       : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
   signal write_data_y_id          : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal data_read_from_memory_id : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal ready_ex                 : std_logic;
 
 begin  -- architecture behavioural
@@ -182,6 +185,7 @@ begin  -- architecture behavioural
       write_data_y            => write_data_y_id,
       pc                      => pc_id,
       alu_result              => alu_result_id,
+      data_read_from_memory   => data_read_from_memory_id,
       ready_if                => ready_if,
       ready                   => ready_id);
 
@@ -224,6 +228,7 @@ begin  -- architecture behavioural
       write_enable_y_id        => write_enable_y_id,
       write_address_y_id       => write_address_y_id,
       write_data_y_id          => write_data_y_id,
+      data_read_from_memory_id => data_read_from_memory_id,
       ready_ex                 => ready_ex);
 
 end architecture behavioural;

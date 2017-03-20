@@ -62,6 +62,7 @@ architecture behavioural of ex_stage is
   signal alu_result                   : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal branch_active                : std_logic;
   signal next_branch_active           : std_logic;
+  signal destination_register_wb_i    : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
   signal next_destination_register_wb : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
 
   signal data_requisition_i     : std_logic;
@@ -101,7 +102,8 @@ begin  -- architecture behavioural
   begin  -- process sequential
     if rst_n = '0' then                 -- asynchronous reset (active low)
       -- destination register
-      destination_register_wb <= (others => '0');
+      destination_register_wb   <= (others => '0');
+      destination_register_wb_i <= (others => '0');
 
       -- branch
       branch_active <= '0';
@@ -119,7 +121,8 @@ begin  -- architecture behavioural
 
     elsif clk'event and clk = '1' then  -- rising clock edge
       -- destination register
-      destination_register_wb <= next_destination_register_wb;
+      destination_register_wb   <= next_destination_register_wb;
+      destination_register_wb_i <= next_destination_register_wb;
 
       -- branch
       branch_active <= next_branch_active;
@@ -148,12 +151,10 @@ begin  -- architecture behavioural
 
     case branch_active is
       when '1' =>
-        next_destination_register_wb <= (others => '0');
-        next_branch_active           <= '0';
+        next_branch_active <= '0';
 
       when others =>
-        next_destination_register_wb <= destination_register;
-        next_branch_active           <= is_branch and alu_result(0);
+        next_branch_active <= is_branch and alu_result(0);
     end case;
 
     case ready is
@@ -173,40 +174,43 @@ begin  -- architecture behavioural
 
         -- it is a new requisition. starts memory interface.
         if (is_requisition = '1' and waiting_for_memory = '0') then
-          data_requisition        <= is_requisition;
-          data_address            <= alu_result;
-          data_write_enable       <= is_write and (is_requisition);
-          data_write_data         <= is_write_data;
-          data_requisition_i      <= is_requisition;
-          data_address_i          <= alu_result;
-          data_write_enable_i     <= is_write and (is_requisition);
-          data_write_data_i       <= is_write_data;
-          next_waiting_for_memory <= not data_grant;
-          next_is_requisition_wb  <= data_grant;
-        -- requisition happening and still waiting for memory to answer
+          data_requisition             <= is_requisition;
+          data_address                 <= alu_result;
+          data_write_enable            <= is_write and (is_requisition);
+          data_write_data              <= is_write_data;
+          data_requisition_i           <= is_requisition;
+          data_address_i               <= alu_result;
+          data_write_enable_i          <= is_write and (is_requisition);
+          data_write_data_i            <= is_write_data;
+          next_waiting_for_memory      <= not data_grant;
+          next_is_requisition_wb       <= data_grant;
+          next_destination_register_wb <= destination_register;
+          -- requisition happening and still waiting for memory to answer
         elsif (waiting_for_memory = '1') then
-          data_requisition        <= last_data_requisition;
-          data_address            <= last_data_address;
-          data_write_enable       <= last_data_write_enable;
-          data_write_data         <= last_data_write_data;
-          data_requisition_i      <= last_data_requisition;
-          data_address_i          <= last_data_address;
-          data_write_enable_i     <= last_data_write_enable;
-          data_write_data_i       <= last_data_write_data;
-          next_waiting_for_memory <= not data_grant;
-          next_is_requisition_wb  <= data_grant;
-        -- just a logical operation
+          data_requisition             <= last_data_requisition;
+          data_address                 <= last_data_address;
+          data_write_enable            <= last_data_write_enable;
+          data_write_data              <= last_data_write_data;
+          data_requisition_i           <= last_data_requisition;
+          data_address_i               <= last_data_address;
+          data_write_enable_i          <= last_data_write_enable;
+          data_write_data_i            <= last_data_write_data;
+          next_waiting_for_memory      <= not data_grant;
+          next_is_requisition_wb       <= data_grant;
+          next_destination_register_wb <= destination_register_wb_i;
+          -- just a logical operation
         else
-          data_requisition        <= '0';
-          data_address            <= (others => '0');
-          data_write_enable       <= '0';
-          data_write_data         <= (others => '0');
-          data_requisition_i      <= '0';
-          data_address_i          <= (others => '0');
-          data_write_enable_i     <= '0';
-          data_write_data_i       <= (others => '0');
-          next_waiting_for_memory <= '0';
-          next_is_requisition_wb  <= '0';
+          data_requisition             <= '0';
+          data_address                 <= (others => '0');
+          data_write_enable            <= '0';
+          data_write_data              <= (others => '0');
+          data_requisition_i           <= '0';
+          data_address_i               <= (others => '0');
+          data_write_enable_i          <= '0';
+          data_write_data_i            <= (others => '0');
+          next_waiting_for_memory      <= '0';
+          next_is_requisition_wb       <= '0';
+          next_destination_register_wb <= (others => '0');
         end if;
 
     end case;
