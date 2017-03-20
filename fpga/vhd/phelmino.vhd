@@ -15,7 +15,12 @@ entity phelmino is
     rst_n : in std_logic;
 
     core_input  : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-    core_output : out std_logic_vector(WORD_WIDTH-1 downto 0));
+    core_output : out std_logic_vector(WORD_WIDTH-1 downto 0);
+
+    hex_display_1 : out std_logic_vector(6 downto 0);
+    hex_display_2 : out std_logic_vector(6 downto 0);
+    hex_display_3 : out std_logic_vector(6 downto 0);
+    hex_display_4 : out std_logic_vector(6 downto 0));
 
 end entity phelmino;
 
@@ -38,15 +43,19 @@ architecture behavioural of phelmino is
       data_read_data_valid : in  std_logic);
   end component phelmino_core;
 
-  component memory_controller is
+  component memory_controller
     generic (
       depth : natural;
-      width : natural);
+      width : natural); 
     port (
       clk                  : in  std_logic;
       rst_n                : in  std_logic;
       core_input           : in  std_logic_vector(width-1 downto 0);
       core_output          : out std_logic_vector(width-1 downto 0);
+      hex_display_1        : out std_logic_vector(6 downto 0);
+      hex_display_2        : out std_logic_vector(6 downto 0);
+      hex_display_3        : out std_logic_vector(6 downto 0);
+      hex_display_4        : out std_logic_vector(6 downto 0);
       instr_requisition    : in  std_logic;
       instr_address        : in  std_logic_vector(width-1 downto 0);
       instr_grant          : out std_logic;
@@ -58,8 +67,8 @@ architecture behavioural of phelmino is
       data_write_data      : in  std_logic_vector(width-1 downto 0);
       data_read_data       : out std_logic_vector(width-1 downto 0);
       data_grant           : out std_logic;
-      data_read_data_valid : out std_logic);
-  end component memory_controller;
+      data_read_data_valid : out std_logic); 
+  end component;
 
   signal instr_requisition    : std_logic;
   signal instr_address        : std_logic_vector(WORD_WIDTH-1 downto 0);
@@ -92,7 +101,7 @@ begin  -- architecture behavioural
       data_grant           => data_grant,
       data_read_data_valid => data_read_data_valid);
 
-  controller_memory : entity lib_fpga.memory_controller
+  controller_memory : memory_controller
     generic map (
       depth => MEMORY_DEPTH,
       width => WORD_WIDTH)
@@ -101,6 +110,10 @@ begin  -- architecture behavioural
       rst_n                => rst_n,
       core_input           => core_input,
       core_output          => core_output,
+      hex_display_1        => hex_display_1,
+      hex_display_2        => hex_display_2,
+      hex_display_3        => hex_display_3,
+      hex_display_4        => hex_display_4,
       instr_requisition    => instr_requisition,
       instr_address        => instr_address,
       instr_grant          => instr_grant,

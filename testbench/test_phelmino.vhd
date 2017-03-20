@@ -14,17 +14,25 @@ end entity test_phelmino;
 
 architecture behavioural of test_phelmino is
 
-  component phelmino is
+  component phelmino
     port (
-      clk         : in  std_logic;
-      rst_n       : in  std_logic;
-      core_input  : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      core_output : out std_logic_vector(WORD_WIDTH-1 downto 0));
-  end component phelmino;
-  signal clk         : std_logic                               := '0';
-  signal rst_n       : std_logic                               := '0';
-  signal core_input  : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
-  signal core_output : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
+      clk           : in  std_logic;
+      rst_n         : in  std_logic;
+      core_input    : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      core_output   : out std_logic_vector(WORD_WIDTH-1 downto 0);
+      hex_display_1 : out std_logic_vector(6 downto 0);
+      hex_display_2 : out std_logic_vector(6 downto 0);
+      hex_display_3 : out std_logic_vector(6 downto 0);
+      hex_display_4 : out std_logic_vector(6 downto 0)); 
+  end component;
+  signal clk           : std_logic                               := '0';
+  signal rst_n         : std_logic                               := '0';
+  signal core_input    : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
+  signal core_output   : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
+  signal hex_display_1 : std_logic_vector(6 downto 0)            := (others => '0');
+  signal hex_display_2 : std_logic_vector(6 downto 0)            := (others => '0');
+  signal hex_display_3 : std_logic_vector(6 downto 0)            := (others => '0');
+  signal hex_display_4 : std_logic_vector(6 downto 0)            := (others => '0');
 
 begin  -- architecture behavioural
 

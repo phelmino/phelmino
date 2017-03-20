@@ -43,7 +43,6 @@ entity id_stage is
 
     -- forwarding signals
     alu_result            : in std_logic_vector(WORD_WIDTH-1 downto 0);
-    data_read_from_memory : in std_logic_vector(WORD_WIDTH-1 downto 0);
 
     -- pipeline control signals
     ready_if : out std_logic;
