@@ -32,3 +32,4 @@ compile ram.vhd
 compile seven_segments.vhd 
 compile memory_controller.vhd 
 compile phelmino.vhd 
+compile system.vhd 
