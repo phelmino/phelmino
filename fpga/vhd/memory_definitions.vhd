@@ -13,7 +13,7 @@ package memory_definitions is
   constant ROM_END   : natural := 16#7F#;
   constant ROM_DEPTH : natural := 8;
   constant RAM_BEGIN : natural := 16#80#;
-  constant RAM_END   : natural := 16#FF#;
+  constant RAM_END   : natural := 16#FE#;
   constant RAM_DEPTH : natural := 8;
   constant HEX_ADDR  : natural := 16#FE#;
   constant IO_ADDR   : natural := 16#FF#;

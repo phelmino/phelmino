@@ -11,9 +11,6 @@ entity wb_stage is
     clk   : in std_logic;
     rst_n : in std_logic;
 
-    -- forwarding
-    data_read_from_memory_id : out std_logic_vector(WORD_WIDTH-1 downto 0);
-
     -- destination register
     destination_register : in std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
 
@@ -42,9 +39,6 @@ begin  -- architecture behavioural
   -- todo reactivate this
   ready_ex <= '1' when (is_requisition = '0') else data_read_data_valid;
   -- ready_ex <= '1';
-
-  -- forwards data from memory directly to id stage
-  data_read_from_memory_id <= data_read_data;
 
   sequential_process : process (clk, rst_n) is
   begin  -- process sequential_process

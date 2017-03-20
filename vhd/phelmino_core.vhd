@@ -71,7 +71,6 @@ architecture behavioural of phelmino_core is
       write_address_y         : in  std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       write_data_y            : in  std_logic_vector(WORD_WIDTH-1 downto 0);
       alu_result              : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      data_read_from_memory   : in  std_logic_vector(WORD_WIDTH-1 downto 0);
       pc                      : in  std_logic_vector(WORD_WIDTH-1 downto 0);
       ready_if                : out std_logic;
       ready                   : in  std_logic);
@@ -129,7 +128,6 @@ architecture behavioural of phelmino_core is
     port (
       clk                      : in  std_logic;
       rst_n                    : in  std_logic;
-      data_read_from_memory_id : out std_logic_vector(WORD_WIDTH-1 downto 0);
       destination_register     : in  std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       is_requisition           : in  std_logic;
       data_read_data           : in  std_logic_vector(WORD_WIDTH-1 downto 0);
@@ -139,7 +137,6 @@ architecture behavioural of phelmino_core is
       write_data_y_id          : out std_logic_vector(WORD_WIDTH-1 downto 0);
       ready_ex                 : out std_logic);
   end component wb_stage;
-  signal data_read_from_memory_id : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal write_enable_y_id        : std_logic;
   signal write_address_y_id       : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
   signal write_data_y_id          : std_logic_vector(WORD_WIDTH-1 downto 0);
@@ -185,7 +182,6 @@ begin  -- architecture behavioural
       write_data_y            => write_data_y_id,
       pc                      => pc_id,
       alu_result              => alu_result_id,
-      data_read_from_memory   => data_read_from_memory_id,
       ready_if                => ready_if,
       ready                   => ready_id);
 
@@ -221,7 +217,6 @@ begin  -- architecture behavioural
     port map (
       clk                      => clk,
       rst_n                    => rst_n,
-      data_read_from_memory_id => data_read_from_memory_id,
       destination_register     => destination_register_wb,
       is_requisition           => is_requisition_wb,
       data_read_data           => data_read_data,
