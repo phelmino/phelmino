@@ -36,11 +36,11 @@ architecture behavioural of rom is
      7      => x"004f8f93",             -- addi t6, t6, 4
                                         -- <loop>
      8      => x"ff8fa083",             -- lw ra, -8(t6)
-     9      => x"002081b3",             -- add gp, ra, sp
-     10     => x"003fa023",             -- sw gp, 0(t6)
-     11     => x"004f8f93",             -- addi t6, t6, 4
-     12     => x"ffff0f13",             -- addi t5, t5, -1
-     13     => x"00018113",             -- mv sp, gp
+     9      => x"ffcfa103",             -- lw sp, -4(t6)
+     10     => x"002081b3",             -- add gp, ra, sp
+     11     => x"003fa023",             -- sw gp, 0(t6)
+     12     => x"004f8f93",             -- addi t6, t6, 4
+     13     => x"ffff0f13",             -- addi t5, t5, -1
      14     => x"fe0f12e3",             -- bnez t5, 20 <loop>
      15     => x"3e302c23",             -- sw gp, 1016(zero)
      others => NOP);

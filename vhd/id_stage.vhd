@@ -42,11 +42,12 @@ entity id_stage is
     write_data_y    : in std_logic_vector(WORD_WIDTH-1 downto 0);
 
     -- forwarding signals
-    alu_result            : in std_logic_vector(WORD_WIDTH-1 downto 0);
-
+    alu_result            : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+    data_read_from_memory : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+    
     -- pipeline control signals
-    ready_if : out std_logic;
-    ready    : in  std_logic);
+    ready_if              : out std_logic;
+    ready                 : in  std_logic);
 
 end entity id_stage;
 
@@ -192,11 +193,11 @@ begin  -- architecture behavioural
   combinationalprocess : process (alu_result, current_mux_controller_a,
                                   current_mux_controller_b,
                                   current_mux_controller_c,
-                                  immediate_extension, is_branch,
-                                  mux_controller_a, mux_controller_b,
-                                  read_address_a, read_address_b, read_data_a,
-                                  read_data_b, write_address_y,
-                                  write_address_z, write_data_y,
+                                  data_read_from_memory, immediate_extension,
+                                  is_branch, mux_controller_a,
+                                  mux_controller_b, read_address_a,
+                                  read_address_b, read_data_a, read_data_b,
+                                  write_address_y, write_address_z,
                                   write_enable_y, write_enable_z) is
   begin  -- process combinationalprocess
     -- mux to define origin of signal alu_operand_a
@@ -204,7 +205,7 @@ begin  -- architecture behavioural
       when ALU_SOURCE_ZERO          => alu_operand_a <= (others => '0');
       when ALU_SOURCE_FROM_REGISTER => alu_operand_a <= read_data_a;
       when ALU_SOURCE_FROM_ALU      => alu_operand_a <= alu_result;
-      when ALU_SOURCE_FROM_WB_STAGE => alu_operand_a <= write_data_y;
+      when ALU_SOURCE_FROM_WB_STAGE => alu_operand_a <= data_read_from_memory;
       when ALU_SOURCE_FROM_IMM      => alu_operand_a <= immediate_extension;
       when others                   => alu_operand_a <= (others => '0');
     end case;
@@ -214,7 +215,7 @@ begin  -- architecture behavioural
       when ALU_SOURCE_ZERO          => alu_operand_b <= (others => '0');
       when ALU_SOURCE_FROM_REGISTER => alu_operand_b <= read_data_b;
       when ALU_SOURCE_FROM_ALU      => alu_operand_b <= alu_result;
-      when ALU_SOURCE_FROM_WB_STAGE => alu_operand_b <= write_data_y;
+      when ALU_SOURCE_FROM_WB_STAGE => alu_operand_b <= data_read_from_memory;
       when ALU_SOURCE_FROM_IMM      => alu_operand_b <= immediate_extension;
       when others                   => alu_operand_b <= (others => '0');
     end case;
@@ -224,7 +225,7 @@ begin  -- architecture behavioural
       when ALU_SOURCE_ZERO          => next_is_write_data_ex <= (others => '0');
       when ALU_SOURCE_FROM_REGISTER => next_is_write_data_ex <= read_data_b;
       when ALU_SOURCE_FROM_ALU      => next_is_write_data_ex <= alu_result;
-      when ALU_SOURCE_FROM_WB_STAGE => next_is_write_data_ex <= write_data_y;
+      when ALU_SOURCE_FROM_WB_STAGE => next_is_write_data_ex <= data_read_from_memory;
       when ALU_SOURCE_FROM_IMM      => next_is_write_data_ex <= immediate_extension;
       when others                   => next_is_write_data_ex <= (others => '0');
     end case;

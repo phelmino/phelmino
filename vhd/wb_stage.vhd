@@ -24,6 +24,9 @@ entity wb_stage is
     write_address_y_id : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
     write_data_y_id    : out std_logic_vector(WORD_WIDTH-1 downto 0);
 
+    -- forwarding
+    data_read_from_memory_id : out std_logic_vector(WORD_WIDTH-1 downto 0);
+
     -- pipeline propagation control signals
     ready_ex : out std_logic);
 
@@ -37,8 +40,9 @@ begin  -- architecture behavioural
 
   -- ready if memory transaction finished.
   -- todo reactivate this
-  ready_ex <= '1' when (is_requisition = '0') else data_read_data_valid;
+  ready_ex                 <= '1' when (is_requisition = '0') else data_read_data_valid;
   -- ready_ex <= '1';
+  data_read_from_memory_id <= data_read_data;
 
   sequential_process : process (clk, rst_n) is
   begin  -- process sequential_process

@@ -5,9 +5,8 @@ use ieee.numeric_std.all;
 library lib_vhdl;
 use lib_vhdl.phelmino_definitions.all;
 
-library lib_nanoproc;
-use lib_nanoproc.all;
-use lib_nanoproc.nano_pkg.all;
+library lib_fpga;
+use lib_fpga.memory_definitions.all;
 
 entity system is
 
@@ -36,7 +35,7 @@ architecture structural of system is
   signal next_core_input : std_logic_vector(WORD_WIDTH-1 downto 0);
 begin  -- architecture structural
 
-  phelmino_1 : entity lib_vhdl.phelmino
+  phelmino_1 : entity lib_fpga.phelmino
     port map (
       clk           => CLOCK_50,
       rst_n         => RESET,
