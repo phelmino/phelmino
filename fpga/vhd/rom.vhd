@@ -66,6 +66,12 @@ architecture behavioural of rom is
      5      => x"181fa023",             -- sw ra, 384(t6)
      others => NOP);
 
+  constant meta : rom_data_type :=
+    (0      => x"00100093",             -- li ra, 1
+     1      => x"20002083",             -- lw ra, 512(zero)
+     2      => x"00a08113",             -- addi sp, ra, 10
+     others => NOP);
+
   signal next_output : std_logic_vector(width-1 downto 0);
 
 begin  -- architecture behavioural
@@ -81,7 +87,7 @@ begin  -- architecture behavioural
 
   combinational : process (address) is
   begin  -- process combinational
-    next_output <= fibonacci(to_integer(unsigned(address)));
+    next_output <= meta(to_integer(unsigned(address)));
   end process combinational;
 
 end architecture behavioural;
