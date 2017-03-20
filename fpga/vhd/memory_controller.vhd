@@ -24,10 +24,10 @@ entity memory_controller is
     core_output : out std_logic_vector(width-1 downto 0);
 
     -- seven segments display
+    hex_display_0 : out std_logic_vector(6 downto 0);
     hex_display_1 : out std_logic_vector(6 downto 0);
     hex_display_2 : out std_logic_vector(6 downto 0);
     hex_display_3 : out std_logic_vector(6 downto 0);
-    hex_display_4 : out std_logic_vector(6 downto 0);
 
     -- instruction memory interface
     instr_requisition : in  std_logic;
@@ -139,22 +139,22 @@ begin  -- architecture behavioural
   seven_segments_1 : seven_segments
     port map (
       digit  => current_hex(3 downto 0),
-      output => hex_display_1);
+      output => hex_display_0);
 
   seven_segments_2 : seven_segments
     port map (
       digit  => current_hex(7 downto 4),
-      output => hex_display_2);
+      output => hex_display_1);
 
   seven_segments_3 : seven_segments
     port map (
       digit  => current_hex(11 downto 8),
-      output => hex_display_3);
+      output => hex_display_2);
 
   seven_segments_4 : seven_segments
     port map (
       digit  => current_hex(15 downto 12),
-      output => hex_display_4);
+      output => hex_display_3);
 
   sequential : process (clk, rst_n) is
   begin  -- process sequential

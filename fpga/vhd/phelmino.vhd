@@ -17,10 +17,10 @@ entity phelmino is
     core_input  : in  std_logic_vector(WORD_WIDTH-1 downto 0);
     core_output : out std_logic_vector(WORD_WIDTH-1 downto 0);
 
+    hex_display_0 : out std_logic_vector(6 downto 0);
     hex_display_1 : out std_logic_vector(6 downto 0);
     hex_display_2 : out std_logic_vector(6 downto 0);
-    hex_display_3 : out std_logic_vector(6 downto 0);
-    hex_display_4 : out std_logic_vector(6 downto 0));
+    hex_display_3 : out std_logic_vector(6 downto 0));
 
 end entity phelmino;
 
@@ -52,10 +52,10 @@ architecture behavioural of phelmino is
       rst_n                : in  std_logic;
       core_input           : in  std_logic_vector(width-1 downto 0);
       core_output          : out std_logic_vector(width-1 downto 0);
+      hex_display_0        : out std_logic_vector(6 downto 0);
       hex_display_1        : out std_logic_vector(6 downto 0);
       hex_display_2        : out std_logic_vector(6 downto 0);
       hex_display_3        : out std_logic_vector(6 downto 0);
-      hex_display_4        : out std_logic_vector(6 downto 0);
       instr_requisition    : in  std_logic;
       instr_address        : in  std_logic_vector(width-1 downto 0);
       instr_grant          : out std_logic;
@@ -110,10 +110,10 @@ begin  -- architecture behavioural
       rst_n                => rst_n,
       core_input           => core_input,
       core_output          => core_output,
+      hex_display_0        => hex_display_0,
       hex_display_1        => hex_display_1,
       hex_display_2        => hex_display_2,
       hex_display_3        => hex_display_3,
-      hex_display_4        => hex_display_4,
       instr_requisition    => instr_requisition,
       instr_address        => instr_address,
       instr_grant          => instr_grant,
