@@ -22,7 +22,7 @@ architecture behavioural of alu is
 
   signal alu_operand_a_unsigned : unsigned(WORD_WIDTH-1 downto 0);
   signal alu_operand_b_unsigned : unsigned(WORD_WIDTH-1 downto 0);
-  signal alu_result_unsigned    : unsigned(WORD_WIDTH downto 0);
+  signal alu_result_unsigned    : unsigned(WORD_WIDTH-1 downto 0);
 
   signal comp_equal     : std_logic_vector(0 downto 0);
   signal comp_less_than : std_logic_vector(0 downto 0);
@@ -31,7 +31,7 @@ begin  -- architecture behavioural
 
   alu_operand_a_unsigned <= unsigned(alu_operand_a);
   alu_operand_b_unsigned <= unsigned(alu_operand_b);
-  alu_result             <= std_logic_vector(alu_result_unsigned(WORD_WIDTH-1 downto 0));
+  alu_result             <= std_logic_vector(alu_result_unsigned);
 
   comp_equal     <= "1" when alu_operand_a = alu_operand_b                   else "0";
   comp_less_than <= "1" when alu_operand_a_unsigned < alu_operand_b_unsigned else "0";
@@ -42,14 +42,14 @@ begin  -- architecture behavioural
   -- outputs: alu_result
   combinational_alu : process (alu_operand_a_unsigned, alu_operand_b_unsigned,
                                alu_operator, comp_equal, comp_less_than) is
-    constant zero_padding : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
+    constant zero_padding : std_logic_vector(WORD_WIDTH-2 downto 0) := (others => '0');
   begin  -- process combinatorial_alu
     case alu_operator is
-      when ALU_ADD => alu_result_unsigned <= ('0' & alu_operand_a_unsigned) + ('0' & alu_operand_b_unsigned);
-      when ALU_SUB => alu_result_unsigned <= ('0' & alu_operand_a_unsigned) - ('0' & alu_operand_b_unsigned);
-      when ALU_XOR => alu_result_unsigned <= ('0' & alu_operand_a_unsigned) xor ('0' & alu_operand_b_unsigned);
-      when ALU_OR  => alu_result_unsigned <= ('0' & alu_operand_a_unsigned) or ('0' & alu_operand_b_unsigned);
-      when ALU_AND => alu_result_unsigned <= ('0' & alu_operand_a_unsigned) and ('0' & alu_operand_b_unsigned);
+      when ALU_ADD => alu_result_unsigned <= alu_operand_a_unsigned + alu_operand_b_unsigned;
+      when ALU_SUB => alu_result_unsigned <= alu_operand_a_unsigned - alu_operand_b_unsigned;
+      when ALU_XOR => alu_result_unsigned <= alu_operand_a_unsigned xor alu_operand_b_unsigned;
+      when ALU_OR  => alu_result_unsigned <= alu_operand_a_unsigned or alu_operand_b_unsigned;
+      when ALU_AND => alu_result_unsigned <= alu_operand_a_unsigned and alu_operand_b_unsigned;
       when ALU_LTU => alu_result_unsigned <= unsigned(zero_padding & comp_less_than);
       when ALU_GEU => alu_result_unsigned <= unsigned(zero_padding & not comp_less_than);
       when ALU_EQ  => alu_result_unsigned <= unsigned(zero_padding & comp_equal);

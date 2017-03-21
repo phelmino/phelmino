@@ -65,9 +65,6 @@ architecture behavioural of ex_stage is
   signal next_destination_register_wb : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
 
   signal data_requisition_i  : std_logic;
-  signal data_address_i      : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal data_write_enable_i : std_logic;
-  signal data_write_data_i   : std_logic_vector(WORD_WIDTH-1 downto 0);
 
   signal waiting_for_memory     : std_logic;
   signal next_is_requisition_wb : std_logic;
