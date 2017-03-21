@@ -94,7 +94,6 @@ begin  -- architecture behavioural
   data_write_enable  <= is_write;
   data_write_data    <= is_write_data;
 
-
   alu_1 : entity lib_vhdl.alu
     port map (
       alu_operand_a => alu_operand_a,
