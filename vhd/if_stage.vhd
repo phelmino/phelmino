@@ -49,14 +49,9 @@ architecture behavioural of if_stage is
   signal empty : std_logic;
   signal full  : std_logic;
 
-  type origin_instruction is (from_fifo, from_last_instruction, bubble);
+  type origin_instruction is (from_fifo, bubble);
   signal current_origin_instruction : origin_instruction;
   signal next_origin_instruction    : origin_instruction;
-
-  signal last_instruction      : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal last_pc               : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal next_last_instruction : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal next_last_pc          : std_logic_vector(WORD_WIDTH-1 downto 0);
 
   component fifo is
     generic (
@@ -78,6 +73,9 @@ architecture behavioural of if_stage is
   signal fifo_input  : std_logic_vector(2*WORD_WIDTH-1 downto 0);
   signal fifo_output : std_logic_vector(2*WORD_WIDTH-1 downto 0);
 
+  signal next_instruction_id : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal next_pc_id          : std_logic_vector(WORD_WIDTH-1 downto 0);
+
 begin  -- architecture behavioural
   instr_address <= current_pc;
   fifo_input    <= current_waiting_pc & instr_reqdata;
@@ -98,7 +96,7 @@ begin  -- architecture behavioural
       empty        => empty,
       full         => full);
 
-  sequential : process (clk, rst_n) is
+  interface_memory : process (clk, rst_n) is
   begin  -- process sequential
     if rst_n = '0' then                 -- asynchronous reset (active low)
       current_pc                 <= (others => '0');
@@ -107,10 +105,6 @@ begin  -- architecture behavioural
       current_origin_instruction <= bubble;
       current_branch_destination <= (others => '0');
       instr_requisition          <= '0';
-
-      last_pc          <= (others => '0');
-      last_instruction <= NOP;
-
     elsif clk'event and clk = '1' then  -- rising clock edge
       current_pc                 <= next_pc;
       current_waiting_pc         <= next_waiting_pc;
@@ -118,38 +112,35 @@ begin  -- architecture behavioural
       current_origin_instruction <= next_origin_instruction;
       current_branch_destination <= branch_destination;
       instr_requisition          <= next_instr_requisition;
-
-      last_instruction <= next_last_instruction;
-      last_pc          <= next_last_pc;
     end if;
-  end process sequential;
+  end process interface_memory;
+
+  interface_id : process (clk, ready, rst_n) is
+  begin  -- process interface_id
+    if rst_n = '0' then                 -- asynchronous reset (active low)
+      pc_id          <= (others => '0');
+      instruction_id <= NOP;
+    elsif clk'event and clk = '1' and ready = '1' then  -- rising clock edge
+      pc_id          <= next_instruction_id;
+      instruction_id <= next_pc_id;
+    end if;
+  end process interface_id;
 
   combinational : process (branch_active, current_branch_destination,
                            current_origin_instruction, current_pc,
                            current_waiting_for_memory, current_waiting_pc,
                            empty, fifo_output, full,
-                           instr_grant, instr_reqvalid, last_instruction,
-                           last_pc, ready) is
+                           instr_grant, instr_reqvalid) is
   begin  -- process combinational
     -- output to stage id
     case current_origin_instruction is
       when bubble =>
-        pc_id                 <= (others => '0');
-        instruction_id        <= NOP;
-        next_last_instruction <= last_instruction;
-        next_last_pc          <= last_pc;
-
-      when from_last_instruction =>
-        pc_id                 <= last_pc;
-        instruction_id        <= last_instruction;
-        next_last_instruction <= last_instruction;
-        next_last_pc          <= last_pc;
+        next_instruction_id <= NOP;
+        next_pc_id          <= (others => '0');
 
       when from_fifo =>
-        pc_id                 <= fifo_output(2*WORD_WIDTH-1 downto WORD_WIDTH);
-        instruction_id        <= fifo_output(WORD_WIDTH-1 downto 0);
-        next_last_pc          <= fifo_output(2*WORD_WIDTH-1 downto WORD_WIDTH);
-        next_last_instruction <= fifo_output(WORD_WIDTH-1 downto 0);
+        next_instruction_id <= fifo_output(2*WORD_WIDTH-1 downto WORD_WIDTH);
+        next_pc_id          <= fifo_output(WORD_WIDTH-1 downto 0);
     end case;
 
     case branch_active is
@@ -185,17 +176,13 @@ begin  -- architecture behavioural
         end if;
 
         -- stage id is ready and fifo is not empty. 
-        if (ready = '1' and empty = '0') then
+        if (empty = '0') then
           read_enable             <= '1';
           next_origin_instruction <= from_fifo;
         -- stage id is ready, but fifo is empty. sends a bubble.
-        elsif (ready = '1' and empty = '1') then
-          read_enable             <= '0';
-          next_origin_instruction <= bubble;
-        -- stage id is not ready. maintains same instruction.
         else
           read_enable             <= '0';
-          next_origin_instruction <= from_last_instruction;
+          next_origin_instruction <= bubble;
         end if;
     end case;
 
