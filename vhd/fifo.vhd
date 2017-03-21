@@ -13,6 +13,7 @@ entity fifo is
 
   port (
     clk          : in  std_logic;
+    enable       : in  std_logic;
     rst_n        : in  std_logic;
     clear        : in  std_logic;
     write_enable : in  std_logic;
@@ -47,13 +48,13 @@ begin  -- architecture behavioural
   -- type   : sequential
   -- inputs : clk, rst_n, read_enable
   -- outputs: data_output
-  readproc : process (clk, rst_n) is
+  readproc : process (clk, enable, rst_n) is
   begin  -- process readproc
     if rst_n = '0' then                 -- asynchronous reset (active low)
       data_output  <= (others => '0');
       read_pointer <= (others => '0');
       data_valid   <= '0';
-    elsif clk'event and clk = '1' then  -- rising clock edge
+    elsif clk'event and clk = '1' and enable = '1' then  -- rising clock edge
       case clear is
         when '1' => read_pointer <= (others => '0');
                     data_output <= (others => '0');
@@ -117,17 +118,17 @@ begin  -- architecture behavioural
           status_counter <= status_counter;
 
           -- only reading, and it is not empty.
-          if ((read_enable = '1') and (write_enable = '0') and (unsigned(status_counter) /= 0)) then
+          if ((enable = '1') and (read_enable = '1') and (write_enable = '0') and (unsigned(status_counter) /= 0)) then
             status_counter <= std_logic_vector(unsigned(status_counter) - 1);
           end if;
 
           -- trying to read and write when full: only reads.
-          if ((read_enable = '1') and (write_enable = '1') and (unsigned(status_counter) = depth)) then
+          if ((enable = '1') and (read_enable = '1') and (write_enable = '1') and (unsigned(status_counter) = depth)) then
             status_counter <= std_logic_vector(unsigned(status_counter) - 1);
           end if;
 
           -- only writing, and it is not full.
-          if ((read_enable = '0') and (write_enable = '1') and (unsigned(status_counter) /= depth)) then
+          if (((enable = '0') or (read_enable = '0')) and (write_enable = '1') and (unsigned(status_counter) /= depth)) then
             status_counter <= std_logic_vector(unsigned(status_counter) + 1);
           end if;
 

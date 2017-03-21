@@ -24,7 +24,7 @@ end entity rom;
 
 architecture behavioural of rom is
 
-  type     rom_data_type is array (0 to 2**MEMORY_DEPTH-1) of std_logic_vector(width-1 downto 0);
+  type rom_data_type is array (0 to 2**MEMORY_DEPTH-1) of std_logic_vector(width-1 downto 0);
   constant fibonacci : rom_data_type :=
     (0      => x"01400f13",             -- li t5, 20
      1      => x"20000f93",             -- li t6, 512
@@ -35,14 +35,14 @@ architecture behavioural of rom is
      6      => x"002fa023",             -- sw sp, 0(t6)
      7      => x"004f8f93",             -- addi t6, t6, 4
                                         -- <loop>
-     9      => x"ff8fa083",             -- lw ra, -8(t6)
-     10     => x"ffcfa103",             -- lw sp, -4(t6)
-     13     => x"002081b3",             -- add gp, ra, sp
-     14     => x"003fa023",             -- sw gp, 0(t6)
-     15     => x"004f8f93",             -- addi t6, t6, 4
-     16     => x"ffff0f13",             -- addi t5, t5, -1
-     17     => x"fc0f1ee3",             -- bnez t5, 20 <loop>
-     18     => x"3e302c23",             -- sw gp, 1016(zero)
+     8      => x"ff8fa083",             -- lw ra, -8(t6)
+     9      => x"ffcfa103",             -- lw sp, -4(t6)
+     12     => x"002081b3",             -- add gp, ra, sp
+     13     => x"003fa023",             -- sw gp, 0(t6)
+     14     => x"004f8f93",             -- addi t6, t6, 4
+     15     => x"ffff0f13",             -- addi t5, t5, -1
+     16     => x"fe0f10e3",             -- bnez t5, 20 <loop>
+     17     => x"3e302c23",             -- sw gp, 1016(zero)
      others => NOP);
 
   constant baby : rom_data_type :=

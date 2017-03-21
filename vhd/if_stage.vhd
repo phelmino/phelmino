@@ -59,6 +59,7 @@ architecture behavioural of if_stage is
       data_width : natural);
     port (
       clk          : in  std_logic;
+      enable       : in  std_logic;
       rst_n        : in  std_logic;
       clear        : in  std_logic;
       write_enable : in  std_logic;
@@ -87,6 +88,7 @@ begin  -- architecture behavioural
       data_width => 2 * WORD_WIDTH)
     port map (
       clk          => clk,
+      enable       => ready,
       rst_n        => rst_n,
       clear        => branch_active,
       write_enable => write_enable,
@@ -102,15 +104,11 @@ begin  -- architecture behavioural
       current_pc                 <= (others => '0');
       current_waiting_pc         <= (others => '0');
       current_waiting_for_memory <= '0';
-      current_origin_instruction <= bubble;
-      current_branch_destination <= (others => '0');
       instr_requisition          <= '0';
     elsif clk'event and clk = '1' then  -- rising clock edge
       current_pc                 <= next_pc;
       current_waiting_pc         <= next_waiting_pc;
       current_waiting_for_memory <= next_waiting_for_memory;
-      current_origin_instruction <= next_origin_instruction;
-      current_branch_destination <= branch_destination;
       instr_requisition          <= next_instr_requisition;
     end if;
   end process interface_memory;
@@ -118,19 +116,25 @@ begin  -- architecture behavioural
   interface_id : process (clk, ready, rst_n) is
   begin  -- process interface_id
     if rst_n = '0' then                 -- asynchronous reset (active low)
-      pc_id          <= (others => '0');
-      instruction_id <= NOP;
+      pc_id                      <= (others => '0');
+      instruction_id             <= NOP;
+      current_branch_destination <= (others => '0');
+      current_origin_instruction <= bubble;
     elsif clk'event and clk = '1' and ready = '1' then  -- rising clock edge
-      pc_id          <= next_instruction_id;
-      instruction_id <= next_pc_id;
+      pc_id                      <= next_pc_id;
+      instruction_id             <= next_instruction_id;
+      current_branch_destination <= branch_destination;
+      current_origin_instruction <= next_origin_instruction;
     end if;
   end process interface_id;
 
   combinational : process (branch_active, current_branch_destination,
                            current_origin_instruction, current_pc,
                            current_waiting_for_memory, current_waiting_pc,
-                           empty, fifo_output, full,
-                           instr_grant, instr_reqvalid) is
+                           empty,
+                           fifo_output(2*WORD_WIDTH-1 downto WORD_WIDTH),
+                           fifo_output(WORD_WIDTH-1 downto 0), full,
+                           instr_grant, instr_reqvalid, ready) is
   begin  -- process combinational
     -- output to stage id
     case current_origin_instruction is
@@ -139,8 +143,8 @@ begin  -- architecture behavioural
         next_pc_id          <= (others => '0');
 
       when from_fifo =>
-        next_instruction_id <= fifo_output(2*WORD_WIDTH-1 downto WORD_WIDTH);
-        next_pc_id          <= fifo_output(WORD_WIDTH-1 downto 0);
+        next_pc_id          <= fifo_output(2*WORD_WIDTH-1 downto WORD_WIDTH);
+        next_instruction_id <= fifo_output(WORD_WIDTH-1 downto 0);
     end case;
 
     case branch_active is

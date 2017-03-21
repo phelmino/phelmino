@@ -14,6 +14,7 @@ architecture behavioural of test_fifo is
       data_width : natural);
     port (
       clk          : in  std_logic;
+      enable       : in  std_logic;
       rst_n        : in  std_logic;
       clear        : in  std_logic;
       write_enable : in  std_logic;
@@ -26,6 +27,7 @@ architecture behavioural of test_fifo is
   end component prefetch_buffer;
 
   signal clk          : std_logic                     := '0';
+  signal enable       : std_logic                     := '1';
   signal rst_n        : std_logic                     := '0';
   signal clear        : std_logic                     := '0';
   signal write_enable : std_logic                     := '0';
@@ -45,6 +47,7 @@ begin  -- architecture behavioural
       data_width => 32)
     port map (
       clk          => clk,
+      enable       => enable,
       rst_n        => rst_n,
       clear        => clear,
       write_enable => write_enable,
