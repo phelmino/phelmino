@@ -87,7 +87,7 @@ begin  -- architecture behavioural
 
   combinational : process (address) is
   begin  -- process combinational
-    next_output <= meta(to_integer(unsigned(address)));
+    next_output <= fibonacci(to_integer(unsigned(address)));
   end process combinational;
 
 end architecture behavioural;
