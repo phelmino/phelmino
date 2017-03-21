@@ -154,7 +154,7 @@ begin  -- architecture behavioural
         next_pc                 <= current_branch_destination;
         next_waiting_pc         <= current_branch_destination;
         next_origin_instruction <= bubble;
-        next_instr_requisition  <= '1';
+        next_instr_requisition  <= '0';
         read_enable             <= '0';
         write_enable            <= '0';
         next_waiting_for_memory <= '0';
