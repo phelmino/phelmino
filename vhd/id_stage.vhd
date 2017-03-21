@@ -42,12 +42,12 @@ entity id_stage is
     write_data_y    : in std_logic_vector(WORD_WIDTH-1 downto 0);
 
     -- forwarding signals
-    alu_result            : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-    data_read_from_memory : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-    
+    alu_result            : in std_logic_vector(WORD_WIDTH-1 downto 0);
+    data_read_from_memory : in std_logic_vector(WORD_WIDTH-1 downto 0);
+
     -- pipeline control signals
-    ready_if              : out std_logic;
-    ready                 : in  std_logic);
+    ready_if : out std_logic;
+    ready    : in  std_logic);
 
 end entity id_stage;
 
@@ -78,7 +78,6 @@ architecture behavioural of id_stage is
   component decoder is
     port (
       instruction          : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      instruction_valid    : out std_logic;
       is_requisition       : out std_logic;
       is_write             : out std_logic;
       is_branch            : out std_logic;
@@ -90,7 +89,6 @@ architecture behavioural of id_stage is
       destination_register : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       immediate_extension  : out std_logic_vector(WORD_WIDTH-1 downto 0));
   end component decoder;
-  signal instruction_valid       : std_logic;
   signal is_requisition          : std_logic;
   signal is_write                : std_logic;
   signal next_is_write_data_ex   : std_logic_vector(WORD_WIDTH-1 downto 0);
@@ -111,11 +109,13 @@ architecture behavioural of id_stage is
   signal current_mux_controller_c : alu_source;
 
   -- stall detection
-  signal stall : std_logic;
+  signal stall   : std_logic;
+  signal ready_i : std_logic;
 begin  -- architecture behavioural
 
   -- pipeline propagation
-  ready_if <= ready and not stall;
+  ready_i  <= ready and not stall;
+  ready_if <= ready_i;
 
   -- calculates next branch destination
   next_branch_destination <= std_logic_vector(unsigned(pc) + unsigned(immediate_extension));
@@ -141,7 +141,6 @@ begin  -- architecture behavioural
   decoderblock : entity lib_vhdl.decoder
     port map (
       instruction          => instruction,
-      instruction_valid    => instruction_valid,
       is_requisition       => is_requisition,
       is_write             => is_write,
       is_branch            => is_branch,
@@ -153,7 +152,7 @@ begin  -- architecture behavioural
       destination_register => destination_register,
       immediate_extension  => immediate_extension);
 
-  sequentialprocess : process (clk, ready, rst_n) is
+  sequentialprocess : process (clk, ready_i, rst_n) is
   begin  -- process sequentialprocess
     if rst_n = '0' then                 -- asynchronous reset (active low).
       alu_operand_a_ex        <= (others => '0');
@@ -165,7 +164,7 @@ begin  -- architecture behavioural
       is_branch_ex            <= '0';
       destination_register_ex <= (others => '0');
       branch_destination_if   <= (others => '0');
-    elsif clk'event and clk = '1' and ready = '1' then  -- rising clock edge
+    elsif clk'event and clk = '1' and ready_i = '1' then  -- rising clock edge
       if (branch_active = '1') then     -- synchronous reset (active high)
         alu_operand_a_ex        <= (others => '0');
         alu_operand_b_ex        <= (others => '0');
