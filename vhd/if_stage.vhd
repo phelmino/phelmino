@@ -71,15 +71,19 @@ architecture behavioural of if_stage is
   end component fifo;
 
   -- fifo should store the instruction and its pc.
-  signal fifo_input  : std_logic_vector(2*WORD_WIDTH-1 downto 0);
-  signal fifo_output : std_logic_vector(2*WORD_WIDTH-1 downto 0);
+  signal fifo_input       : std_logic_vector(2*WORD_WIDTH-1 downto 0);
+  signal fifo_output      : std_logic_vector(2*WORD_WIDTH-1 downto 0);
+  signal fifo_pc          : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal fifo_instruction : std_logic_vector(WORD_WIDTH-1 downto 0);
 
   signal next_instruction_id : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal next_pc_id          : std_logic_vector(WORD_WIDTH-1 downto 0);
 
 begin  -- architecture behavioural
-  instr_address <= current_pc;
-  fifo_input    <= current_waiting_pc & instr_reqdata;
+  instr_address    <= current_pc;
+  fifo_input       <= current_waiting_pc & instr_reqdata;
+  fifo_pc          <= fifo_output(2*WORD_WIDTH-1 downto WORD_WIDTH);
+  fifo_instruction <= fifo_output(WORD_WIDTH-1 downto 0);
 
   -- instance "prefetch_buffer"
   prefetch_buffer : entity lib_vhdl.fifo
@@ -131,10 +135,8 @@ begin  -- architecture behavioural
   combinational : process (branch_active, current_branch_destination,
                            current_origin_instruction, current_pc,
                            current_waiting_for_memory, current_waiting_pc,
-                           empty,
-                           fifo_output(2*WORD_WIDTH-1 downto WORD_WIDTH),
-                           fifo_output(WORD_WIDTH-1 downto 0), full,
-                           instr_grant, instr_reqvalid, ready) is
+                           empty, fifo_instruction, fifo_pc, full, instr_grant,
+                           instr_reqvalid) is
   begin  -- process combinational
     -- output to stage id
     case current_origin_instruction is
@@ -143,8 +145,8 @@ begin  -- architecture behavioural
         next_pc_id          <= (others => '0');
 
       when from_fifo =>
-        next_pc_id          <= fifo_output(2*WORD_WIDTH-1 downto WORD_WIDTH);
-        next_instruction_id <= fifo_output(WORD_WIDTH-1 downto 0);
+        next_pc_id          <= fifo_pc;
+        next_instruction_id <= fifo_instruction;
     end case;
 
     case branch_active is

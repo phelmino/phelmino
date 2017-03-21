@@ -37,12 +37,12 @@ architecture behavioural of rom is
                                         -- <loop>
      8      => x"ff8fa083",             -- lw ra, -8(t6)
      9      => x"ffcfa103",             -- lw sp, -4(t6)
-     12     => x"002081b3",             -- add gp, ra, sp
-     13     => x"003fa023",             -- sw gp, 0(t6)
-     14     => x"004f8f93",             -- addi t6, t6, 4
-     15     => x"ffff0f13",             -- addi t5, t5, -1
-     16     => x"fe0f10e3",             -- bnez t5, 20 <loop>
-     17     => x"3e302c23",             -- sw gp, 1016(zero)
+     10     => x"002081b3",             -- add gp, ra, sp
+     11     => x"003fa023",             -- sw gp, 0(t6)
+     12     => x"004f8f93",             -- addi t6, t6, 4
+     13     => x"ffff0f13",             -- addi t5, t5, -1
+     14     => x"fe0f14e3",             -- bnez t5, 20 <loop>
+     15     => x"3e302c23",             -- sw gp, 1016(zero)
      others => NOP);
 
   constant baby : rom_data_type :=
@@ -87,7 +87,7 @@ begin  -- architecture behavioural
 
   combinational : process (address) is
   begin  -- process combinational
-    next_output <= fibonacci(to_integer(unsigned(address)));
+    next_output <= meta(to_integer(unsigned(address)));
   end process combinational;
 
 end architecture behavioural;
