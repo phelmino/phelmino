@@ -44,6 +44,7 @@ entity id_stage is
     -- forwarding signals
     alu_result            : in std_logic_vector(WORD_WIDTH-1 downto 0);
     data_read_from_memory : in std_logic_vector(WORD_WIDTH-1 downto 0);
+    data_read_data_valid  : in std_logic;
 
     -- pipeline control signals
     ready_if : out std_logic;
@@ -175,17 +176,15 @@ begin  -- architecture behavioural
       current_stall_state <= next_stall_state;
 
       if ((ready = '1' and valid = '0') or branch_active = '1') then
-        alu_operand_a_ex          <= (others => '0');
-        alu_operand_b_ex          <= (others => '0');
-        alu_operator_ex           <= ALU_ADD;
-        is_requisition_ex         <= '0';
-        is_write_ex               <= '0';
-        is_read_i                 <= '0';
-        is_write_data_ex          <= (others => '0');
-        is_branch_ex              <= '0';
-        destination_register_ex   <= (others => '0');
-        destination_register_ex_i <= (others => '0');
-        branch_destination_if     <= (others => '0');
+        alu_operand_a_ex        <= (others => '0');
+        alu_operand_b_ex        <= (others => '0');
+        alu_operator_ex         <= ALU_ADD;
+        is_requisition_ex       <= '0';
+        is_write_ex             <= '0';
+        is_write_data_ex        <= (others => '0');
+        is_branch_ex            <= '0';
+        destination_register_ex <= (others => '0');
+        branch_destination_if   <= (others => '0');
       end if;
 
       if (valid = '1' and branch_active = '0') then
@@ -207,6 +206,7 @@ begin  -- architecture behavioural
   combinationalprocess : process (alu_result, current_mux_controller_a,
                                   current_mux_controller_b,
                                   current_mux_controller_c,
+                                  current_stall_state, data_read_data_valid,
                                   data_read_from_memory,
                                   destination_register_ex_i,
                                   immediate_extension, is_read_i,
@@ -250,7 +250,7 @@ begin  -- architecture behavioural
     current_mux_controller_a <= mux_controller_a;
     if ((write_enable_z = '1') and (unsigned(write_address_z) /= 0) and (mux_controller_a = ALU_SOURCE_FROM_REGISTER) and (read_address_a = write_address_z)) then
       current_mux_controller_a <= ALU_SOURCE_FROM_ALU;
-    elsif ((write_enable_y = '1') and (unsigned(write_address_y) /= 0) and (mux_controller_a = ALU_SOURCE_FROM_REGISTER) and (read_address_a = write_address_y)) then
+    elsif ((is_read_i = '1') and (unsigned(destination_register_ex_i) /= 0) and (mux_controller_a = ALU_SOURCE_FROM_REGISTER) and (read_address_a = destination_register_ex_i)) then
       current_mux_controller_a <= ALU_SOURCE_FROM_WB_STAGE;
     end if;
 
@@ -258,7 +258,7 @@ begin  -- architecture behavioural
     current_mux_controller_b <= mux_controller_b;
     if ((write_enable_z = '1') and (unsigned(write_address_z) /= 0) and (mux_controller_b = ALU_SOURCE_FROM_REGISTER) and (read_address_b = write_address_z)) then
       current_mux_controller_b <= ALU_SOURCE_FROM_ALU;
-    elsif ((write_enable_y = '1') and (unsigned(write_address_y) /= 0) and (mux_controller_b = ALU_SOURCE_FROM_REGISTER) and (read_address_b = write_address_y)) then
+    elsif ((is_read_i = '1') and (unsigned(destination_register_ex_i) /= 0) and (mux_controller_b = ALU_SOURCE_FROM_REGISTER) and (read_address_b = destination_register_ex_i)) then
       current_mux_controller_b <= ALU_SOURCE_FROM_WB_STAGE;
     end if;
 
@@ -266,7 +266,7 @@ begin  -- architecture behavioural
     current_mux_controller_c <= ALU_SOURCE_FROM_REGISTER;
     if ((write_enable_z = '1') and (unsigned(write_address_z) /= 0) and (read_address_b = write_address_z)) then
       current_mux_controller_c <= ALU_SOURCE_FROM_ALU;
-    elsif ((write_enable_y = '1') and (unsigned(write_address_y) /= 0) and (read_address_b = write_address_y)) then
+    elsif ((is_read_i = '1') and (unsigned(destination_register_ex_i) /= 0) and (read_address_b = destination_register_ex_i)) then
       current_mux_controller_c <= ALU_SOURCE_FROM_WB_STAGE;
     end if;
 
@@ -286,8 +286,9 @@ begin  -- architecture behavioural
       when stalling =>
         stall            <= '1';
         next_stall_state <= stalling;
-        if (write_enable_y = '1') then
+        if (data_read_data_valid = '1') then
           next_stall_state <= normal_execution;
+          stall            <= '0';
         end if;
     end case;
 
