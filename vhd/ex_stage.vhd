@@ -64,17 +64,17 @@ architecture behavioural of ex_stage is
   signal next_branch_active           : std_logic;
   signal next_destination_register_wb : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
 
-  signal data_requisition_i  : std_logic;
+  signal data_requisition_i : std_logic;
 
   signal waiting_for_memory     : std_logic;
   signal next_is_requisition_wb : std_logic;
 
-  signal ready_i : std_logic;
+  signal valid : std_logic;
 
 begin  -- architecture behavioural
 
-  ready_i          <= ready when (waiting_for_memory = '0') else ready and data_grant;
-  ready_id         <= ready_i;
+  valid            <= ready when (waiting_for_memory = '0') else ready and data_grant;
+  ready_id         <= valid;
   alu_result_id    <= alu_result;
   branch_active_if <= branch_active;
   branch_active_id <= branch_active;
@@ -98,7 +98,7 @@ begin  -- architecture behavioural
       alu_operator  => alu_operator,
       alu_result    => alu_result);
 
-  interface_wb : process (clk, ready_i, rst_n) is
+  interface_wb : process (clk, rst_n) is
   begin  -- process memory_interface
     if rst_n = '0' then                 -- asynchronous reset (active low)
       -- destination register
@@ -109,15 +109,28 @@ begin  -- architecture behavioural
 
       -- interface with wb stage
       is_requisition_wb <= '0';
-    elsif clk'event and clk = '1' and ready_i = '1' then  -- rising clock edge
-      -- destination register
-      destination_register_wb <= next_destination_register_wb;
+    elsif clk'event and clk = '1' then  -- rising clock edge
+      if (valid = '1') then
+        -- destination register
+        destination_register_wb <= next_destination_register_wb;
 
-      -- branch
-      branch_active <= next_branch_active;
+        -- branch
+        branch_active <= next_branch_active;
 
-      -- interface with wb stage
-      is_requisition_wb <= next_is_requisition_wb;
+        -- interface with wb stage
+        is_requisition_wb <= next_is_requisition_wb;
+      end if;
+
+      if (ready = '1' and valid = '0') then
+        -- destination register
+        destination_register_wb <= (others => '0');
+
+        -- branch
+        branch_active <= '0';
+
+        -- interface with wb stage
+        is_requisition_wb <= '0';
+      end if;
     end if;
   end process interface_wb;
 
