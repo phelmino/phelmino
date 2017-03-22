@@ -72,6 +72,7 @@ architecture behavioural of phelmino_core is
       write_data_y            : in  std_logic_vector(WORD_WIDTH-1 downto 0);
       alu_result              : in  std_logic_vector(WORD_WIDTH-1 downto 0);
       data_read_from_memory   : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      data_read_data_valid    : in  std_logic;
       pc                      : in  std_logic_vector(WORD_WIDTH-1 downto 0);
       ready_if                : out std_logic;
       ready                   : in  std_logic);
@@ -186,6 +187,7 @@ begin  -- architecture behavioural
       pc                      => pc_id,
       alu_result              => alu_result_id,
       data_read_from_memory   => data_read_from_memory_id,
+      data_read_data_valid    => data_read_data_valid,
       ready_if                => ready_if,
       ready                   => ready_id);
 

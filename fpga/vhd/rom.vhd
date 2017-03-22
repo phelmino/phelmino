@@ -34,7 +34,7 @@ architecture behavioural of rom is
      5      => x"00100113",             -- li sp, 1
      6      => x"002fa023",             -- sw sp, 0(t6)
      7      => x"004f8f93",             -- addi t6, t6, 4
-                                        -- <loop>
+                             -- <loop>
      8      => x"ff8fa083",             -- lw ra, -8(t6)
      9      => x"ffcfa103",             -- lw sp, -4(t6)
      10     => x"002081b3",             -- add gp, ra, sp
@@ -43,6 +43,26 @@ architecture behavioural of rom is
      13     => x"ffff0f13",             -- addi t5, t5, -1
      14     => x"fe0f14e3",             -- bnez t5, 20 <loop>
      15     => x"3e302c23",             -- sw gp, 1016(zero)
+     others => NOP);
+
+  constant fibonacci_hard : rom_data_type :=
+    (0      => x"01400f13",             -- li t5, 20
+     1      => x"20000f93",             -- li t6, 512
+     2      => x"00100093",             -- li ra, 1
+     3      => x"001fa023",             -- sw ra, 0(t6)
+     4      => x"004f8f93",             -- addi t6, t6, 4
+     5      => x"00100113",             -- li sp, 1
+     6      => x"002fa023",             -- sw sp, 0(t6)
+     7      => x"004f8f93",             -- addi t6, t6, 4
+                             -- <loop>
+     8      => x"ff8fa083",             -- lw ra, -8(t6)
+     9      => x"ffcfa103",             -- lw sp, -4(t6)
+     10     => x"00208133",             -- add sp, ra, sp
+     11     => x"002fa023",             -- sw sp, 0(t6)
+     12     => x"004f8f93",             -- addi t6, t6, 4
+     13     => x"ffff0f13",             -- addi t5, t5, -1
+     14     => x"fe0f14e3",             -- bnez t5, 20 <loop>
+     15     => x"3e202c23",             -- sw sp, 1016(zero)
      others => NOP);
 
   constant baby : rom_data_type :=
@@ -87,7 +107,7 @@ begin  -- architecture behavioural
 
   combinational : process (address) is
   begin  -- process combinational
-    next_output <= fibonacci(to_integer(unsigned(address)));
+    next_output <= fibonacci_hard(to_integer(unsigned(address)));
   end process combinational;
 
 end architecture behavioural;
