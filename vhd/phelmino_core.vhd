@@ -12,7 +12,7 @@ entity phelmino_core is
     clk   : in std_logic;
     rst_n : in std_logic;
 
-    -- instruction memory interface
+    -- instruction memory interfaceg
     instr_requisition : out std_logic;
     instr_address     : out std_logic_vector(WORD_WIDTH-1 downto 0);
     instr_grant       : in  std_logic;
@@ -20,13 +20,13 @@ entity phelmino_core is
     instr_reqdata     : in  std_logic_vector(WORD_WIDTH-1 downto 0);
 
     -- data memory interface
-    data_requisition  : out std_logic;
-    data_address      : out std_logic_vector(WORD_WIDTH-1 downto 0);
-    data_write_enable : out std_logic;
-    data_write_data   : out std_logic_vector(WORD_WIDTH-1 downto 0);
-    data_reqdata      : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-    data_grant        : in  std_logic;
-    data_reqvalid     : in  std_logic);
+    data_requisition     : out std_logic;
+    data_address         : out std_logic_vector(WORD_WIDTH-1 downto 0);
+    data_write_enable    : out std_logic;
+    data_write_data      : out std_logic_vector(WORD_WIDTH-1 downto 0);
+    data_read_data       : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+    data_grant           : in  std_logic;
+    data_read_data_valid : in  std_logic);
 
 end entity phelmino_core;
 
@@ -46,10 +46,8 @@ architecture behavioural of phelmino_core is
       branch_destination : in  std_logic_vector(WORD_WIDTH-1 downto 0);
       ready              : in  std_logic);
   end component if_stage;
-  signal instruction_id     : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal pc_id              : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal branch_active      : std_logic;
-  signal branch_destination : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal instruction_id : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal pc_id          : std_logic_vector(WORD_WIDTH-1 downto 0);
 
   component id_stage is
     port (
@@ -61,6 +59,8 @@ architecture behavioural of phelmino_core is
       alu_operator_ex         : out alu_operation;
       destination_register_ex : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       is_requisition_ex       : out std_logic;
+      is_write_ex             : out std_logic;
+      is_write_data_ex        : out std_logic_vector(WORD_WIDTH-1 downto 0);
       is_branch_ex            : out std_logic;
       branch_destination_if   : out std_logic_vector(WORD_WIDTH-1 downto 0);
       branch_active           : in  std_logic;
@@ -72,11 +72,11 @@ architecture behavioural of phelmino_core is
       write_data_y            : in  std_logic_vector(WORD_WIDTH-1 downto 0);
       alu_result              : in  std_logic_vector(WORD_WIDTH-1 downto 0);
       data_read_from_memory   : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      data_read_data_valid    : in  std_logic;
       pc                      : in  std_logic_vector(WORD_WIDTH-1 downto 0);
       ready_if                : out std_logic;
       ready                   : in  std_logic);
   end component id_stage;
-  signal instruction             : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal alu_operand_a_ex        : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal alu_operand_b_ex        : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal alu_operator_ex         : alu_operation;
@@ -84,7 +84,8 @@ architecture behavioural of phelmino_core is
   signal branch_destination_if   : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal destination_register_ex : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
   signal is_requisition_ex       : std_logic;
-  signal pc                      : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal is_write_ex             : std_logic;
+  signal is_write_data_ex        : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal ready_if                : std_logic;
 
   component ex_stage is
@@ -102,6 +103,9 @@ architecture behavioural of phelmino_core is
       write_address_z_id      : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       write_data_z_id         : out std_logic_vector(WORD_WIDTH-1 downto 0);
       is_requisition          : in  std_logic;
+      is_requisition_wb       : out std_logic;
+      is_write                : in  std_logic;
+      is_write_data           : in  std_logic_vector(WORD_WIDTH-1 downto 0);
       data_requisition        : out std_logic;
       data_address            : out std_logic_vector(WORD_WIDTH-1 downto 0);
       data_write_enable       : out std_logic;
@@ -120,24 +124,26 @@ architecture behavioural of phelmino_core is
   signal write_data_z_id         : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal destination_register_wb : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
   signal ready_id                : std_logic;
+  signal is_requisition_wb       : std_logic;
 
   component wb_stage is
     port (
       clk                      : in  std_logic;
       rst_n                    : in  std_logic;
-      data_read_from_memory_id : out std_logic_vector(WORD_WIDTH-1 downto 0);
       destination_register     : in  std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-      data_reqdata             : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      data_reqvalid            : in  std_logic;
+      is_requisition           : in  std_logic;
+      data_read_data           : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      data_read_from_memory_id : out std_logic_vector(WORD_WIDTH-1 downto 0);
+      data_read_data_valid     : in  std_logic;
       write_enable_y_id        : out std_logic;
       write_address_y_id       : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       write_data_y_id          : out std_logic_vector(WORD_WIDTH-1 downto 0);
       ready_ex                 : out std_logic);
   end component wb_stage;
-  signal data_read_from_memory_id : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal write_enable_y_id        : std_logic;
   signal write_address_y_id       : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
   signal write_data_y_id          : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal data_read_from_memory_id : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal ready_ex                 : std_logic;
 
 begin  -- architecture behavioural
@@ -167,6 +173,8 @@ begin  -- architecture behavioural
       alu_operator_ex         => alu_operator_ex,
       destination_register_ex => destination_register_ex,
       is_requisition_ex       => is_requisition_ex,
+      is_write_ex             => is_write_ex,
+      is_write_data_ex        => is_write_data_ex,
       is_branch_ex            => is_branch_ex,
       branch_destination_if   => branch_destination_if,
       branch_active           => branch_active_id,
@@ -179,6 +187,7 @@ begin  -- architecture behavioural
       pc                      => pc_id,
       alu_result              => alu_result_id,
       data_read_from_memory   => data_read_from_memory_id,
+      data_read_data_valid    => data_read_data_valid,
       ready_if                => ready_if,
       ready                   => ready_id);
 
@@ -197,6 +206,9 @@ begin  -- architecture behavioural
       write_address_z_id      => write_address_z_id,
       write_data_z_id         => write_data_z_id,
       is_requisition          => is_requisition_ex,
+      is_requisition_wb       => is_requisition_wb,
+      is_write                => is_write_ex,
+      is_write_data           => is_write_data_ex,
       data_requisition        => data_requisition,
       data_address            => data_address,
       data_write_enable       => data_write_enable,
@@ -211,13 +223,14 @@ begin  -- architecture behavioural
     port map (
       clk                      => clk,
       rst_n                    => rst_n,
-      data_read_from_memory_id => data_read_from_memory_id,
       destination_register     => destination_register_wb,
-      data_reqdata             => data_reqdata,
-      data_reqvalid            => data_reqvalid,
+      is_requisition           => is_requisition_wb,
+      data_read_data           => data_read_data,
+      data_read_data_valid     => data_read_data_valid,
       write_enable_y_id        => write_enable_y_id,
       write_address_y_id       => write_address_y_id,
       write_data_y_id          => write_data_y_id,
+      data_read_from_memory_id => data_read_from_memory_id,
       ready_ex                 => ready_ex);
 
 end architecture behavioural;

@@ -1,5 +1,6 @@
 #!/bin/bash
 HAS_ERROR=0
+ORIG=`pwd`
 
 function compile {
     if [ $HAS_ERROR = 0 ]; then
@@ -17,6 +18,8 @@ function compile {
 
 cd vhd/
 compile compil_phelmino.sh
-cd ../testbench/
+cd ../fpga/vhd/
+compile compil_fpga.sh
+cd ../../testbench/
 compile compil_bench.sh
-cd ..
+cd $ORIG

@@ -31,6 +31,9 @@ entity ex_stage is
 
     -- data memory interface
     is_requisition    : in  std_logic;
+    is_requisition_wb : out std_logic;
+    is_write          : in  std_logic;
+    is_write_data     : in  std_logic_vector(WORD_WIDTH-1 downto 0);
     data_requisition  : out std_logic;
     data_address      : out std_logic_vector(WORD_WIDTH-1 downto 0);
     data_write_enable : out std_logic;
@@ -50,30 +53,43 @@ end entity ex_stage;
 architecture behavioural of ex_stage is
   component alu is
     port (
-      alu_operand_a : in std_logic_vector(WORD_WIDTH-1 downto 0);
-      alu_operand_b : in std_logic_vector(WORD_WIDTH-1 downto 0);
-      alu_operator  : in alu_operation);
+      alu_operand_a : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      alu_operand_b : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      alu_operator  : in  alu_operation;
+      alu_result    : out std_logic_vector(WORD_WIDTH-1 downto 0));
   end component alu;
 
   signal alu_result                   : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal branch_active                : std_logic;
   signal next_branch_active           : std_logic;
   signal next_destination_register_wb : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-  
+
+  signal data_requisition_i : std_logic;
+
+  signal waiting_for_memory     : std_logic;
+  signal next_is_requisition_wb : std_logic;
+
+  signal valid : std_logic;
+
 begin  -- architecture behavioural
 
-  ready_id         <= ready when (is_requisition = '0') else ready and data_grant;
+  valid            <= ready when (waiting_for_memory = '0') else ready and data_grant;
+  ready_id         <= valid;
+  alu_result_id    <= alu_result;
   branch_active_if <= branch_active;
   branch_active_id <= branch_active;
 
   -- gpr
-  write_enable_z_id  <= '1';
+  write_enable_z_id  <= not data_requisition_i;
   write_address_z_id <= destination_register;
   write_data_z_id    <= alu_result;
 
-  -- todo voir quels sont les signaux qui doivent etre relies a l'alu.
-  -- registre, non registre, etc. ca c'est la cause de la boucle
-  -- combinationelle que l'on a trouve.
+  -- memory interface
+  data_address       <= alu_result;
+  data_requisition   <= is_requisition;
+  data_requisition_i <= is_requisition;
+  data_write_enable  <= is_write;
+  data_write_data    <= is_write_data;
 
   alu_1 : entity lib_vhdl.alu
     port map (
@@ -82,56 +98,65 @@ begin  -- architecture behavioural
       alu_operator  => alu_operator,
       alu_result    => alu_result);
 
-  sequential : process (clk, rst_n) is
-  begin  -- process sequential
+  interface_wb : process (clk, rst_n) is
+  begin  -- process memory_interface
     if rst_n = '0' then                 -- asynchronous reset (active low)
-      -- alu
-      alu_result_id <= (others => '0');
-
-      -- memory
-      data_requisition  <= '0';
-      data_address      <= (others => '0');
-      data_write_enable <= '0';
-      data_write_data   <= (others => '0');
-
       -- destination register
       destination_register_wb <= (others => '0');
 
       -- branch
       branch_active <= '0';
 
+      -- interface with wb stage
+      is_requisition_wb <= '0';
     elsif clk'event and clk = '1' then  -- rising clock edge
-      -- alu
-      alu_result_id <= alu_result;
+      if (valid = '1') then
+        -- destination register
+        destination_register_wb <= next_destination_register_wb;
 
-      -- memory
-      data_requisition  <= '0';
-      data_address      <= alu_result;
-      data_write_enable <= '0';
-      data_write_data   <= (others => '0');
+        -- branch
+        branch_active <= next_branch_active;
 
-      -- destination register
-      destination_register_wb <= next_destination_register_wb;
+        -- interface with wb stage
+        is_requisition_wb <= next_is_requisition_wb;
+      end if;
 
-      -- branch
-      branch_active <= next_branch_active;
+      if (ready = '1' and valid = '0') then
+        -- destination register
+        destination_register_wb <= (others => '0');
+
+        -- branch
+        branch_active <= '0';
+
+        -- interface with wb stage
+        is_requisition_wb <= '0';
+      end if;
     end if;
-  end process sequential;
+  end process interface_wb;
 
-  combinational : process (alu_result, branch_active, destination_register,
-                           is_branch)
+  combinational : process (alu_result(0), branch_active, data_grant,
+                           destination_register, is_branch, is_requisition)
   begin  -- process combinational
 
     case branch_active is
       when '1' =>
-        next_destination_register_wb <= (others => '0');
-        next_branch_active           <= '0';
+        next_branch_active <= '0';
 
       when others =>
-        next_destination_register_wb <= destination_register;
-        next_branch_active           <= is_branch and alu_result(0);
+        next_branch_active <= is_branch and alu_result(0);
     end case;
 
+    -- it is a new requisition. starts memory interface.
+    if (is_requisition = '1') then
+      waiting_for_memory           <= not data_grant;
+      next_is_requisition_wb       <= data_grant;
+      next_destination_register_wb <= destination_register;
+    -- just a logical operation
+    else
+      waiting_for_memory           <= '0';
+      next_is_requisition_wb       <= '0';
+      next_destination_register_wb <= (others => '0');
+    end if;
   end process combinational;
 
 end architecture behavioural;
