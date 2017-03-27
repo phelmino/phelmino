@@ -42,6 +42,7 @@ architecture behavioural of if_stage is
   signal next_pc                : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal next_waiting_pc        : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal next_instr_requisition : std_logic;
+  signal instr_requisition_i    : std_logic;
 
   signal current_waiting_for_memory : std_logic;
   signal next_waiting_for_memory    : std_logic;
@@ -78,12 +79,15 @@ architecture behavioural of if_stage is
 
   signal next_instruction_id : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal next_pc_id          : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal clear               : std_logic;
 
 begin  -- architecture behavioural
-  instr_address    <= current_pc;
-  fifo_input       <= current_waiting_pc & instr_reqdata;
-  fifo_pc          <= fifo_output(2*WORD_WIDTH-1 downto WORD_WIDTH);
-  fifo_instruction <= fifo_output(WORD_WIDTH-1 downto 0);
+  instr_address     <= current_pc;
+  instr_requisition <= instr_requisition_i;
+  fifo_input        <= current_waiting_pc & instr_reqdata;
+  fifo_pc           <= fifo_output(2*WORD_WIDTH-1 downto WORD_WIDTH);
+  fifo_instruction  <= fifo_output(WORD_WIDTH-1 downto 0);
+  clear             <= ready and branch_active;
 
   -- instance "prefetch_buffer"
   prefetch_buffer : entity lib_vhdl.fifo
@@ -94,7 +98,7 @@ begin  -- architecture behavioural
       clk          => clk,
       enable       => ready,
       rst_n        => rst_n,
-      clear        => branch_active,
+      clear        => clear,
       write_enable => write_enable,
       data_input   => fifo_input,
       read_enable  => read_enable,
@@ -108,27 +112,29 @@ begin  -- architecture behavioural
       current_pc                 <= (others => '0');
       current_waiting_pc         <= (others => '0');
       current_waiting_for_memory <= '0';
-      instr_requisition          <= '0';
+      instr_requisition_i        <= '0';
     elsif clk'event and clk = '1' then  -- rising clock edge
       current_pc                 <= next_pc;
       current_waiting_pc         <= next_waiting_pc;
       current_waiting_for_memory <= next_waiting_for_memory;
-      instr_requisition          <= next_instr_requisition;
+      instr_requisition_i        <= next_instr_requisition;
     end if;
   end process interface_memory;
 
-  interface_id : process (clk, ready, rst_n) is
+  interface_id : process (clk, rst_n) is
   begin  -- process interface_id
     if rst_n = '0' then                 -- asynchronous reset (active low)
       pc_id                      <= (others => '0');
       instruction_id             <= NOP;
       current_branch_destination <= (others => '0');
       current_origin_instruction <= bubble;
-    elsif clk'event and clk = '1' and ready = '1' then  -- rising clock edge
-      pc_id                      <= next_pc_id;
-      instruction_id             <= next_instruction_id;
-      current_branch_destination <= branch_destination;
-      current_origin_instruction <= next_origin_instruction;
+    elsif clk'event and clk = '1' then  -- rising clock edge
+      if (ready = '1') then
+        pc_id                      <= next_pc_id;
+        instruction_id             <= next_instruction_id;
+        current_branch_destination <= branch_destination;
+        current_origin_instruction <= next_origin_instruction;
+      end if;
     end if;
   end process interface_id;
 
@@ -136,7 +142,7 @@ begin  -- architecture behavioural
                            current_origin_instruction, current_pc,
                            current_waiting_for_memory, current_waiting_pc,
                            empty, fifo_instruction, fifo_pc, full, instr_grant,
-                           instr_reqvalid) is
+                           instr_requisition_i, instr_reqvalid) is
   begin  -- process combinational
     -- output to stage id
     case current_origin_instruction is
@@ -162,7 +168,7 @@ begin  -- architecture behavioural
         next_instr_requisition <= '1';
 
         -- received a grant, starts new requisition after a cycle
-        if (full = '0' and instr_grant = '1') then
+        if (full = '0' and instr_grant = '1' and instr_requisition_i = '1') then
           next_pc                 <= std_logic_vector(unsigned(current_pc) + WORD_WIDTH_IN_BYTES);
           next_waiting_for_memory <= '1';
         -- still no grant, maintains request

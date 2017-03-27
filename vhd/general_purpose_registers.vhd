@@ -38,6 +38,7 @@ end entity general_purpose_registers;
 architecture behavioural of general_purpose_registers is
   type register_array is array (0 to 2**n-1) of std_logic_vector(w-1 downto 0);
   signal gpr : register_array;
+
 begin  -- architecture behavioural
 
   -- purpose: sequential process that refreshes the outputs of the gpr and rewrites the apropriated registers.
@@ -50,6 +51,7 @@ begin  -- architecture behavioural
     if rst_n = '0' then                 -- asynchronous reset (active low)
       -- clears register bank
       gpr <= (others => (others => '0'));
+
     elsif clk'event and clk = '1' then  -- rising clock edge
       -- rewrites specific address in register bank
       -- can not rewrite register r0
