@@ -6,6 +6,7 @@ library lib_vhdl;
 use lib_vhdl.phelmino_definitions.all;
 
 library lib_fpga;
+use lib_fpga.all;
 use lib_fpga.memory_definitions.all;
 
 --library lib_synth_fpga;

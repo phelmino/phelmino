@@ -136,12 +136,16 @@ begin  -- architecture behavioural
         read_address_b       <= (others => '0');
         mux_controller_a     <= ALU_SOURCE_FROM_REGISTER;
         mux_controller_b     <= ALU_SOURCE_FROM_IMM;
-        instruction_valid    <= '1';
         is_requisition       <= '1';
         is_branch            <= '0';
         destination_register <= rdestination;
         alu_operator         <= ALU_ADD;
         is_write             <= '0';
+
+        case func3 is
+          when "010"  => instruction_valid <= '1';
+          when others => instruction_valid <= '0';
+        end case;
 
       -- Adding STORE WORD instruction  case 
       when OPCODE_STORE =>
@@ -149,12 +153,16 @@ begin  -- architecture behavioural
         read_address_b       <= rsource2;
         mux_controller_a     <= ALU_SOURCE_FROM_REGISTER;
         mux_controller_b     <= ALU_SOURCE_FROM_IMM;
-        instruction_valid    <= '1';
         is_requisition       <= '1';
         is_branch            <= '0';
         destination_register <= (others => '0');
         alu_operator         <= ALU_ADD;
         is_write             <= '1';
+
+        case func3 is
+          when "010"  => instruction_valid <= '1';
+          when others => instruction_valid <= '0';
+        end case;
 
       when others =>
         instruction_valid    <= '0';
