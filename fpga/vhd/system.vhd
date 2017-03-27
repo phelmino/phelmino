@@ -14,7 +14,9 @@ entity system is
     CLOCK_50               : in  std_logic;
     RESET                  : in  std_logic;
     core_output            : out std_logic_vector(WORD_WIDTH-1 downto 0);
-    HEX0, HEX1, HEX2, HEX3 : out std_logic_vector(6 downto 0));
+    HEX0, HEX1, HEX2, HEX3 : out std_logic_vector(6 downto 0);
+    SW                     : in  std_logic_vector (9 downto 0);
+    LEDR                   : out std_logic_vector (9 downto 0));
 
 end entity system;
 
@@ -33,7 +35,20 @@ architecture structural of system is
 
   signal core_input      : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal next_core_input : std_logic_vector(WORD_WIDTH-1 downto 0);
+
+  --attribute chip_pin of CLOCK_50 : signal is "L1";  -- Si 50 MHz
+  --attribute chip_pin of RESET    : signal is "R22";
+  --attribute chip_pin of HEX0     : signal is "E2,F1,F2,H1,H2,J1,J2";
+  --attribute chip_pin of HEX1     : signal is "D1,D2,G3,H4,H5,H6,E1";
+  --attribute chip_pin of HEX2     : signal is "D3,E4,E3,C1,C2,G6,G5";
+  --attribute chip_pin of HEX3     : signal is "D4,F3,L8,J4,D6,D5,F4";
+  --attribute chip_pin of SW       : signal is "L2,M1,M2,U11,U12,W12,V12,M22,L21,L22";
+  --attribute chip_pin of LEDR     : signal is "R17,R18,U18,Y18,V19,T18,Y19,U19,R19,R20";
+
 begin  -- architecture structural
+
+  -- data of the switches copied into leds
+  LEDR <= SW;
 
   phelmino_1 : entity lib_fpga.phelmino
     port map (
@@ -56,8 +71,9 @@ begin  -- architecture structural
   end process sequential;
 
   combinational : process (core_input) is
+    constant zero_padding : std_logic_vector(21 downto 0) := (others => '0');
   begin  -- process combinational
-    next_core_input <= std_logic_vector(unsigned(core_input) + 1);
+    next_core_input <= zero_padding & SW;
   end process combinational;
 
 end architecture structural;
