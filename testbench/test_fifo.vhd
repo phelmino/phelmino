@@ -21,7 +21,6 @@ architecture behavioural of test_fifo is
       data_input   : in  std_logic_vector(data_width-1 downto 0);
       read_enable  : in  std_logic;
       data_output  : out std_logic_vector(data_width-1 downto 0);
-      data_valid   : out std_logic;
       empty        : out std_logic;
       full         : out std_logic);
   end component prefetch_buffer;
@@ -34,7 +33,6 @@ architecture behavioural of test_fifo is
   signal data_input   : std_logic_vector(31 downto 0) := (others => '0');
   signal read_enable  : std_logic                     := '0';
   signal data_output  : std_logic_vector(31 downto 0) := (others => '0');
-  signal data_valid   : std_logic                     := '0';
   signal empty        : std_logic                     := '0';
   signal full         : std_logic                     := '0';
 
@@ -54,7 +52,6 @@ begin  -- architecture behavioural
       data_input   => data_input,
       read_enable  => read_enable,
       data_output  => data_output,
-      data_valid   => data_valid,
       empty        => empty,
       full         => full);
 

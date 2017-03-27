@@ -27,7 +27,7 @@ end entity ram;
 
 architecture behavioural of ram is
 
-  type   ram_data_type is array (0 to 2**depth-1) of std_logic_vector(width-1 downto 0);
+  type ram_data_type is array (0 to 2**depth-1) of std_logic_vector(width-1 downto 0);
   signal ram_data : ram_data_type := (others => (others => '0'));
 
   signal next_output     : std_logic_vector(width-1 downto 0);

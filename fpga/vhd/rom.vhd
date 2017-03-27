@@ -27,7 +27,8 @@ architecture behavioural of rom is
   type rom_data_type is array (0 to 2**MEMORY_DEPTH-1) of std_logic_vector(width-1 downto 0);
   constant fibonacci : rom_data_type :=
     (0      => x"00000193",             -- li gp, 0
-     1      => x"3fc02f03",             -- lw 15, 1020(zero)
+     1      => x"01400f13",             -- li t5, 20
+     -- 1      => x"3fc02f03",             -- lw t5, 1020(zero)
      2      => x"040f0663",             -- beqz t5, 54 <end>
      3      => x"20000f93",             -- li t6, 512
      4      => x"00100193",             -- li gp, 1

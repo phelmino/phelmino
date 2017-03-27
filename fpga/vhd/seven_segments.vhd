@@ -1,7 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.std_logic_unsigned.all;
 
 library lib_fpga;
 use lib_fpga.memory_definitions.all;
@@ -40,6 +39,6 @@ architecture behavioural of seven_segments is
 
 begin  -- architecture behavioural
 
-  output <= to_stdlogicvector(conversion_table(conv_integer(digit))(6 downto 0));
+  output <= to_stdlogicvector(conversion_table(to_integer(unsigned(digit)))(6 downto 0));
 
 end architecture behavioural;
