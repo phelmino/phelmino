@@ -18,6 +18,7 @@ entity decoder is
     is_requisition       : out std_logic;
     is_write             : out std_logic;
     is_branch            : out std_logic;
+    is_jump              : out std_logic;
     destination_register : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
     immediate_extension  : out std_logic_vector(WORD_WIDTH-1 downto 0));
 
@@ -75,6 +76,7 @@ begin  -- architecture behavioural
         instruction_valid    <= '1';
         is_requisition       <= '0';
         is_branch            <= '0';
+        is_jump              <= '0';
         destination_register <= rdestination;
         alu_operator         <= ALU_ADD;
         is_write             <= '0';
@@ -143,6 +145,7 @@ begin  -- architecture behavioural
         instruction_valid    <= '1';
         is_requisition       <= '0';
         is_branch            <= '0';
+        is_jump              <= '0';
         destination_register <= rdestination;
         alu_operator         <= ALU_ADD;
         is_write             <= '0';
@@ -180,6 +183,7 @@ begin  -- architecture behavioural
         instruction_valid    <= '1';
         is_requisition       <= '0';
         is_branch            <= '1';
+        is_jump              <= '0';
         is_write             <= '0';
         immediate_extension  <= sign_extended_immediate;
 
@@ -201,6 +205,7 @@ begin  -- architecture behavioural
         mux_controller_b     <= ALU_SOURCE_FROM_IMM;
         is_requisition       <= '1';
         is_branch            <= '0';
+        is_jump              <= '0';
         destination_register <= rdestination;
         alu_operator         <= ALU_ADD;
         is_write             <= '0';
@@ -219,6 +224,7 @@ begin  -- architecture behavioural
         mux_controller_b     <= ALU_SOURCE_FROM_IMM;
         is_requisition       <= '1';
         is_branch            <= '0';
+        is_jump              <= '0';
         destination_register <= (others => '0');
         alu_operator         <= ALU_ADD;
         is_write             <= '1';
@@ -237,6 +243,7 @@ begin  -- architecture behavioural
         mux_controller_b     <= ALU_SOURCE_ZERO;
         is_requisition       <= '0';
         is_branch            <= '0';
+        is_jump              <= '0';
         destination_register <= rdestination;
         alu_operator         <= ALU_ADD;
         is_write             <= '0';
@@ -251,6 +258,22 @@ begin  -- architecture behavioural
         mux_controller_b     <= ALU_SOURCE_FROM_PC;
         is_requisition       <= '0';
         is_branch            <= '0';
+        is_jump              <= '0';
+        destination_register <= rdestination;
+        alu_operator         <= ALU_ADD;
+        is_write             <= '0';
+        immediate_extension  <= sign_extended_immediate;
+        instruction_valid    <= '1';
+
+      -- adding jump and link instruction
+      when OPCODE_JAL =>
+        read_address_a       <= (others => '0');
+        read_address_b       <= (others => '0');
+        mux_controller_a     <= ALU_SOURCE_FROM_PC;
+        mux_controller_b     <= ALU_SOURCE_FOUR;
+        is_requisition       <= '0';
+        is_branch            <= '0';
+        is_jump              <= '1';
         destination_register <= rdestination;
         alu_operator         <= ALU_ADD;
         is_write             <= '0';
@@ -261,6 +284,7 @@ begin  -- architecture behavioural
         instruction_valid    <= '0';
         is_requisition       <= '0';
         is_branch            <= '0';
+        is_jump              <= '0';
         mux_controller_a     <= ALU_SOURCE_ZERO;
         mux_controller_b     <= ALU_SOURCE_ZERO;
         read_address_a       <= (others => '0');
@@ -275,8 +299,8 @@ begin  -- architecture behavioural
 -- purpose: sign extension of immediates
 -- type   : combinational
   signextension : process (immediate_type_i, immediate_type_s,
-                           immediate_type_sb, immediate_type_u, opcode,
-                           sign_bit) is
+                           immediate_type_sb, immediate_type_u,
+                           immediate_type_uj, opcode, sign_bit) is
     constant filled_one  : std_logic_vector(WORD_WIDTH-13 downto 0) := (others => '1');
     constant filled_zero : std_logic_vector(WORD_WIDTH-13 downto 0) := (others => '0');
   begin  -- process signextension
@@ -288,6 +312,14 @@ begin  -- architecture behavioural
           sign_extended_immediate <= filled_zero & immediate_type_i;
         else
           sign_extended_immediate <= filled_one & immediate_type_i;
+        end if;
+
+      when OPCODE_JAL =>
+        zero_extended_immediate <= filled_zero(WORD_WIDTH-21 downto 1) & immediate_type_uj;
+        if sign_bit = '0' then
+          sign_extended_immediate <= filled_zero(WORD_WIDTH-21 downto 1) & immediate_type_uj;
+        else
+          sign_extended_immediate <= filled_one(WORD_WIDTH-21 downto 1) & immediate_type_uj;
         end if;
 
       when OPCODE_BRANCH =>

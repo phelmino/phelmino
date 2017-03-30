@@ -23,6 +23,7 @@ architecture behavioural of test_if_stage is
       instruction_id     : out std_logic_vector(WORD_WIDTH-1 downto 0);
       pc_id              : out std_logic_vector(WORD_WIDTH-1 downto 0);
       branch_active      : in  std_logic;
+      jump_active        : in  std_logic;
       branch_destination : in  std_logic_vector(WORD_WIDTH-1 downto 0);
       ready              : in  std_logic);
   end component if_stage;
@@ -37,6 +38,7 @@ architecture behavioural of test_if_stage is
   signal instruction_id     : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
   signal pc_id              : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
   signal branch_active      : std_logic                               := '0';
+  signal jump_active        : std_logic                               := '0';
   signal branch_destination : std_logic_vector(WORD_WIDTH-1 downto 0) := (others => '0');
   signal ready              : std_logic                               := '0';
 
@@ -59,6 +61,7 @@ begin  -- architecture behavioural
       instruction_id     => instruction_id,
       pc_id              => pc_id,
       branch_active      => branch_active,
+      jump_active        => jump_active,
       branch_destination => branch_destination,
       ready              => ready);
 
