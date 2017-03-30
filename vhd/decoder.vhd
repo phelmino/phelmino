@@ -19,15 +19,14 @@ entity decoder is
     is_write             : out std_logic;
     is_branch            : out std_logic;
     is_jump              : out std_logic;
+    is_jump_register     : out std_logic;
     destination_register : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
     immediate_extension  : out std_logic_vector(WORD_WIDTH-1 downto 0));
 
 end entity decoder;
 
 architecture behavioural of decoder is
-
   signal sign_extended_immediate : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal zero_extended_immediate : std_logic_vector(WORD_WIDTH-1 downto 0);
 
   signal opcode       : std_logic_vector(OPCODE_LENGTH-1 downto 0);
   signal func7        : std_logic_vector(FUNC7_LENGTH-1 downto 0);
@@ -77,6 +76,7 @@ begin  -- architecture behavioural
         is_requisition       <= '0';
         is_branch            <= '0';
         is_jump              <= '0';
+        is_jump_register     <= '0';
         destination_register <= rdestination;
         alu_operator         <= ALU_ADD;
         is_write             <= '0';
@@ -146,6 +146,7 @@ begin  -- architecture behavioural
         is_requisition       <= '0';
         is_branch            <= '0';
         is_jump              <= '0';
+        is_jump_register     <= '0';
         destination_register <= rdestination;
         alu_operator         <= ALU_ADD;
         is_write             <= '0';
@@ -184,6 +185,7 @@ begin  -- architecture behavioural
         is_requisition       <= '0';
         is_branch            <= '1';
         is_jump              <= '0';
+        is_jump_register     <= '0';
         is_write             <= '0';
         immediate_extension  <= sign_extended_immediate;
 
@@ -206,6 +208,7 @@ begin  -- architecture behavioural
         is_requisition       <= '1';
         is_branch            <= '0';
         is_jump              <= '0';
+        is_jump_register     <= '0';
         destination_register <= rdestination;
         alu_operator         <= ALU_ADD;
         is_write             <= '0';
@@ -225,6 +228,7 @@ begin  -- architecture behavioural
         is_requisition       <= '1';
         is_branch            <= '0';
         is_jump              <= '0';
+        is_jump_register     <= '0';
         destination_register <= (others => '0');
         alu_operator         <= ALU_ADD;
         is_write             <= '1';
@@ -244,6 +248,7 @@ begin  -- architecture behavioural
         is_requisition       <= '0';
         is_branch            <= '0';
         is_jump              <= '0';
+        is_jump_register     <= '0';
         destination_register <= rdestination;
         alu_operator         <= ALU_ADD;
         is_write             <= '0';
@@ -259,6 +264,7 @@ begin  -- architecture behavioural
         is_requisition       <= '0';
         is_branch            <= '0';
         is_jump              <= '0';
+        is_jump_register     <= '0';
         destination_register <= rdestination;
         alu_operator         <= ALU_ADD;
         is_write             <= '0';
@@ -274,17 +280,38 @@ begin  -- architecture behavioural
         is_requisition       <= '0';
         is_branch            <= '0';
         is_jump              <= '1';
+        is_jump_register     <= '0';
         destination_register <= rdestination;
         alu_operator         <= ALU_ADD;
         is_write             <= '0';
         immediate_extension  <= sign_extended_immediate;
         instruction_valid    <= '1';
 
+      -- adding indirect jump instruction
+      when OPCODE_JALR =>
+        read_address_a       <= rsource1;
+        read_address_b       <= (others => '0');
+        mux_controller_a     <= ALU_SOURCE_FROM_PC;
+        mux_controller_b     <= ALU_SOURCE_FOUR;
+        is_requisition       <= '0';
+        is_branch            <= '0';
+        is_jump              <= '1';
+        is_jump_register     <= '1';
+        destination_register <= rdestination;
+        alu_operator         <= ALU_ADD;
+        is_write             <= '0';
+        immediate_extension  <= sign_extended_immediate;
+        case func3 is
+          when "000"  => instruction_valid <= '1';
+          when others => instruction_valid <= '0';
+        end case;
+
       when others =>
         instruction_valid    <= '0';
         is_requisition       <= '0';
         is_branch            <= '0';
         is_jump              <= '0';
+        is_jump_register     <= '0';
         mux_controller_a     <= ALU_SOURCE_ZERO;
         mux_controller_b     <= ALU_SOURCE_ZERO;
         read_address_a       <= (others => '0');
@@ -306,8 +333,7 @@ begin  -- architecture behavioural
   begin  -- process signextension
 
     case opcode is
-      when OPCODE_ALU_IMMEDIATE_REGISTER | OPCODE_LOAD =>
-        zero_extended_immediate <= filled_zero & immediate_type_i;
+      when OPCODE_ALU_IMMEDIATE_REGISTER | OPCODE_LOAD | OPCODE_JALR =>
         if sign_bit = '0' then
           sign_extended_immediate <= filled_zero & immediate_type_i;
         else
@@ -315,7 +341,6 @@ begin  -- architecture behavioural
         end if;
 
       when OPCODE_JAL =>
-        zero_extended_immediate <= filled_zero(WORD_WIDTH-21 downto 1) & immediate_type_uj;
         if sign_bit = '0' then
           sign_extended_immediate <= filled_zero(WORD_WIDTH-21 downto 1) & immediate_type_uj;
         else
@@ -323,7 +348,6 @@ begin  -- architecture behavioural
         end if;
 
       when OPCODE_BRANCH =>
-        zero_extended_immediate <= filled_zero(WORD_WIDTH-13 downto 1) & immediate_type_sb;
         if sign_bit = '0' then
           sign_extended_immediate <= filled_zero(WORD_WIDTH-13 downto 1) & immediate_type_sb;
         else
@@ -331,7 +355,6 @@ begin  -- architecture behavioural
         end if;
 
       when OPCODE_STORE =>
-        zero_extended_immediate <= filled_zero & immediate_type_s;
         if sign_bit = '0' then
           sign_extended_immediate <= filled_zero & immediate_type_s;
         else
@@ -339,13 +362,10 @@ begin  -- architecture behavioural
         end if;
 
       when OPCODE_LUI | OPCODE_AUIPC =>
-        zero_extended_immediate <= immediate_type_u;
         sign_extended_immediate <= immediate_type_u;
 
       when others =>
-        zero_extended_immediate <= (others => '0');
         sign_extended_immediate <= (others => '0');
-
     end case;
   end process signextension;
 
