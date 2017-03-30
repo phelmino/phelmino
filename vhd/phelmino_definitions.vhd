@@ -32,19 +32,23 @@ package phelmino_definitions is
   constant RSOURCE2_END        : natural := 20;
   constant IMMEDIATE_I_LENGTH  : natural := 12;
   constant IMMEDIATE_S_LENGTH  : natural := 12;
-  constant IMMEDIATE_I_BEGIN   : natural := 31;
-  constant IMMEDIATE_I_END     : natural := 20;
   constant IMMEDIATE_SB_LENGTH : natural := 13;
+  constant IMMEDIATE_U_LENGTH  : natural := 32;
+  constant IMMEDIATE_UJ_LENGTH : natural := 21;
 
   -- Controls of MUX generating ALU Operands
-  type alu_source is (ALU_SOURCE_ZERO, ALU_SOURCE_FROM_REGISTER, ALU_SOURCE_FROM_ALU, ALU_SOURCE_FROM_WB_STAGE, ALU_SOURCE_FROM_IMM);
+  type alu_source is (ALU_SOURCE_ZERO, ALU_SOURCE_FROM_REGISTER, ALU_SOURCE_FROM_ALU, ALU_SOURCE_FROM_WB_STAGE, ALU_SOURCE_FROM_IMM, ALU_SOURCE_FROM_PC);
 
   -- OPCODEs from ISA
-  constant OPCODE_ALU_REGISTER_REGISTER  : std_logic_vector(OPCODE_LENGTH-1 downto 0) := "0110011";
-  constant OPCODE_ALU_IMMEDIATE_REGISTER : std_logic_vector(OPCODE_LENGTH-1 downto 0) := "0010011";
+  constant OPCODE_LUI                    : std_logic_vector(OPCODE_LENGTH-1 downto 0) := "0110111";
+  constant OPCODE_AUIPC                  : std_logic_vector(OPCODE_LENGTH-1 downto 0) := "0010111";
+  constant OPCODE_JAL                    : std_logic_vector(OPCODE_LENGTH-1 downto 0) := "1101111";
+  constant OPCODE_JALR                   : std_logic_vector(OPCODE_LENGTH-1 downto 0) := "1100111";
   constant OPCODE_BRANCH                 : std_logic_vector(OPCODE_LENGTH-1 downto 0) := "1100011";
   constant OPCODE_LOAD                   : std_logic_vector(OPCODE_LENGTH-1 downto 0) := "0000011";
   constant OPCODE_STORE                  : std_logic_vector(OPCODE_LENGTH-1 downto 0) := "0100011";
+  constant OPCODE_ALU_REGISTER_REGISTER  : std_logic_vector(OPCODE_LENGTH-1 downto 0) := "0110011";
+  constant OPCODE_ALU_IMMEDIATE_REGISTER : std_logic_vector(OPCODE_LENGTH-1 downto 0) := "0010011";
 
   -- Some instructions
   constant NOP            : std_logic_vector(WORD_WIDTH-1 downto 0) := "0000000" & "00000" & "00000" & "000" & "00000" & "0110011";
