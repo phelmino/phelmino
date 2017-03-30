@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 
 package phelmino_definitions is
   -- ALU Operations
-  type alu_operation is (ALU_ADD, ALU_SUB, ALU_XOR, ALU_OR, ALU_AND, ALU_LTU, ALU_GEU, ALU_EQ, ALU_NE);
+  type alu_operation is (ALU_ADD, ALU_SUB, ALU_XOR, ALU_OR, ALU_AND, ALU_LT, ALU_GE, ALU_LTU, ALU_GEU, ALU_EQ, ALU_NE, ALU_SLL, ALU_SRL, ALU_SRA);
 
   -- GPR
   constant WORD_WIDTH          : natural := 32;

@@ -88,9 +88,34 @@ begin  -- architecture behavioural
               when others    => instruction_valid <= '0';
             end case;
 
+          when "001" =>
+            case func7 is
+              when "0000000" => alu_operator      <= ALU_SLL;
+              when others    => instruction_valid <= '0';
+            end case;
+
+          when "010" =>
+            case func7 is
+              when "0000000" => alu_operator      <= ALU_LT;
+              when others    => instruction_valid <= '0';
+            end case;
+
+          when "011" =>
+            case func7 is
+              when "0000000" => alu_operator      <= ALU_LTU;
+              when others    => instruction_valid <= '0';
+            end case;
+
           when "100" =>
             case func7 is
               when "0000000" => alu_operator      <= ALU_XOR;
+              when others    => instruction_valid <= '0';
+            end case;
+
+          when "101" =>
+            case func7 is
+              when "0000000" => alu_operator      <= ALU_SRL;
+              when "0100000" => alu_operator      <= ALU_SRA;
               when others    => instruction_valid <= '0';
             end case;
 
@@ -124,20 +149,24 @@ begin  -- architecture behavioural
         immediate_extension  <= sign_extended_immediate;
 
         case func3 is
-          when "000" =>
-            alu_operator <= ALU_ADD;
-
-          when "100" =>
-            alu_operator <= ALU_XOR;
-
-          when "110" =>
-            alu_operator <= ALU_OR;
-
-          when "111" =>
-            alu_operator <= ALU_AND;
-
-          when others =>
-            instruction_valid <= '0';
+          when "000" => alu_operator <= ALU_ADD;
+          when "001" =>
+            case func7 is
+              when "0000000" => alu_operator      <= ALU_SLL;
+              when others    => instruction_valid <= '0';
+            end case;
+          when "010" => alu_operator <= ALU_LT;
+          when "011" => alu_operator <= ALU_LTU;
+          when "100" => alu_operator <= ALU_XOR;
+          when "101" =>
+            case func7 is
+              when "0000000" => alu_operator      <= ALU_SRL;
+              when "0100000" => alu_operator      <= ALU_SRA;
+              when others    => instruction_valid <= '0';
+            end case;
+          when "110"  => alu_operator      <= ALU_OR;
+          when "111"  => alu_operator      <= ALU_AND;
+          when others => instruction_valid <= '0';
         end case;
 
       when OPCODE_BRANCH =>
@@ -157,6 +186,8 @@ begin  -- architecture behavioural
         case func3 is
           when "000"  => alu_operator      <= ALU_EQ;
           when "001"  => alu_operator      <= ALU_NE;
+          when "100"  => alu_operator      <= ALU_LT;
+          when "101"  => alu_operator      <= ALU_GE;
           when "110"  => alu_operator      <= ALU_LTU;
           when "111"  => alu_operator      <= ALU_GEU;
           when others => instruction_valid <= '0';
