@@ -199,4 +199,5 @@ begin  -- architecture behavioural
     end case;
 
   end process combinational;
+
 end architecture behavioural;
