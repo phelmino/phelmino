@@ -24,19 +24,48 @@ entity decoder is
 end entity decoder;
 
 architecture behavioural of decoder is
+
+  signal sign_extended_immediate : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal zero_extended_immediate : std_logic_vector(WORD_WIDTH-1 downto 0);
+
+  signal opcode       : std_logic_vector(OPCODE_LENGTH-1 downto 0);
+  signal func7        : std_logic_vector(FUNC7_LENGTH-1 downto 0);
+  signal func3        : std_logic_vector(FUNC3_LENGTH-1 downto 0);
+  signal rsource1     : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+  signal rsource2     : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+  signal rdestination : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+
+  signal sign_bit          : std_logic;
+  signal immediate_type_i  : std_logic_vector(IMMEDIATE_I_LENGTH-1 downto 0);
+  signal immediate_type_s  : std_logic_vector(IMMEDIATE_S_LENGTH-1 downto 0);
+  signal immediate_type_sb : std_logic_vector(IMMEDIATE_SB_LENGTH-1 downto 0);
+  signal immediate_type_u  : std_logic_vector(IMMEDIATE_U_LENGTH-1 downto 0);
+  signal immediate_type_uj : std_logic_vector(IMMEDIATE_UJ_LENGTH-1 downto 0);
+
 begin  -- architecture behavioural
+
+  opcode       <= instruction(OPCODE_BEGIN downto OPCODE_END);
+  func7        <= instruction(FUNC7_BEGIN downto FUNC7_END);
+  func3        <= instruction(FUNC3_BEGIN downto FUNC3_END);
+  rsource1     <= instruction(RSOURCE1_BEGIN downto RSOURCE1_END);
+  rsource2     <= instruction(RSOURCE2_BEGIN downto RSOURCE2_END);
+  rdestination <= instruction(RDESTINATION_BEGIN downto RDESTINATION_END);
+
+  sign_bit <= instruction(WORD_WIDTH-1);
+
+  immediate_type_i  <= instruction(31 downto 20);
+  immediate_type_sb <= instruction(31) & instruction(7) & instruction(30 downto 25) & instruction(11 downto 8) & '0';
+  immediate_type_s  <= instruction(31 downto 25) & instruction(11 downto 7);
+  immediate_type_u  <= instruction(31 downto 12) & "000000000000";
+  immediate_type_uj <= instruction(31) & instruction(19 downto 12) & instruction(20) & instruction(30 downto 21) & '0';
 
   -- purpose: decodes an instruction
   -- type   : combinational
   -- inputs : instruction
-  decoder_process : process (instruction) is
-    alias opcode is instruction(OPCODE_BEGIN downto OPCODE_END);
-    alias func7 is instruction(FUNC7_BEGIN downto FUNC7_END);
-    alias func3 is instruction(FUNC3_BEGIN downto FUNC3_END);
-    alias rsource1 is instruction(RSOURCE1_BEGIN downto RSOURCE1_END);
-    alias rsource2 is instruction(RSOURCE2_BEGIN downto RSOURCE2_END);
-    alias rdestination is instruction(RDESTINATION_BEGIN downto RDESTINATION_END);
+  decoder_process : process (func3, func7, opcode, rdestination, rsource1,
+                             rsource2, sign_extended_immediate) is
   begin  -- process decoder_process 
+
     case opcode is
       when OPCODE_ALU_REGISTER_REGISTER =>
         read_address_a       <= rsource1;
@@ -49,6 +78,7 @@ begin  -- architecture behavioural
         destination_register <= rdestination;
         alu_operator         <= ALU_ADD;
         is_write             <= '0';
+        immediate_extension  <= sign_extended_immediate;
 
         case func3 is
           when "000" =>
@@ -91,6 +121,7 @@ begin  -- architecture behavioural
         destination_register <= rdestination;
         alu_operator         <= ALU_ADD;
         is_write             <= '0';
+        immediate_extension  <= sign_extended_immediate;
 
         case func3 is
           when "000" =>
@@ -121,6 +152,7 @@ begin  -- architecture behavioural
         is_requisition       <= '0';
         is_branch            <= '1';
         is_write             <= '0';
+        immediate_extension  <= sign_extended_immediate;
 
         case func3 is
           when "000"  => alu_operator      <= ALU_EQ;
@@ -130,7 +162,7 @@ begin  -- architecture behavioural
           when others => instruction_valid <= '0';
         end case;
 
-      -- Adding LOAD WORD instruction case 
+      -- adding load instruction 
       when OPCODE_LOAD =>
         read_address_a       <= rsource1;
         read_address_b       <= (others => '0');
@@ -141,13 +173,14 @@ begin  -- architecture behavioural
         destination_register <= rdestination;
         alu_operator         <= ALU_ADD;
         is_write             <= '0';
+        immediate_extension  <= sign_extended_immediate;
 
         case func3 is
           when "010"  => instruction_valid <= '1';
           when others => instruction_valid <= '0';
         end case;
 
-      -- Adding STORE WORD instruction  case 
+      -- adding store instruction 
       when OPCODE_STORE =>
         read_address_a       <= rsource1;
         read_address_b       <= rsource2;
@@ -158,11 +191,40 @@ begin  -- architecture behavioural
         destination_register <= (others => '0');
         alu_operator         <= ALU_ADD;
         is_write             <= '1';
+        immediate_extension  <= sign_extended_immediate;
 
         case func3 is
           when "010"  => instruction_valid <= '1';
           when others => instruction_valid <= '0';
         end case;
+
+      -- adding load upper immediate instruction
+      when OPCODE_LUI =>
+        read_address_a       <= (others => '0');
+        read_address_b       <= (others => '0');
+        mux_controller_a     <= ALU_SOURCE_FROM_IMM;
+        mux_controller_b     <= ALU_SOURCE_ZERO;
+        is_requisition       <= '0';
+        is_branch            <= '0';
+        destination_register <= rdestination;
+        alu_operator         <= ALU_ADD;
+        is_write             <= '0';
+        immediate_extension  <= sign_extended_immediate;
+        instruction_valid    <= '1';
+
+      -- adding add upper immediate to pc instruction
+      when OPCODE_AUIPC =>
+        read_address_a       <= (others => '0');
+        read_address_b       <= (others => '0');
+        mux_controller_a     <= ALU_SOURCE_FROM_IMM;
+        mux_controller_b     <= ALU_SOURCE_FROM_PC;
+        is_requisition       <= '0';
+        is_branch            <= '0';
+        destination_register <= rdestination;
+        alu_operator         <= ALU_ADD;
+        is_write             <= '0';
+        immediate_extension  <= sign_extended_immediate;
+        instruction_valid    <= '1';
 
       when others =>
         instruction_valid    <= '0';
@@ -175,54 +237,52 @@ begin  -- architecture behavioural
         alu_operator         <= ALU_ADD;
         destination_register <= (others => '0');
         is_write             <= '0';
+        immediate_extension  <= sign_extended_immediate;
     end case;
   end process decoder_process;
 
 -- purpose: sign extension of immediates
 -- type   : combinational
-  signextension : process (instruction) is
-    alias sign_bit is instruction(WORD_WIDTH-1);
-    alias opcode is instruction(OPCODE_BEGIN downto OPCODE_END);
-    alias immediate_type_i is instruction(IMMEDIATE_I_BEGIN downto IMMEDIATE_I_END);
-    variable immediate_type_s  : std_logic_vector(IMMEDIATE_S_LENGTH-1 downto 0);
-    variable immediate_type_sb : std_logic_vector(IMMEDIATE_SB_LENGTH-1 downto 0);
-
+  signextension : process (immediate_type_i, immediate_type_s,
+                           immediate_type_sb, immediate_type_u, opcode,
+                           sign_bit) is
     constant filled_one  : std_logic_vector(WORD_WIDTH-13 downto 0) := (others => '1');
     constant filled_zero : std_logic_vector(WORD_WIDTH-13 downto 0) := (others => '0');
   begin  -- process signextension
-    immediate_type_sb := instruction(31) & instruction(7) & instruction(30 downto 25) & instruction(11 downto 8) & '0';
-    immediate_type_s  := instruction(31 downto 25) & instruction(11 downto 7);
 
     case opcode is
-      when OPCODE_ALU_IMMEDIATE_REGISTER =>
+      when OPCODE_ALU_IMMEDIATE_REGISTER | OPCODE_LOAD =>
+        zero_extended_immediate <= filled_zero & immediate_type_i;
         if sign_bit = '0' then
-          immediate_extension <= filled_zero & immediate_type_i;
+          sign_extended_immediate <= filled_zero & immediate_type_i;
         else
-          immediate_extension <= filled_one & immediate_type_i;
+          sign_extended_immediate <= filled_one & immediate_type_i;
         end if;
 
       when OPCODE_BRANCH =>
+        zero_extended_immediate <= filled_zero(WORD_WIDTH-13 downto 1) & immediate_type_sb;
         if sign_bit = '0' then
-          immediate_extension <= filled_zero(WORD_WIDTH-13 downto 1) & immediate_type_sb;
+          sign_extended_immediate <= filled_zero(WORD_WIDTH-13 downto 1) & immediate_type_sb;
         else
-          immediate_extension <= filled_one(WORD_WIDTH-13 downto 1) & immediate_type_sb;
-        end if;
-
-      when OPCODE_LOAD =>
-        if sign_bit = '0' then
-          immediate_extension <= filled_zero & immediate_type_i;
-        else
-          immediate_extension <= filled_one & immediate_type_i;
+          sign_extended_immediate <= filled_one(WORD_WIDTH-13 downto 1) & immediate_type_sb;
         end if;
 
       when OPCODE_STORE =>
+        zero_extended_immediate <= filled_zero & immediate_type_s;
         if sign_bit = '0' then
-          immediate_extension <= filled_zero & immediate_type_s;
+          sign_extended_immediate <= filled_zero & immediate_type_s;
         else
-          immediate_extension <= filled_one & immediate_type_s;
+          sign_extended_immediate <= filled_one & immediate_type_s;
         end if;
 
-      when others => immediate_extension <= (others => '0');
+      when OPCODE_LUI | OPCODE_AUIPC =>
+        zero_extended_immediate <= immediate_type_u;
+        sign_extended_immediate <= immediate_type_u;
+
+      when others =>
+        zero_extended_immediate <= (others => '0');
+        sign_extended_immediate <= (others => '0');
+
     end case;
   end process signextension;
 
