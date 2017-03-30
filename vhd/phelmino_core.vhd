@@ -31,6 +31,9 @@ entity phelmino_core is
 end entity phelmino_core;
 
 architecture behavioural of phelmino_core is
+  signal instr_requisition_i : std_logic;
+  signal data_requisition_i  : std_logic;
+
   component if_stage is
     port (
       clk                : in  std_logic;
@@ -148,11 +151,14 @@ architecture behavioural of phelmino_core is
 
 begin  -- architecture behavioural
 
+  instr_requisition <= instr_requisition_i;
+  data_requisition  <= data_requisition_i;
+
   stage_if : entity lib_vhdl.if_stage
     port map (
       clk                => clk,
       rst_n              => rst_n,
-      instr_requisition  => instr_requisition,
+      instr_requisition  => instr_requisition_i,
       instr_address      => instr_address,
       instr_grant        => instr_grant,
       instr_reqvalid     => instr_reqvalid,
@@ -209,7 +215,7 @@ begin  -- architecture behavioural
       is_requisition_wb       => is_requisition_wb,
       is_write                => is_write_ex,
       is_write_data           => is_write_data_ex,
-      data_requisition        => data_requisition,
+      data_requisition        => data_requisition_i,
       data_address            => data_address,
       data_write_enable       => data_write_enable,
       data_write_data         => data_write_data,
@@ -232,5 +238,33 @@ begin  -- architecture behavioural
       write_data_y_id          => write_data_y_id,
       data_read_from_memory_id => data_read_from_memory_id,
       ready_ex                 => ready_ex);
+
+  -- verification
+  -- psl default clock is (clk'event and clk = '1');
+
+  -- psl property instruction_requisition_triggers_grant is
+  --    always (rst_n = '1' and instr_requisition_i = '1' ->
+  --    (eventually! instr_grant = '1')
+  --    abort (instr_requisition_i = '0' or rst_n = '0'));
+  -- psl assert instruction_requisition_triggers_grant;
+
+  -- psl property instruction_requisition_grant_before_valid is
+  --    always (rst_n = '1' and instr_requisition_i = '1' ->
+  --    {[*1 to inf]; instr_grant = '1'; [*0 to inf]; instr_reqvalid = '1'}
+  --    abort (instr_requisition_i = '0' or rst_n = '0'));
+  -- psl assert instruction_requisition_grant_before_valid;
+
+  -- psl property data_requisition_triggers_grant is
+  --    always (rst_n = '1' and data_requisition_i = '1' ->
+  --    (eventually! data_grant = '1')
+  --    abort (data_requisition_i = '0' or rst_n = '0'));
+  -- psl assert data_requisition_triggers_grant;
+
+  -- psl property data_requisition_grant_before_valid is
+  --    always (rst_n = '1' and data_requisition_i = '1' ->
+  --    {[*1 to inf]; data_grant = '1'; [*0 to inf]; data_read_data_valid = '1'}
+  --    abort (data_requisition_i = '0' or rst_n = '0'));
+  -- psl assert data_requisition_grant_before_valid;
+
 
 end architecture behavioural;
