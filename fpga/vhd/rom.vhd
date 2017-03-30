@@ -102,7 +102,7 @@ architecture behavioural of rom is
 
   constant jumperman : rom_data_type :=
     (0      => x"00a00093",              -- li ra, 10
-     3      => x"ff9ff56f",              -- jal a0, 4
+     1      => x"00a08567",              -- jalr a0, 10(ra)
      others => NOP);
 
   signal next_output : std_logic_vector(width-1 downto 0);

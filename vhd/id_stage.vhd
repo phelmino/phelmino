@@ -85,6 +85,7 @@ architecture behavioural of id_stage is
       is_write             : out std_logic;
       is_branch            : out std_logic;
       is_jump              : out std_logic;
+      is_jump_register     : out std_logic;
       read_address_a       : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       read_address_b       : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       alu_operator         : out alu_operation;
@@ -99,6 +100,7 @@ architecture behavioural of id_stage is
   signal next_is_write_data_ex   : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal is_branch               : std_logic;
   signal is_jump                 : std_logic;
+  signal is_jump_register        : std_logic;
   signal alu_operand_a           : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal alu_operand_b           : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal alu_operator            : alu_operation;
@@ -128,7 +130,8 @@ begin  -- architecture behavioural
   ready_if <= valid;
 
   -- calculates next branch destination
-  next_branch_destination <= std_logic_vector(unsigned(pc) + unsigned(immediate_extension));
+  next_branch_destination <= std_logic_vector(unsigned(pc) + unsigned(immediate_extension)) when is_jump_register = '0'
+                             else std_logic_vector(unsigned(read_data_a) + unsigned(immediate_extension));
 
   -- assertion
   assert (rst_n = '0' or instruction_valid = '1') report "Invalid instruction in decoding stage." severity failure;
@@ -159,6 +162,7 @@ begin  -- architecture behavioural
       is_write             => is_write,
       is_branch            => is_branch,
       is_jump              => is_jump,
+      is_jump_register     => is_jump_register,
       read_address_a       => read_address_a,
       read_address_b       => read_address_b,
       alu_operator         => alu_operator,
