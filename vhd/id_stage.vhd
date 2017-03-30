@@ -28,6 +28,7 @@ entity id_stage is
 
     -- branches
     is_branch_ex          : out std_logic;
+    jump_active_if        : out std_logic;
     branch_destination_if : out std_logic_vector(WORD_WIDTH-1 downto 0);
     branch_active         : in  std_logic;
 
@@ -83,6 +84,7 @@ architecture behavioural of id_stage is
       is_requisition       : out std_logic;
       is_write             : out std_logic;
       is_branch            : out std_logic;
+      is_jump              : out std_logic;
       read_address_a       : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       read_address_b       : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       alu_operator         : out alu_operation;
@@ -96,6 +98,7 @@ architecture behavioural of id_stage is
   signal is_write                : std_logic;
   signal next_is_write_data_ex   : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal is_branch               : std_logic;
+  signal is_jump                 : std_logic;
   signal alu_operand_a           : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal alu_operand_b           : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal alu_operator            : alu_operation;
@@ -155,6 +158,7 @@ begin  -- architecture behavioural
       is_requisition       => is_requisition,
       is_write             => is_write,
       is_branch            => is_branch,
+      is_jump              => is_jump,
       read_address_a       => read_address_a,
       read_address_b       => read_address_b,
       alu_operator         => alu_operator,
@@ -174,6 +178,7 @@ begin  -- architecture behavioural
       is_write_ex              <= '0';
       is_write_data_ex         <= (others => '0');
       is_branch_ex             <= '0';
+      jump_active_if           <= '0';
       destination_register_ex  <= (others => '0');
       branch_destination_if    <= (others => '0');
       current_stall_state      <= normal_execution;
@@ -189,6 +194,7 @@ begin  -- architecture behavioural
         is_write_ex             <= '0';
         is_write_data_ex        <= (others => '0');
         is_branch_ex            <= '0';
+        jump_active_if          <= '0';
         destination_register_ex <= (others => '0');
         branch_destination_if   <= (others => '0');
       end if;
@@ -203,6 +209,7 @@ begin  -- architecture behavioural
         destination_register_ex <= destination_register;
         branch_destination_if   <= next_branch_destination;
         is_branch_ex            <= is_branch;
+        jump_active_if          <= is_jump;
       end if;
     end if;
   end process sequentialprocess;
@@ -229,6 +236,7 @@ begin  -- architecture behavioural
       when ALU_SOURCE_FROM_WB_STAGE => alu_operand_a <= write_data_y;
       when ALU_SOURCE_FROM_IMM      => alu_operand_a <= immediate_extension;
       when ALU_SOURCE_FROM_PC       => alu_operand_a <= pc;
+      when ALU_SOURCE_FOUR          => alu_operand_a <= (2 => '1', others => '0');
       when others                   => alu_operand_a <= (others => '0');
     end case;
 
@@ -240,6 +248,7 @@ begin  -- architecture behavioural
       when ALU_SOURCE_FROM_WB_STAGE => alu_operand_b <= write_data_y;
       when ALU_SOURCE_FROM_IMM      => alu_operand_b <= immediate_extension;
       when ALU_SOURCE_FROM_PC       => alu_operand_b <= pc;
+      when ALU_SOURCE_FOUR          => alu_operand_b <= (2 => '1', others => '0');
       when others                   => alu_operand_b <= (others => '0');
     end case;
 
@@ -251,6 +260,7 @@ begin  -- architecture behavioural
       when ALU_SOURCE_FROM_WB_STAGE => next_is_write_data_ex <= write_data_y;
       when ALU_SOURCE_FROM_IMM      => next_is_write_data_ex <= immediate_extension;
       when ALU_SOURCE_FROM_PC       => next_is_write_data_ex <= pc;
+      when ALU_SOURCE_FOUR          => next_is_write_data_ex <= (2 => '1', others => '0');
       when others                   => next_is_write_data_ex <= (others => '0');
     end case;
 

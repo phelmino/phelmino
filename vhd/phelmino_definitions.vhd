@@ -37,7 +37,8 @@ package phelmino_definitions is
   constant IMMEDIATE_UJ_LENGTH : natural := 21;
 
   -- Controls of MUX generating ALU Operands
-  type alu_source is (ALU_SOURCE_ZERO, ALU_SOURCE_FROM_REGISTER, ALU_SOURCE_FROM_ALU, ALU_SOURCE_FROM_WB_STAGE, ALU_SOURCE_FROM_IMM, ALU_SOURCE_FROM_PC);
+  type alu_source is (ALU_SOURCE_ZERO, ALU_SOURCE_FROM_REGISTER, ALU_SOURCE_FROM_ALU, ALU_SOURCE_FROM_WB_STAGE,
+                      ALU_SOURCE_FROM_IMM, ALU_SOURCE_FROM_PC, ALU_SOURCE_FOUR);
 
   -- OPCODEs from ISA
   constant OPCODE_LUI                    : std_logic_vector(OPCODE_LENGTH-1 downto 0) := "0110111";

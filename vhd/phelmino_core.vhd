@@ -46,6 +46,7 @@ architecture behavioural of phelmino_core is
       instruction_id     : out std_logic_vector(WORD_WIDTH-1 downto 0);
       pc_id              : out std_logic_vector(WORD_WIDTH-1 downto 0);
       branch_active      : in  std_logic;
+      jump_active        : in  std_logic;
       branch_destination : in  std_logic_vector(WORD_WIDTH-1 downto 0);
       ready              : in  std_logic);
   end component if_stage;
@@ -67,6 +68,7 @@ architecture behavioural of phelmino_core is
       is_branch_ex            : out std_logic;
       branch_destination_if   : out std_logic_vector(WORD_WIDTH-1 downto 0);
       branch_active           : in  std_logic;
+      jump_active_if          : out std_logic;
       write_enable_z          : in  std_logic;
       write_address_z         : in  std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       write_data_z            : in  std_logic_vector(WORD_WIDTH-1 downto 0);
@@ -90,6 +92,7 @@ architecture behavioural of phelmino_core is
   signal is_write_ex             : std_logic;
   signal is_write_data_ex        : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal ready_if                : std_logic;
+  signal jump_active_if          : std_logic;
 
   component ex_stage is
     port (
@@ -166,6 +169,7 @@ begin  -- architecture behavioural
       instruction_id     => instruction_id,
       pc_id              => pc_id,
       branch_active      => branch_active_if,
+      jump_active        => jump_active_if,
       branch_destination => branch_destination_if,
       ready              => ready_if);
 
@@ -184,6 +188,7 @@ begin  -- architecture behavioural
       is_branch_ex            => is_branch_ex,
       branch_destination_if   => branch_destination_if,
       branch_active           => branch_active_id,
+      jump_active_if          => jump_active_if,
       write_enable_z          => write_enable_z_id,
       write_address_z         => write_address_z_id,
       write_data_z            => write_data_z_id,

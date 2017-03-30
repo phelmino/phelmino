@@ -24,6 +24,7 @@ entity if_stage is
     pc_id          : out std_logic_vector(WORD_WIDTH-1 downto 0);
 
     -- branch signals
+    jump_active        : in std_logic;
     branch_active      : in std_logic;
     branch_destination : in std_logic_vector(WORD_WIDTH-1 downto 0);
 
@@ -87,7 +88,7 @@ begin  -- architecture behavioural
   fifo_input        <= current_waiting_pc & instr_reqdata;
   fifo_pc           <= fifo_output(2*WORD_WIDTH-1 downto WORD_WIDTH);
   fifo_instruction  <= fifo_output(WORD_WIDTH-1 downto 0);
-  clear             <= ready and branch_active;
+  clear             <= ready and (branch_active or jump_active);
 
   -- instance "prefetch_buffer"
   prefetch_buffer : entity lib_vhdl.fifo
@@ -138,11 +139,12 @@ begin  -- architecture behavioural
     end if;
   end process interface_id;
 
-  combinational : process (branch_active, current_branch_destination,
+  combinational : process (branch_active, branch_destination,
+                           current_branch_destination,
                            current_origin_instruction, current_pc,
                            current_waiting_for_memory, current_waiting_pc,
                            empty, fifo_instruction, fifo_pc, full, instr_grant,
-                           instr_requisition_i, instr_reqvalid) is
+                           instr_requisition_i, instr_reqvalid, jump_active) is
   begin  -- process combinational
     -- output to stage id
     case current_origin_instruction is
@@ -155,7 +157,7 @@ begin  -- architecture behavioural
         next_instruction_id <= fifo_instruction;
     end case;
 
-    case branch_active is
+    case (branch_active) is
       when '1' =>
         next_pc                 <= current_branch_destination;
         next_waiting_pc         <= current_branch_destination;
@@ -165,39 +167,50 @@ begin  -- architecture behavioural
         write_enable            <= '0';
         next_waiting_for_memory <= '0';
       when others =>
-        next_instr_requisition <= '1';
 
-        -- received a grant, starts new requisition after a cycle
-        if (full = '0' and instr_grant = '1' and instr_requisition_i = '1') then
-          next_pc                 <= std_logic_vector(unsigned(current_pc) + WORD_WIDTH_IN_BYTES);
-          next_waiting_for_memory <= '1';
-        -- still no grant, maintains request
-        else
-          next_pc                 <= current_pc;
-          next_waiting_for_memory <= current_waiting_for_memory;
-        end if;
+        case jump_active is
+          when '1' =>
+            next_pc                 <= branch_destination;
+            next_waiting_pc         <= branch_destination;
+            next_origin_instruction <= bubble;
+            next_instr_requisition  <= '0';
+            read_enable             <= '0';
+            write_enable            <= '0';
+            next_waiting_for_memory <= '0';
 
-        -- received valid, can store new instruction in fifo
-        if (full = '0' and instr_reqvalid = '1' and current_waiting_for_memory = '1') then
-          next_waiting_pc <= current_pc;
-          write_enable    <= '1';
-        -- still waiting for a valid, maintains counter.
-        else
-          next_waiting_pc <= current_waiting_pc;
-          write_enable    <= '0';
-        end if;
+          when others =>
+            next_instr_requisition <= '1';
 
-        -- stage id is ready and fifo is not empty. 
-        if (empty = '0') then
-          read_enable             <= '1';
-          next_origin_instruction <= from_fifo;
-        -- stage id is ready, but fifo is empty. sends a bubble.
-        else
-          read_enable             <= '0';
-          next_origin_instruction <= bubble;
-        end if;
+            -- received a grant, starts new requisition after a cycle
+            if (full = '0' and instr_grant = '1' and instr_requisition_i = '1') then
+              next_pc                 <= std_logic_vector(unsigned(current_pc) + WORD_WIDTH_IN_BYTES);
+              next_waiting_for_memory <= '1';
+            -- still no grant, maintains request
+            else
+              next_pc                 <= current_pc;
+              next_waiting_for_memory <= current_waiting_for_memory;
+            end if;
+
+            -- received valid, can store new instruction in fifo
+            if (full = '0' and instr_reqvalid = '1' and current_waiting_for_memory = '1') then
+              next_waiting_pc <= current_pc;
+              write_enable    <= '1';
+            -- still waiting for a valid, maintains counter.
+            else
+              next_waiting_pc <= current_waiting_pc;
+              write_enable    <= '0';
+            end if;
+
+            -- stage id is ready and fifo is not empty. 
+            if (empty = '0') then
+              read_enable             <= '1';
+              next_origin_instruction <= from_fifo;
+            -- stage id is ready, but fifo is empty. sends a bubble.
+            else
+              read_enable             <= '0';
+              next_origin_instruction <= bubble;
+            end if;
+        end case;
     end case;
-
   end process combinational;
-
 end architecture behavioural;
