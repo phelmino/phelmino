@@ -64,7 +64,7 @@ begin  -- architecture behavioural
       when ALU_GEU => alu_result_unsigned <= unsigned(zero_padding & not comp_less_than_unsigned);
       when ALU_EQ  => alu_result_unsigned <= unsigned(zero_padding & comp_equal);
       when ALU_NE  => alu_result_unsigned <= unsigned(zero_padding & not comp_equal);
-      when ALU_SLL => alu_result_unsigned <= shift_left(alu_operand_a_unsigned, to_integer(unsigned(alu_operand_b(4 downto 0))));
+      when ALU_SLL => alu_result_unsigned <= shift_left(alu_operand_a_unsigned, to_integer(unsigned(alu_operand_b(4 downto 0))))(WORD_WIDTH-1 downto 0);
       when ALU_SRL => alu_result_unsigned <= shift_right(alu_operand_a_unsigned, to_integer(unsigned(alu_operand_b(4 downto 0))));
       when ALU_SRA => alu_result_unsigned <= unsigned(shift_right(alu_operand_a_signed, to_integer(unsigned(alu_operand_b(4 downto 0)))));
       when others  => alu_result_unsigned <= (others => '0');
