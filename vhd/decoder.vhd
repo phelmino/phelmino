@@ -15,7 +15,7 @@ entity decoder is
     alu_operator         : out alu_operation;
     mux_controller_a     : out alu_source;
     mux_controller_b     : out alu_source;
-    is_requisition       : out std_logic;
+    is_requisition       : out requisition_size;
     is_write             : out std_logic;
     is_branch            : out std_logic;
     is_jump              : out std_logic;
@@ -73,7 +73,7 @@ begin  -- architecture behavioural
         mux_controller_a     <= ALU_SOURCE_FROM_REGISTER;
         mux_controller_b     <= ALU_SOURCE_FROM_REGISTER;
         instruction_valid    <= '1';
-        is_requisition       <= '0';
+        is_requisition       <= NO_REQ;
         is_branch            <= '0';
         is_jump              <= '0';
         is_jump_register     <= '0';
@@ -143,7 +143,7 @@ begin  -- architecture behavioural
         mux_controller_a     <= ALU_SOURCE_FROM_REGISTER;
         mux_controller_b     <= ALU_SOURCE_FROM_IMM;
         instruction_valid    <= '1';
-        is_requisition       <= '0';
+        is_requisition       <= NO_REQ;
         is_branch            <= '0';
         is_jump              <= '0';
         is_jump_register     <= '0';
@@ -182,7 +182,7 @@ begin  -- architecture behavioural
         mux_controller_a     <= ALU_SOURCE_FROM_REGISTER;
         mux_controller_b     <= ALU_SOURCE_FROM_REGISTER;
         instruction_valid    <= '1';
-        is_requisition       <= '0';
+        is_requisition       <= NO_REQ;
         is_branch            <= '1';
         is_jump              <= '0';
         is_jump_register     <= '0';
@@ -199,13 +199,12 @@ begin  -- architecture behavioural
           when others => instruction_valid <= '0';
         end case;
 
-      -- adding load instruction 
+        -- adding load instruction 
       when OPCODE_LOAD =>
         read_address_a       <= rsource1;
         read_address_b       <= (others => '0');
         mux_controller_a     <= ALU_SOURCE_FROM_REGISTER;
         mux_controller_b     <= ALU_SOURCE_FROM_IMM;
-        is_requisition       <= '1';
         is_branch            <= '0';
         is_jump              <= '0';
         is_jump_register     <= '0';
@@ -215,17 +214,37 @@ begin  -- architecture behavioural
         immediate_extension  <= sign_extended_immediate;
 
         case func3 is
-          when "010"  => instruction_valid <= '1';
-          when others => instruction_valid <= '0';
+          when "000" =>
+            is_requisition    <= REQ_BYTE;
+            instruction_valid <= '1';
+
+          when "001" =>
+            is_requisition    <= REQ_HALFWORD;
+            instruction_valid <= '1';
+
+          when "010" =>
+            is_requisition    <= REQ_WORD;
+            instruction_valid <= '1';
+
+          when "100" =>
+            is_requisition    <= REQ_BYTEU;
+            instruction_valid <= '1';
+
+          when "101" =>
+            is_requisition    <= REQ_HALFWORDU;
+            instruction_valid <= '1';
+
+          when others =>
+            is_requisition    <= NO_REQ;
+            instruction_valid <= '0';
         end case;
 
-      -- adding store instruction 
+        -- adding store instruction 
       when OPCODE_STORE =>
         read_address_a       <= rsource1;
         read_address_b       <= rsource2;
         mux_controller_a     <= ALU_SOURCE_FROM_REGISTER;
         mux_controller_b     <= ALU_SOURCE_FROM_IMM;
-        is_requisition       <= '1';
         is_branch            <= '0';
         is_jump              <= '0';
         is_jump_register     <= '0';
@@ -235,17 +254,30 @@ begin  -- architecture behavioural
         immediate_extension  <= sign_extended_immediate;
 
         case func3 is
-          when "010"  => instruction_valid <= '1';
-          when others => instruction_valid <= '0';
+          when "000" =>
+            is_requisition    <= REQ_BYTE;
+            instruction_valid <= '1';
+
+          when "001" =>
+            is_requisition    <= REQ_HALFWORD;
+            instruction_valid <= '1';
+            
+          when "010" =>
+            is_requisition    <= REQ_WORD;
+            instruction_valid <= '1';
+            
+          when others =>
+            is_requisition    <= NO_REQ;
+            instruction_valid <= '0';
         end case;
 
-      -- adding load upper immediate instruction
+        -- adding load upper immediate instruction
       when OPCODE_LUI =>
         read_address_a       <= (others => '0');
         read_address_b       <= (others => '0');
         mux_controller_a     <= ALU_SOURCE_FROM_IMM;
         mux_controller_b     <= ALU_SOURCE_ZERO;
-        is_requisition       <= '0';
+        is_requisition       <= NO_REQ;
         is_branch            <= '0';
         is_jump              <= '0';
         is_jump_register     <= '0';
@@ -255,13 +287,13 @@ begin  -- architecture behavioural
         immediate_extension  <= sign_extended_immediate;
         instruction_valid    <= '1';
 
-      -- adding add upper immediate to pc instruction
+        -- adding add upper immediate to pc instruction
       when OPCODE_AUIPC =>
         read_address_a       <= (others => '0');
         read_address_b       <= (others => '0');
         mux_controller_a     <= ALU_SOURCE_FROM_IMM;
         mux_controller_b     <= ALU_SOURCE_FROM_PC;
-        is_requisition       <= '0';
+        is_requisition       <= NO_REQ;
         is_branch            <= '0';
         is_jump              <= '0';
         is_jump_register     <= '0';
@@ -271,13 +303,13 @@ begin  -- architecture behavioural
         immediate_extension  <= sign_extended_immediate;
         instruction_valid    <= '1';
 
-      -- adding jump and link instruction
+        -- adding jump and link instruction
       when OPCODE_JAL =>
         read_address_a       <= (others => '0');
         read_address_b       <= (others => '0');
         mux_controller_a     <= ALU_SOURCE_FROM_PC;
         mux_controller_b     <= ALU_SOURCE_FOUR;
-        is_requisition       <= '0';
+        is_requisition       <= NO_REQ;
         is_branch            <= '0';
         is_jump              <= '1';
         is_jump_register     <= '0';
@@ -287,13 +319,13 @@ begin  -- architecture behavioural
         immediate_extension  <= sign_extended_immediate;
         instruction_valid    <= '1';
 
-      -- adding indirect jump instruction
+        -- adding indirect jump instruction
       when OPCODE_JALR =>
         read_address_a       <= rsource1;
         read_address_b       <= (others => '0');
         mux_controller_a     <= ALU_SOURCE_FROM_PC;
         mux_controller_b     <= ALU_SOURCE_FOUR;
-        is_requisition       <= '0';
+        is_requisition       <= NO_REQ;
         is_branch            <= '0';
         is_jump              <= '1';
         is_jump_register     <= '1';
@@ -308,7 +340,7 @@ begin  -- architecture behavioural
 
       when others =>
         instruction_valid    <= '0';
-        is_requisition       <= '0';
+        is_requisition       <= NO_REQ;
         is_branch            <= '0';
         is_jump              <= '0';
         is_jump_register     <= '0';

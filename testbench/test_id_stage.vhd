@@ -19,7 +19,7 @@ architecture test of test_id_stage is
       alu_operand_b_ex        : out std_logic_vector(WORD_WIDTH-1 downto 0);
       alu_operator_ex         : out alu_operation;
       destination_register_ex : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-      is_requisition_ex       : out std_logic;
+      is_requisition_ex       : out requisition_size;
       is_branch_ex            : out std_logic;
       branch_destination_if   : out std_logic_vector(WORD_WIDTH-1 downto 0);
       branch_active           : in  std_logic;
@@ -43,7 +43,7 @@ architecture test of test_id_stage is
   signal alu_operand_b_ex        : std_logic_vector(WORD_WIDTH-1 downto 0)        := (others => '0');
   signal alu_operator_ex         : alu_operation                                  := ALU_ADD;
   signal destination_register_ex : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0) := (others => '0');
-  signal is_requisition_ex       : std_logic                                      := '0';
+  signal is_requisition_ex       : requisition_size                               := NO_REQ;
   signal is_branch_ex            : std_logic                                      := '0';
   signal branch_destination_if   : std_logic_vector(WORD_WIDTH-1 downto 0)        := (others => '0');
   signal branch_active           : std_logic                                      := '0';

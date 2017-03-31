@@ -30,10 +30,11 @@ entity ex_stage is
     write_data_z_id    : out std_logic_vector(WORD_WIDTH-1 downto 0);
 
     -- data memory interface
-    is_requisition    : in  std_logic;
-    is_requisition_wb : out std_logic;
+    is_requisition    : in  requisition_size;
+    is_requisition_wb : out requisition_size;
     is_write          : in  std_logic;
     is_write_data     : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+    bit_mask_wb       : out std_logic_vector(1 downto 0);
     data_requisition  : out std_logic;
     data_address      : out std_logic_vector(WORD_WIDTH-1 downto 0);
     data_write_enable : out std_logic;
@@ -63,11 +64,12 @@ architecture behavioural of ex_stage is
   signal branch_active                : std_logic;
   signal next_branch_active           : std_logic;
   signal next_destination_register_wb : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+  signal next_bitmask_wb              : std_logic_vector(1 downto 0);
 
   signal data_requisition_i : std_logic;
 
   signal waiting_for_memory     : std_logic;
-  signal next_is_requisition_wb : std_logic;
+  signal next_is_requisition_wb : requisition_size;
 
   signal valid : std_logic;
 
@@ -85,9 +87,9 @@ begin  -- architecture behavioural
   write_data_z_id    <= alu_result;
 
   -- memory interface
-  data_address       <= alu_result;
-  data_requisition   <= is_requisition;
-  data_requisition_i <= is_requisition;
+  data_address       <= alu_result(WORD_WIDTH-1 downto 2) & "00";
+  data_requisition   <= '1' when (is_requisition /= NO_REQ) else '0';
+  data_requisition_i <= '1' when (is_requisition /= NO_REQ) else '0';
   data_write_enable  <= is_write;
   data_write_data    <= is_write_data;
 
@@ -108,7 +110,8 @@ begin  -- architecture behavioural
       branch_active <= '0';
 
       -- interface with wb stage
-      is_requisition_wb <= '0';
+      is_requisition_wb <= NO_REQ;
+      bit_mask_wb       <= (others => '0');
     elsif clk'event and clk = '1' then  -- rising clock edge
       if (valid = '1') then
         -- destination register
@@ -119,6 +122,7 @@ begin  -- architecture behavioural
 
         -- interface with wb stage
         is_requisition_wb <= next_is_requisition_wb;
+        bit_mask_wb       <= next_bitmask_wb;
       end if;
 
       if (ready = '1' and valid = '0') then
@@ -129,12 +133,13 @@ begin  -- architecture behavioural
         branch_active <= '0';
 
         -- interface with wb stage
-        is_requisition_wb <= '0';
+        is_requisition_wb <= NO_REQ;
+        bit_mask_wb       <= (others => '0');
       end if;
     end if;
   end process interface_wb;
 
-  combinational : process (alu_result(0), branch_active, data_grant,
+  combinational : process (alu_result, branch_active, data_grant,
                            destination_register, is_branch, is_requisition)
   begin  -- process combinational
 
@@ -147,15 +152,20 @@ begin  -- architecture behavioural
     end case;
 
     -- it is a new requisition. starts memory interface.
-    if (is_requisition = '1') then
-      waiting_for_memory           <= not data_grant;
-      next_is_requisition_wb       <= data_grant;
+    if (is_requisition /= NO_REQ) then
+      waiting_for_memory <= not data_grant;
+      case data_grant is
+        when '1'    => next_is_requisition_wb <= is_requisition;
+        when others => next_is_requisition_wb <= NO_REQ;
+      end case;
       next_destination_register_wb <= destination_register;
-    -- just a logical operation
+      next_bitmask_wb              <= alu_result(1 downto 0);
+      -- just a logical operation
     else
       waiting_for_memory           <= '0';
-      next_is_requisition_wb       <= '0';
+      next_is_requisition_wb       <= NO_REQ;
       next_destination_register_wb <= (others => '0');
+      next_bitmask_wb              <= (others => '0');
     end if;
   end process combinational;
 

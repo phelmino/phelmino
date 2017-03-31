@@ -5,6 +5,9 @@ package phelmino_definitions is
   -- ALU Operations
   type alu_operation is (ALU_ADD, ALU_SUB, ALU_XOR, ALU_OR, ALU_AND, ALU_LT, ALU_GE, ALU_LTU, ALU_GEU, ALU_EQ, ALU_NE, ALU_SLL, ALU_SRL, ALU_SRA);
 
+  -- Requisition size
+  type requisition_size is (NO_REQ, REQ_BYTE, REQ_BYTEU, REQ_HALFWORD, REQ_HALFWORDU, REQ_WORD);
+
   -- GPR
   constant WORD_WIDTH          : natural := 32;
   constant WORD_WIDTH_IN_BYTES : natural := WORD_WIDTH/8;
