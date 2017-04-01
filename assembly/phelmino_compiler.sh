@@ -11,10 +11,10 @@ if [[ $# -lt 2 ]]; then
 else
    case $1 in
            "-s") riscv32-unknown-elf-as -o riscv_raw_elf $2 ;;
-           "-c") riscv32-unknown-elf-gcc -o riscv_raw_elf $2
+           "-c") riscv32-unknown-elf-gcc -s -o riscv_raw_elf $2 -static
    esac
          
-   riscv32-unknown-elf-objcopy -I elf32-littleriscv -j .text -O binary riscv_raw_elf riscv_section_elf
+   riscv32-unknown-elf-objcopy -I elf32-littleriscv -O binary riscv_raw_elf riscv_section_elf
    xxd -c 4 -e riscv_section_elf > riscv_hex_instructions.txt
    ./generate_rom.pl
 
