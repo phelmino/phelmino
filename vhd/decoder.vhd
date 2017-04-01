@@ -256,11 +256,11 @@ begin  -- architecture behavioural
         case func3 is
           when "000" =>
             is_requisition    <= REQ_BYTE;
-            instruction_valid <= '1';
+            instruction_valid <= '0';
 
           when "001" =>
             is_requisition    <= REQ_HALFWORD;
-            instruction_valid <= '1';
+            instruction_valid <= '0';
             
           when "010" =>
             is_requisition    <= REQ_WORD;
