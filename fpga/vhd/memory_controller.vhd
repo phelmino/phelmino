@@ -73,26 +73,18 @@ architecture behavioural of memory_controller is
   component ram is
     generic (
       depth : natural;
-      width : natural);
+      width : natural); 
     port (
-      clk          : in  std_logic;
-      rst_n        : in  std_logic;
-      address      : in  std_logic_vector(depth-1 downto 0);
-      input        : in  std_logic_vector(width-1 downto 0);
-      output       : out std_logic_vector(width-1 downto 0);
-      write_enable : in  std_logic);
+      clk            : in  std_logic;
+      rst_n          : in  std_logic;
+      address_a      : in  std_logic_vector(depth-1 downto 0);
+      address_b      : in  std_logic_vector(depth-1 downto 0);
+      input          : in  std_logic_vector(width-1 downto 0);
+      output_a       : out std_logic_vector(width-1 downto 0);
+      output_b       : out std_logic_vector(width-1 downto 0);
+      output_hex     : out std_logic_vector(width-1 downto 0);
+      write_enable_b : in  std_logic); 
   end component ram;
-
-  component rom is
-    generic (
-      depth : natural;
-      width : natural);
-    port (
-      clk     : in  std_logic;
-      rst_n   : in  std_logic;
-      address : in  std_logic_vector(depth-1 downto 0);
-      output  : out std_logic_vector(width-1 downto 0));
-  end component rom;
 
   component seven_segments is
     port (
@@ -104,7 +96,7 @@ architecture behavioural of memory_controller is
   signal data_address_real  : std_logic_vector(MEMORY_DEPTH-1 downto 0);
   signal current_hex        : std_logic_vector(width-1 downto 0);
 
-  type   origin_output is (output_MEM, output_IO, output_NONE);
+  type origin_output is (output_MEM, output_IO, output_NONE);
   signal last_origin_output    : origin_output;
   signal current_origin_output : origin_output;
   signal next_origin_output    : origin_output;
@@ -113,28 +105,20 @@ begin  -- architecture behavioural
   instr_address_real <= instr_address(depth-1+2 downto 2);
   data_address_real  <= data_address(depth-1+2 downto 2);
 
-  rom_1 : entity lib_fpga.rom
-    generic map (
-      depth => ROM_DEPTH,
-      width => MEMORY_WIDTH)
-    port map (
-      clk     => clk,
-      rst_n   => rst_n,
-      address => current_rom_address,
-      output  => instr_reqdata);
-
   ram_1 : entity lib_fpga.ram
     generic map (
       depth => RAM_DEPTH,
       width => MEMORY_WIDTH)
     port map (
-      clk          => clk,
-      rst_n        => rst_n,
-      address      => current_ram_address,
-      input        => current_ram_input,
-      output       => current_ram_output,
-      output_hex   => current_hex,
-      write_enable => current_write_enable);
+      clk            => clk,
+      rst_n          => rst_n,
+      address_a      => current_rom_address,
+      address_b      => current_ram_address,
+      input          => current_ram_input,
+      output_a       => instr_reqdata,
+      output_b       => current_ram_output,
+      output_hex     => current_hex,
+      write_enable_b => current_write_enable);
 
   seven_segments_1 : seven_segments
     port map (
@@ -207,7 +191,7 @@ begin  -- architecture behavioural
         next_rom_address <= (others => '0');
       when others =>
         -- verify if it is in the good range
-        if (current_instr_grant = '0' and unsigned(instr_address_real) >= ROM_BEGIN and unsigned(instr_address_real) <= ROM_END) then
+        if (current_instr_grant = '0' and unsigned(instr_address_real) >= RAM_BEGIN and unsigned(instr_address_real) <= RAM_END) then
           next_instr_grant <= '1';
           next_rom_address <= instr_address_real;
         else

@@ -1,3 +1,5 @@
+int d = 20;
+
 int main(int argc, char const *argv[]) {
   int a = 1;
   int b = 2;
