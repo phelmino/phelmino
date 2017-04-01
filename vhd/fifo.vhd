@@ -186,8 +186,7 @@ begin  -- architecture behavioural
 
   -- psl property enable_steady_output is
   --    always (rst_n = '1' and enable = '0' ->
-  --    next (always ({prev(data_output_i) = data_output_i}))
-  --    until enable = '1' or rst_n = '0');
+  --    next ({prev(data_output_i) = data_output_i}) until enable = '1' or rst_n = '0');
   -- psl assert enable_steady_output;
 
 end architecture behavioural;

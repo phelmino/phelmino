@@ -62,7 +62,7 @@ architecture behavioural of phelmino_core is
       alu_operand_b_ex        : out std_logic_vector(WORD_WIDTH-1 downto 0);
       alu_operator_ex         : out alu_operation;
       destination_register_ex : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-      is_requisition_ex       : out std_logic;
+      is_requisition_ex       : out requisition_size;
       is_write_ex             : out std_logic;
       is_write_data_ex        : out std_logic_vector(WORD_WIDTH-1 downto 0);
       is_branch_ex            : out std_logic;
@@ -76,8 +76,6 @@ architecture behavioural of phelmino_core is
       write_address_y         : in  std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       write_data_y            : in  std_logic_vector(WORD_WIDTH-1 downto 0);
       alu_result              : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      data_read_from_memory   : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      data_read_data_valid    : in  std_logic;
       pc                      : in  std_logic_vector(WORD_WIDTH-1 downto 0);
       ready_if                : out std_logic;
       ready                   : in  std_logic);
@@ -88,13 +86,13 @@ architecture behavioural of phelmino_core is
   signal is_branch_ex            : std_logic;
   signal branch_destination_if   : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal destination_register_ex : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-  signal is_requisition_ex       : std_logic;
+  signal is_requisition_ex       : requisition_size;
   signal is_write_ex             : std_logic;
   signal is_write_data_ex        : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal ready_if                : std_logic;
   signal jump_active_if          : std_logic;
 
-  component ex_stage is
+  component ex_stage
     port (
       clk                     : in  std_logic;
       rst_n                   : in  std_logic;
@@ -108,10 +106,11 @@ architecture behavioural of phelmino_core is
       write_enable_z_id       : out std_logic;
       write_address_z_id      : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       write_data_z_id         : out std_logic_vector(WORD_WIDTH-1 downto 0);
-      is_requisition          : in  std_logic;
-      is_requisition_wb       : out std_logic;
+      is_requisition          : in  requisition_size;
+      is_requisition_wb       : out requisition_size;
       is_write                : in  std_logic;
       is_write_data           : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      bit_mask_wb             : out std_logic_vector(1 downto 0);
       data_requisition        : out std_logic;
       data_address            : out std_logic_vector(WORD_WIDTH-1 downto 0);
       data_write_enable       : out std_logic;
@@ -120,8 +119,8 @@ architecture behavioural of phelmino_core is
       destination_register    : in  std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       destination_register_wb : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       ready_id                : out std_logic;
-      ready                   : in  std_logic);
-  end component ex_stage;
+      ready                   : in  std_logic); 
+  end component;
   signal alu_result_id           : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal branch_active_if        : std_logic;
   signal branch_active_id        : std_logic;
@@ -129,28 +128,28 @@ architecture behavioural of phelmino_core is
   signal write_address_z_id      : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
   signal write_data_z_id         : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal destination_register_wb : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+  signal bit_mask_wb             : std_logic_vector(1 downto 0);
   signal ready_id                : std_logic;
-  signal is_requisition_wb       : std_logic;
+  signal is_requisition_wb       : requisition_size;
 
-  component wb_stage is
+  component wb_stage
     port (
-      clk                      : in  std_logic;
-      rst_n                    : in  std_logic;
-      destination_register     : in  std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-      is_requisition           : in  std_logic;
-      data_read_data           : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      data_read_from_memory_id : out std_logic_vector(WORD_WIDTH-1 downto 0);
-      data_read_data_valid     : in  std_logic;
-      write_enable_y_id        : out std_logic;
-      write_address_y_id       : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-      write_data_y_id          : out std_logic_vector(WORD_WIDTH-1 downto 0);
-      ready_ex                 : out std_logic);
-  end component wb_stage;
-  signal write_enable_y_id        : std_logic;
-  signal write_address_y_id       : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-  signal write_data_y_id          : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal data_read_from_memory_id : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal ready_ex                 : std_logic;
+      clk                  : in  std_logic;
+      rst_n                : in  std_logic;
+      destination_register : in  std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+      is_requisition       : in  requisition_size;
+      data_read_data       : in  std_logic_vector(WORD_WIDTH-1 downto 0);
+      data_read_data_valid : in  std_logic;
+      bit_mask             : in  std_logic_vector(1 downto 0);
+      write_enable_y_id    : out std_logic;
+      write_address_y_id   : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+      write_data_y_id      : out std_logic_vector(WORD_WIDTH-1 downto 0);
+      ready_ex             : out std_logic); 
+  end component;
+  signal write_enable_y_id  : std_logic;
+  signal write_address_y_id : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+  signal write_data_y_id    : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal ready_ex           : std_logic;
 
 begin  -- architecture behavioural
 
@@ -197,8 +196,6 @@ begin  -- architecture behavioural
       write_data_y            => write_data_y_id,
       pc                      => pc_id,
       alu_result              => alu_result_id,
-      data_read_from_memory   => data_read_from_memory_id,
-      data_read_data_valid    => data_read_data_valid,
       ready_if                => ready_if,
       ready                   => ready_id);
 
@@ -227,49 +224,45 @@ begin  -- architecture behavioural
       data_grant              => data_grant,
       destination_register    => destination_register_ex,
       destination_register_wb => destination_register_wb,
+      bit_mask_wb             => bit_mask_wb,
       ready_id                => ready_id,
       ready                   => ready_ex);
 
   stage_wb : entity lib_vhdl.wb_stage
     port map (
-      clk                      => clk,
-      rst_n                    => rst_n,
-      destination_register     => destination_register_wb,
-      is_requisition           => is_requisition_wb,
-      data_read_data           => data_read_data,
-      data_read_data_valid     => data_read_data_valid,
-      write_enable_y_id        => write_enable_y_id,
-      write_address_y_id       => write_address_y_id,
-      write_data_y_id          => write_data_y_id,
-      data_read_from_memory_id => data_read_from_memory_id,
-      ready_ex                 => ready_ex);
+      clk                  => clk,
+      rst_n                => rst_n,
+      destination_register => destination_register_wb,
+      is_requisition       => is_requisition_wb,
+      data_read_data       => data_read_data,
+      data_read_data_valid => data_read_data_valid,
+      write_enable_y_id    => write_enable_y_id,
+      write_address_y_id   => write_address_y_id,
+      write_data_y_id      => write_data_y_id,
+      bit_mask             => bit_mask_wb,
+      ready_ex             => ready_ex);
 
   -- verification
   -- psl default clock is (clk'event and clk = '1');
 
   -- psl property instruction_requisition_triggers_grant is
-  --    always (rst_n = '1' and instr_requisition_i = '1' ->
-  --    (eventually! instr_grant = '1')
-  --    abort (instr_requisition_i = '0' or rst_n = '0'));
+  --    always (rst_n = '1' and instr_requisition_i = '1' -> (eventually! instr_grant = '1'))
+  --    abort (instr_requisition_i = '0' or rst_n = '0');
   -- psl assert instruction_requisition_triggers_grant;
 
   -- psl property instruction_requisition_grant_before_valid is
-  --    always (rst_n = '1' and instr_requisition_i = '1' ->
-  --    {[*1 to inf]; instr_grant = '1'; [*0 to inf]; instr_reqvalid = '1'}
-  --    abort (instr_requisition_i = '0' or rst_n = '0'));
+  --    always (rst_n = '1' and instr_requisition_i = '1' -> {[*1 to inf]; instr_grant = '1'; [*0 to inf]; instr_reqvalid = '1'})
+  --    abort (instr_requisition_i = '0' or rst_n = '0');
   -- psl assert instruction_requisition_grant_before_valid;
 
   -- psl property data_requisition_triggers_grant is
-  --    always (rst_n = '1' and data_requisition_i = '1' ->
-  --    (eventually! data_grant = '1')
-  --    abort (data_requisition_i = '0' or rst_n = '0'));
+  --    always (rst_n = '1' and data_requisition_i = '1' -> (eventually! data_grant = '1'))
+  --    abort (data_requisition_i = '0' or rst_n = '0');
   -- psl assert data_requisition_triggers_grant;
 
   -- psl property data_requisition_grant_before_valid is
-  --    always (rst_n = '1' and data_requisition_i = '1' ->
-  --    {[*1 to inf]; data_grant = '1'; [*0 to inf]; data_read_data_valid = '1'}
-  --    abort (data_requisition_i = '0' or rst_n = '0'));
+  --    always (rst_n = '1' and data_requisition_i = '1' -> {[*1 to inf]; data_grant = '1'; [*0 to inf]; data_read_data_valid = '1'})
+  --    abort (data_requisition_i = '0' or rst_n = '0');
   -- psl assert data_requisition_grant_before_valid;
-
 
 end architecture behavioural;

@@ -19,7 +19,7 @@ architecture test of test_id_stage is
       alu_operand_b_ex        : out std_logic_vector(WORD_WIDTH-1 downto 0);
       alu_operator_ex         : out alu_operation;
       destination_register_ex : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-      is_requisition_ex       : out std_logic;
+      is_requisition_ex       : out requisition_size;
       is_branch_ex            : out std_logic;
       branch_destination_if   : out std_logic_vector(WORD_WIDTH-1 downto 0);
       branch_active           : in  std_logic;
@@ -31,8 +31,6 @@ architecture test of test_id_stage is
       write_address_y         : in  std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       write_data_y            : in  std_logic_vector(WORD_WIDTH-1 downto 0);
       alu_result              : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      data_read_from_memory   : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      data_read_data_valid    : in  std_logic;
       ready_if                : out std_logic;
       ready                   : in  std_logic);
   end component id_stage;
@@ -45,7 +43,7 @@ architecture test of test_id_stage is
   signal alu_operand_b_ex        : std_logic_vector(WORD_WIDTH-1 downto 0)        := (others => '0');
   signal alu_operator_ex         : alu_operation                                  := ALU_ADD;
   signal destination_register_ex : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0) := (others => '0');
-  signal is_requisition_ex       : std_logic                                      := '0';
+  signal is_requisition_ex       : requisition_size                               := NO_REQ;
   signal is_branch_ex            : std_logic                                      := '0';
   signal branch_destination_if   : std_logic_vector(WORD_WIDTH-1 downto 0)        := (others => '0');
   signal branch_active           : std_logic                                      := '0';
@@ -57,8 +55,6 @@ architecture test of test_id_stage is
   signal write_address_y         : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0) := (others => '0');
   signal write_data_y            : std_logic_vector(WORD_WIDTH-1 downto 0)        := (others => '0');
   signal alu_result              : std_logic_vector(WORD_WIDTH-1 downto 0)        := (others => '0');
-  signal data_read_from_memory   : std_logic_vector(WORD_WIDTH-1 downto 0)        := (others => '0');
-  signal data_read_data_valid    : std_logic                                      := '1';
   signal ready_if                : std_logic                                      := '0';
   signal ready                   : std_logic                                      := '0';
 
@@ -87,8 +83,6 @@ begin  -- architecture test
       write_address_y         => write_address_y,
       write_data_y            => write_data_y,
       alu_result              => alu_result,
-      data_read_from_memory   => data_read_from_memory,
-      data_read_data_valid    => data_read_data_valid,
       ready_if                => ready_if,
       ready                   => ready);
 

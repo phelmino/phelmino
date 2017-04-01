@@ -22,7 +22,7 @@ entity id_stage is
     alu_operand_b_ex        : out std_logic_vector(WORD_WIDTH-1 downto 0);
     alu_operator_ex         : out alu_operation;
     destination_register_ex : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-    is_requisition_ex       : out std_logic;
+    is_requisition_ex       : out requisition_size;
     is_write_ex             : out std_logic;
     is_write_data_ex        : out std_logic_vector(WORD_WIDTH-1 downto 0);
 
@@ -44,8 +44,6 @@ entity id_stage is
 
     -- forwarding signals
     alu_result            : in std_logic_vector(WORD_WIDTH-1 downto 0);
-    data_read_from_memory : in std_logic_vector(WORD_WIDTH-1 downto 0);
-    data_read_data_valid  : in std_logic;
 
     -- pipeline control signals
     ready_if : out std_logic;
@@ -81,7 +79,7 @@ architecture behavioural of id_stage is
     port (
       instruction          : in  std_logic_vector(WORD_WIDTH-1 downto 0);
       instruction_valid    : out std_logic;
-      is_requisition       : out std_logic;
+      is_requisition       : out requisition_size;
       is_write             : out std_logic;
       is_branch            : out std_logic;
       is_jump              : out std_logic;
@@ -95,7 +93,7 @@ architecture behavioural of id_stage is
       immediate_extension  : out std_logic_vector(WORD_WIDTH-1 downto 0));
   end component decoder;
   signal instruction_valid       : std_logic;
-  signal is_requisition          : std_logic;
+  signal is_requisition          : requisition_size;
   signal is_write                : std_logic;
   signal next_is_write_data_ex   : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal is_branch               : std_logic;
@@ -177,7 +175,7 @@ begin  -- architecture behavioural
       alu_operand_a_ex         <= (others => '0');
       alu_operand_b_ex         <= (others => '0');
       alu_operator_ex          <= ALU_ADD;
-      is_requisition_ex        <= '0';
+      is_requisition_ex        <= NO_REQ;
       registers_waiting_memory <= (others => '0');
       is_write_ex              <= '0';
       is_write_data_ex         <= (others => '0');
@@ -194,7 +192,7 @@ begin  -- architecture behavioural
         alu_operand_a_ex        <= (others => '0');
         alu_operand_b_ex        <= (others => '0');
         alu_operator_ex         <= ALU_ADD;
-        is_requisition_ex       <= '0';
+        is_requisition_ex       <= NO_REQ;
         is_write_ex             <= '0';
         is_write_data_ex        <= (others => '0');
         is_branch_ex            <= '0';
@@ -292,7 +290,7 @@ begin  -- architecture behavioural
       current_mux_controller_c <= ALU_SOURCE_FROM_WB_STAGE;
     end if;
 
-    if ((is_requisition and not is_write) = '1') then
+    if (((is_requisition /= NO_REQ) and ((not is_write) = '1'))) then
       next_registers_waiting_memory(to_integer(unsigned(destination_register))) <= '1';
     end if;
 

@@ -28,7 +28,7 @@ end entity rom;
 
 architecture behavioural of rom is
 
-  type rom_data_type is array (0 to 2**MEMORY_DEPTH-1) of std_logic_vector(width-1 downto 0);
+  type     rom_data_type is array (0 to 2**MEMORY_DEPTH-1) of std_logic_vector(width-1 downto 0);
   constant fibonacci : rom_data_type :=
     (0	    => x"00000193",		-- li gp, 0
      1	    => x"01400f13",		-- li t5, 20
@@ -105,8 +105,16 @@ architecture behavioural of rom is
      others => NOP);
 
   constant jumperman : rom_data_type :=
-    (0	    => x"00a00093",		-- li ra, 10
-     1	    => x"00a08567",		-- jalr a0, 10(ra)
+    (0      => x"00a00093",             -- li ra, 10
+     1      => x"00a08567",             -- jalr a0, 10(ra)
+     others => NOP);
+
+  constant broken : rom_data_type :=
+    (0      => x"01400f13",             -- li t5, 20
+     1      => x"20000f93",             -- li t6, 512
+     2      => x"00100093",             -- li ra, 1
+     3      => x"001fa023",             -- sw ra, 0(t6)
+     4      => x"001f9103",             -- lh sp, 1(t6)
      others => NOP);
 
   signal next_output : std_logic_vector(width-1 downto 0);
