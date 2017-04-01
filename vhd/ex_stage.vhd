@@ -160,7 +160,7 @@ begin  -- architecture behavioural
       end case;
       next_destination_register_wb <= destination_register;
       next_bitmask_wb              <= alu_result(1 downto 0);
-      -- just a logical operation
+    -- just a logical operation
     else
       waiting_for_memory           <= '0';
       next_is_requisition_wb       <= NO_REQ;

@@ -48,6 +48,7 @@ architecture behavioural of ram is
     variable ram_data   : ram_data_type;
     variable n          : natural := 0;
   begin
+    ram_data := (others => (others => '0'));
     while not endfile(ram_file) loop
       readline(ram_file, read_line);
       hread(read_line, ram_vector);
