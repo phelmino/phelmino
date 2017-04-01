@@ -147,11 +147,11 @@ begin  -- architecture behavioural
   end process interface_id;
 
   combinational : process (branch_active, branch_destination,
-                           current_branch_destination, current_pc,
+                           current_branch_destination,
+                           current_origin_instruction, current_pc,
                            current_waiting_for_memory, current_waiting_pc,
                            empty, fifo_instruction, fifo_pc, full, instr_grant,
-                           instr_requisition_i, instr_reqvalid, jump_active,
-                           next_origin_instruction) is
+                           instr_requisition_i, instr_reqvalid, jump_active) is
   begin  -- process combinational
     -- output to stage id
     case current_origin_instruction is

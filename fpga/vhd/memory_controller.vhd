@@ -180,8 +180,8 @@ begin  -- architecture behavioural
   combinational : process (core_input, current_data_grant, current_instr_grant,
                            current_ram_output, data_address, data_bit_enable,
                            data_requisition, data_write_data,
-                           data_write_enable, instr_address(width-1 downto 0),
-                           instr_requisition, last_origin_output) is
+                           data_write_enable, instr_address, instr_requisition,
+                           last_origin_output) is
     variable temp_addr : std_logic_vector(width-1 downto 0) := (others => '0');
   begin  -- process combinational
     case instr_requisition is
@@ -192,7 +192,7 @@ begin  -- architecture behavioural
         -- verify if it is in the good range
         if (current_instr_grant = '0') then
           next_instr_grant <= '1';
-          next_rom_address <= std_logic_vector(unsigned(instr_address(width-1 downto 0)) - RAM_BEGIN);
+          next_rom_address <= (std_logic_vector(unsigned(instr_address(width-1 downto 0)) - RAM_BEGIN));
         else
           next_instr_grant <= '0';
           next_rom_address <= (others => '0');
@@ -233,7 +233,7 @@ begin  -- architecture behavioural
             next_ram_address <= (std_logic_vector(unsigned(data_address(width-1 downto 0)) - RAM_BEGIN));
           else
             temp_addr        := std_logic_vector(x"FFFFFFFF" - unsigned(data_address));
-            next_ram_address <= std_logic_vector(RAM_END - unsigned(temp_addr(width-1 downto 0)) - RAM_BEGIN);
+            next_ram_address <= std_logic_vector(RAM_END - RAM_BEGIN - unsigned(temp_addr(width-1 downto 0)));
           end if;
           next_data_grant    <= '1';
           next_write_enable  <= data_write_enable;
