@@ -41,6 +41,7 @@ entity memory_controller is
     data_address         : in  std_logic_vector(width-1 downto 0);
     data_write_enable    : in  std_logic;
     data_write_data      : in  std_logic_vector(width-1 downto 0);
+    data_bit_enable      : in  std_logic_vector(3 downto 0);
     data_read_data       : out std_logic_vector(width-1 downto 0);
     data_grant           : out std_logic;
     data_read_data_valid : out std_logic);
@@ -67,23 +68,26 @@ architecture behavioural of memory_controller is
   signal current_ram_output   : std_logic_vector(width-1 downto 0);
   signal next_write_enable    : std_logic;
   signal current_write_enable : std_logic;
+  signal next_bit_enable      : std_logic_vector(3 downto 0);
+  signal current_bit_enable   : std_logic_vector(3 downto 0);
 
   signal next_core_output : std_logic_vector(width-1 downto 0);
 
   component ram is
     generic (
       depth : natural;
-      width : natural); 
+      width : natural);
     port (
       clk            : in  std_logic;
       rst_n          : in  std_logic;
       address_a      : in  std_logic_vector(depth-1 downto 0);
       address_b      : in  std_logic_vector(depth-1 downto 0);
+      bit_enable_b   : in  std_logic_vector(3 downto 0);
       input          : in  std_logic_vector(width-1 downto 0);
       output_a       : out std_logic_vector(width-1 downto 0);
       output_b       : out std_logic_vector(width-1 downto 0);
       output_hex     : out std_logic_vector(width-1 downto 0);
-      write_enable_b : in  std_logic); 
+      write_enable_b : in  std_logic);
   end component ram;
 
   component seven_segments is
@@ -114,6 +118,7 @@ begin  -- architecture behavioural
       rst_n          => rst_n,
       address_a      => current_rom_address,
       address_b      => current_ram_address,
+      bit_enable_b   => current_bit_enable,
       input          => current_ram_input,
       output_a       => instr_reqdata,
       output_b       => current_ram_output,
@@ -155,6 +160,7 @@ begin  -- architecture behavioural
       current_ram_input     <= (others => '0');
       current_rom_address   <= (others => '0');
       current_ram_address   <= (others => '0');
+      current_bit_enable    <= (others => '0');
       current_origin_output <= output_NONE;
       last_origin_output    <= output_NONE;
 
@@ -169,6 +175,7 @@ begin  -- architecture behavioural
       current_instr_grant   <= next_instr_grant;
       current_data_grant    <= next_data_grant;
       current_write_enable  <= next_write_enable;
+      current_bit_enable    <= next_bit_enable;
       current_ram_input     <= next_ram_input;
       current_rom_address   <= next_rom_address;
       current_ram_address   <= next_ram_address;
@@ -181,7 +188,7 @@ begin  -- architecture behavioural
 
   combinational : process (core_input, current_data_grant, current_instr_grant,
                            current_ram_output, data_address_real,
-                           data_requisition, data_write_data,
+                           data_bit_enable, data_requisition, data_write_data,
                            data_write_enable, instr_address_real,
                            instr_requisition, last_origin_output) is
   begin  -- process combinational
@@ -220,6 +227,7 @@ begin  -- architecture behavioural
         next_ram_input     <= (others => '0');
         next_core_output   <= (others => '0');
         next_origin_output <= output_NONE;
+        next_bit_enable    <= (others => '0');
       when others =>
         next_data_grant    <= '0';
         next_write_enable  <= '0';
@@ -227,6 +235,7 @@ begin  -- architecture behavioural
         next_ram_address   <= (others => '0');
         next_core_output   <= (others => '0');
         next_origin_output <= output_NONE;
+        next_bit_enable    <= (others => '0');
 
         -- verify if it is in the good range
         if (current_data_grant = '0' and unsigned(data_address_real) >= RAM_BEGIN and unsigned(data_address_real) <= RAM_END) then
@@ -236,6 +245,7 @@ begin  -- architecture behavioural
           next_ram_address   <= std_logic_vector(unsigned(data_address_real) - RAM_BEGIN);
           next_core_output   <= (others => '0');
           next_origin_output <= output_MEM;
+          next_bit_enable    <= data_bit_enable;
         end if;
 
         if (current_data_grant = '0' and unsigned(data_address_real) = IO_ADDR) then

@@ -24,6 +24,7 @@ entity phelmino_core is
     data_address         : out std_logic_vector(WORD_WIDTH-1 downto 0);
     data_write_enable    : out std_logic;
     data_write_data      : out std_logic_vector(WORD_WIDTH-1 downto 0);
+    data_bit_enable      : out std_logic_vector(3 downto 0);
     data_read_data       : in  std_logic_vector(WORD_WIDTH-1 downto 0);
     data_grant           : in  std_logic;
     data_read_data_valid : in  std_logic);
@@ -119,7 +120,7 @@ architecture behavioural of phelmino_core is
       destination_register    : in  std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       destination_register_wb : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       ready_id                : out std_logic;
-      ready                   : in  std_logic); 
+      ready                   : in  std_logic);
   end component;
   signal alu_result_id           : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal branch_active_if        : std_logic;
@@ -144,7 +145,7 @@ architecture behavioural of phelmino_core is
       write_enable_y_id    : out std_logic;
       write_address_y_id   : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       write_data_y_id      : out std_logic_vector(WORD_WIDTH-1 downto 0);
-      ready_ex             : out std_logic); 
+      ready_ex             : out std_logic);
   end component;
   signal write_enable_y_id  : std_logic;
   signal write_address_y_id : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
@@ -221,6 +222,7 @@ begin  -- architecture behavioural
       data_address            => data_address,
       data_write_enable       => data_write_enable,
       data_write_data         => data_write_data,
+      data_bit_enable         => data_bit_enable,
       data_grant              => data_grant,
       destination_register    => destination_register_ex,
       destination_register_wb => destination_register_wb,

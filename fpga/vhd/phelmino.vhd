@@ -38,6 +38,7 @@ architecture behavioural of phelmino is
       data_address         : out std_logic_vector(WORD_WIDTH-1 downto 0);
       data_write_enable    : out std_logic;
       data_write_data      : out std_logic_vector(WORD_WIDTH-1 downto 0);
+      data_bit_enable      : out std_logic_vector(3 downto 0);
       data_read_data       : in  std_logic_vector(WORD_WIDTH-1 downto 0);
       data_grant           : in  std_logic;
       data_read_data_valid : in  std_logic);
@@ -46,7 +47,7 @@ architecture behavioural of phelmino is
   component memory_controller
     generic (
       depth : natural;
-      width : natural); 
+      width : natural);
     port (
       clk                  : in  std_logic;
       rst_n                : in  std_logic;
@@ -65,9 +66,10 @@ architecture behavioural of phelmino is
       data_address         : in  std_logic_vector(width-1 downto 0);
       data_write_enable    : in  std_logic;
       data_write_data      : in  std_logic_vector(width-1 downto 0);
+      data_bit_enable      : in  std_logic_vector(3 downto 0);
       data_read_data       : out std_logic_vector(width-1 downto 0);
       data_grant           : out std_logic;
-      data_read_data_valid : out std_logic); 
+      data_read_data_valid : out std_logic);
   end component;
 
   signal instr_requisition    : std_logic;
@@ -79,6 +81,7 @@ architecture behavioural of phelmino is
   signal data_address         : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal data_write_enable    : std_logic;
   signal data_write_data      : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal data_bit_enable      : std_logic_vector(3 downto 0);
   signal data_read_data       : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal data_grant           : std_logic;
   signal data_read_data_valid : std_logic;
@@ -97,6 +100,7 @@ begin  -- architecture behavioural
       data_address         => data_address,
       data_write_enable    => data_write_enable,
       data_write_data      => data_write_data,
+      data_bit_enable      => data_bit_enable,
       data_read_data       => data_read_data,
       data_grant           => data_grant,
       data_read_data_valid => data_read_data_valid);
@@ -123,6 +127,7 @@ begin  -- architecture behavioural
       data_address         => data_address,
       data_write_enable    => data_write_enable,
       data_write_data      => data_write_data,
+      data_bit_enable      => data_bit_enable,
       data_read_data       => data_read_data,
       data_grant           => data_grant,
       data_read_data_valid => data_read_data_valid);
