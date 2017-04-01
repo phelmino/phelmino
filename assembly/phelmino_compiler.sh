@@ -15,7 +15,7 @@ else
    esac
          
    riscv32-unknown-elf-objcopy -I elf32-littleriscv -j .text -O binary riscv_raw_elf riscv_section_elf
-   xxd -e riscv_section_elf > riscv_hex_instructions.txt
+   xxd -c 4 -e riscv_section_elf > riscv_hex_instructions.txt
    ./generate_rom.pl
 
    rm riscv_raw_elf riscv_section_elf riscv_hex_instructions.txt
