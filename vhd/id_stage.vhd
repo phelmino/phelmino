@@ -43,7 +43,7 @@ entity id_stage is
     write_data_y    : in std_logic_vector(WORD_WIDTH-1 downto 0);
 
     -- forwarding signals
-    alu_result            : in std_logic_vector(WORD_WIDTH-1 downto 0);
+    alu_result : in std_logic_vector(WORD_WIDTH-1 downto 0);
 
     -- pipeline control signals
     ready_if : out std_logic;
@@ -216,7 +216,8 @@ begin  -- architecture behavioural
     end if;
   end process sequentialprocess;
 
-  combinationalprocess : process (alu_result, current_mux_controller_a,
+  combinationalprocess : process (alu_result, branch_active,
+                                  current_mux_controller_a,
                                   current_mux_controller_b,
                                   current_mux_controller_c,
                                   current_stall_state, destination_register,
@@ -290,12 +291,12 @@ begin  -- architecture behavioural
       current_mux_controller_c <= ALU_SOURCE_FROM_WB_STAGE;
     end if;
 
-    if (((is_requisition /= NO_REQ) and ((not is_write) = '1'))) then
-      next_registers_waiting_memory(to_integer(unsigned(destination_register))) <= '1';
+    if (write_enable_y = '1' and branch_active = '0') then
+      next_registers_waiting_memory(to_integer(unsigned(write_address_y))) <= '0';
     end if;
 
-    if (write_enable_y = '1') then
-      next_registers_waiting_memory(to_integer(unsigned(write_address_y))) <= '0';
+    if (((is_requisition /= NO_REQ) and ((not is_write) = '1')) and branch_active = '0') then
+      next_registers_waiting_memory(to_integer(unsigned(destination_register))) <= '1';
     end if;
 
     case current_stall_state is

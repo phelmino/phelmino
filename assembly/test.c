@@ -1,10 +1,12 @@
-int d = 20;
+#define HEX_ADDR 0x8FFE
+#define IO_ADDR  0x8FFF
 
-int main(int argc, char const *argv[]) {
-  int a = 1;
-  int b = 2;
-  int c = 0;
+int main(void) {
+    int a = 17;
+    int b = 41;
 
-  c = a + b;
-  return 0;
+    int *c = (int*) HEX_ADDR;
+    *c = a + b;
+
+    return 0;
 }

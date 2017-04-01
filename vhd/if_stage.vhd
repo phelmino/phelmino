@@ -131,8 +131,15 @@ begin  -- architecture behavioural
       current_origin_instruction <= bubble;
     elsif clk'event and clk = '1' then  -- rising clock edge
       if (ready = '1') then
-        pc_id                      <= next_pc_id;
-        instruction_id             <= next_instruction_id;
+        case jump_active is
+          when '0' =>
+            pc_id          <= next_pc_id;
+            instruction_id <= next_instruction_id;
+          when others =>
+            pc_id          <= (others => '0');
+            instruction_id <= NOP;
+        end case;
+
         current_branch_destination <= branch_destination;
         current_origin_instruction <= next_origin_instruction;
       end if;
@@ -140,11 +147,11 @@ begin  -- architecture behavioural
   end process interface_id;
 
   combinational : process (branch_active, branch_destination,
-                           current_branch_destination,
-                           current_origin_instruction, current_pc,
+                           current_branch_destination, current_pc,
                            current_waiting_for_memory, current_waiting_pc,
                            empty, fifo_instruction, fifo_pc, full, instr_grant,
-                           instr_requisition_i, instr_reqvalid, jump_active) is
+                           instr_requisition_i, instr_reqvalid, jump_active,
+                           next_origin_instruction) is
   begin  -- process combinational
     -- output to stage id
     case current_origin_instruction is
@@ -166,8 +173,8 @@ begin  -- architecture behavioural
         read_enable             <= '0';
         write_enable            <= '0';
         next_waiting_for_memory <= '0';
-      when others =>
 
+      when others =>
         case jump_active is
           when '1' =>
             next_pc                 <= branch_destination;

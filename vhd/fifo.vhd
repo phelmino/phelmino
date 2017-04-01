@@ -92,6 +92,7 @@ begin  -- architecture behavioural
       case clear is
         when '1' =>
           write_pointer <= (others => '0');
+          fifo          <= (others => (others => '0'));
 
         when others =>
           write_pointer <= write_pointer;

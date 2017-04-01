@@ -53,6 +53,8 @@ package phelmino_definitions is
   constant OPCODE_STORE                  : std_logic_vector(OPCODE_LENGTH-1 downto 0) := "0100011";
   constant OPCODE_ALU_REGISTER_REGISTER  : std_logic_vector(OPCODE_LENGTH-1 downto 0) := "0110011";
   constant OPCODE_ALU_IMMEDIATE_REGISTER : std_logic_vector(OPCODE_LENGTH-1 downto 0) := "0010011";
+  constant OPCODE_FENCE                  : std_logic_vector(OPCODE_LENGTH-1 downto 0) := "0001111";
+  constant OPCODE_CSR                    : std_logic_vector(OPCODE_LENGTH-1 downto 0) := "1110011";
 
   -- Some instructions
   constant NOP            : std_logic_vector(WORD_WIDTH-1 downto 0) := "0000000" & "00000" & "00000" & "000" & "00000" & "0110011";

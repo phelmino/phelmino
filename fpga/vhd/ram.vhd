@@ -23,6 +23,7 @@ entity ram is
     rst_n          : in  std_logic;
     address_a      : in  std_logic_vector(depth-1 downto 0);
     address_b      : in  std_logic_vector(depth-1 downto 0);
+    bit_enable_b   : in  std_logic_vector(3 downto 0);
     input          : in  std_logic_vector(width-1 downto 0);
     output_a       : out std_logic_vector(width-1 downto 0);
     output_b       : out std_logic_vector(width-1 downto 0);
@@ -76,8 +77,26 @@ begin  -- architecture behavioural
           output_b <= next_output_b;
 
         when others =>
-          output_b                                  <= (others => '0');
-          ram_data(to_integer(unsigned(address_b))) <= input;
+          output_b <= (others => '0');
+
+          case bit_enable_b(3 downto 2) is
+            when "01" =>                -- SB
+              case bit_enable_b(1 downto 0) is
+                when "00"   => ram_data(to_integer(unsigned(address_b)))(7 downto 0)   <= input(7 downto 0);
+                when "01"   => ram_data(to_integer(unsigned(address_b)))(15 downto 8)  <= input(7 downto 0);
+                when "10"   => ram_data(to_integer(unsigned(address_b)))(23 downto 16) <= input(7 downto 0);
+                when others => ram_data(to_integer(unsigned(address_b)))(31 downto 24) <= input(7 downto 0);
+              end case;
+
+            when "10" =>                -- SH
+              case bit_enable_b(1 downto 0) is
+                when "00"   => ram_data(to_integer(unsigned(address_b)))(15 downto 0)  <= input(15 downto 0);
+                when "01"   => ram_data(to_integer(unsigned(address_b)))(23 downto 8)  <= input(15 downto 0);
+                when others => ram_data(to_integer(unsigned(address_b)))(31 downto 16) <= input(15 downto 0);
+              end case;
+
+            when others => ram_data(to_integer(unsigned(address_b))) <= input;
+          end case;
       end case;
     end if;
   end process sequential;

@@ -40,6 +40,7 @@ entity ex_stage is
     data_write_enable : out std_logic;
     data_write_data   : out std_logic_vector(WORD_WIDTH-1 downto 0);
     data_grant        : in  std_logic;
+    data_bit_enable   : out std_logic_vector(3 downto 0);
 
     -- destination register
     destination_register    : in  std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
@@ -66,7 +67,8 @@ architecture behavioural of ex_stage is
   signal next_destination_register_wb : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
   signal next_bitmask_wb              : std_logic_vector(1 downto 0);
 
-  signal data_requisition_i : std_logic;
+  signal data_requisition_i   : std_logic;
+  signal next_data_bit_enable : std_logic_vector(3 downto 0);
 
   signal waiting_for_memory     : std_logic;
   signal next_is_requisition_wb : requisition_size;
@@ -92,6 +94,7 @@ begin  -- architecture behavioural
   data_requisition_i <= '1' when (is_requisition /= NO_REQ) else '0';
   data_write_enable  <= is_write;
   data_write_data    <= is_write_data;
+  data_bit_enable    <= next_data_bit_enable;
 
   alu_1 : entity lib_vhdl.alu
     port map (
@@ -160,12 +163,18 @@ begin  -- architecture behavioural
       end case;
       next_destination_register_wb <= destination_register;
       next_bitmask_wb              <= alu_result(1 downto 0);
+      case is_requisition is
+        when REQ_BYTE | REQ_BYTEU         => next_data_bit_enable <= "01" & alu_result(1 downto 0);
+        when REQ_HALFWORD | REQ_HALFWORDU => next_data_bit_enable <= "10" & alu_result(1 downto 0);
+        when others                       => next_data_bit_enable <= (others => '0');
+      end case;
     -- just a logical operation
     else
       waiting_for_memory           <= '0';
       next_is_requisition_wb       <= NO_REQ;
       next_destination_register_wb <= (others => '0');
       next_bitmask_wb              <= (others => '0');
+      next_data_bit_enable         <= (others => '0');
     end if;
   end process combinational;
 

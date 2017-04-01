@@ -199,7 +199,7 @@ begin  -- architecture behavioural
           when others => instruction_valid <= '0';
         end case;
 
-        -- adding load instruction 
+      -- adding load instruction 
       when OPCODE_LOAD =>
         read_address_a       <= rsource1;
         read_address_b       <= (others => '0');
@@ -239,7 +239,7 @@ begin  -- architecture behavioural
             instruction_valid <= '0';
         end case;
 
-        -- adding store instruction 
+      -- adding store instruction 
       when OPCODE_STORE =>
         read_address_a       <= rsource1;
         read_address_b       <= rsource2;
@@ -256,22 +256,22 @@ begin  -- architecture behavioural
         case func3 is
           when "000" =>
             is_requisition    <= REQ_BYTE;
-            instruction_valid <= '0';
+            instruction_valid <= '1';
 
           when "001" =>
             is_requisition    <= REQ_HALFWORD;
-            instruction_valid <= '0';
-            
+            instruction_valid <= '1';
+
           when "010" =>
             is_requisition    <= REQ_WORD;
             instruction_valid <= '1';
-            
+
           when others =>
             is_requisition    <= NO_REQ;
             instruction_valid <= '0';
         end case;
 
-        -- adding load upper immediate instruction
+      -- adding load upper immediate instruction
       when OPCODE_LUI =>
         read_address_a       <= (others => '0');
         read_address_b       <= (others => '0');
@@ -287,7 +287,7 @@ begin  -- architecture behavioural
         immediate_extension  <= sign_extended_immediate;
         instruction_valid    <= '1';
 
-        -- adding add upper immediate to pc instruction
+      -- adding add upper immediate to pc instruction
       when OPCODE_AUIPC =>
         read_address_a       <= (others => '0');
         read_address_b       <= (others => '0');
@@ -303,7 +303,7 @@ begin  -- architecture behavioural
         immediate_extension  <= sign_extended_immediate;
         instruction_valid    <= '1';
 
-        -- adding jump and link instruction
+      -- adding jump and link instruction
       when OPCODE_JAL =>
         read_address_a       <= (others => '0');
         read_address_b       <= (others => '0');
@@ -319,7 +319,7 @@ begin  -- architecture behavioural
         immediate_extension  <= sign_extended_immediate;
         instruction_valid    <= '1';
 
-        -- adding indirect jump instruction
+      -- adding indirect jump instruction
       when OPCODE_JALR =>
         read_address_a       <= rsource1;
         read_address_b       <= (others => '0');
@@ -337,6 +337,21 @@ begin  -- architecture behavioural
           when "000"  => instruction_valid <= '1';
           when others => instruction_valid <= '0';
         end case;
+
+      when OPCODE_FENCE | OPCODE_CSR =>
+        read_address_a       <= (others => '0');
+        read_address_b       <= (others => '0');
+        mux_controller_a     <= ALU_SOURCE_ZERO;
+        mux_controller_b     <= ALU_SOURCE_ZERO;
+        is_requisition       <= NO_REQ;
+        is_branch            <= '0';
+        is_jump              <= '0';
+        is_jump_register     <= '0';
+        destination_register <= (others => '0');
+        alu_operator         <= ALU_ADD;
+        is_write             <= '0';
+        immediate_extension  <= sign_extended_immediate;
+        instruction_valid    <= '1';
 
       when others =>
         instruction_valid    <= '0';
