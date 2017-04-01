@@ -291,12 +291,16 @@ begin  -- architecture behavioural
       current_mux_controller_c <= ALU_SOURCE_FROM_WB_STAGE;
     end if;
 
-    if (write_enable_y = '1' and branch_active = '0') then
-      next_registers_waiting_memory(to_integer(unsigned(write_address_y))) <= '0';
+    if (branch_active = '1') then
+      next_registers_waiting_memory <= (others => '0');
     end if;
 
     if (((is_requisition /= NO_REQ) and ((not is_write) = '1')) and branch_active = '0') then
       next_registers_waiting_memory(to_integer(unsigned(destination_register))) <= '1';
+    end if;
+
+    if (write_enable_y = '1' and branch_active = '0') then
+      next_registers_waiting_memory(to_integer(unsigned(write_address_y))) <= '0';
     end if;
 
     case current_stall_state is

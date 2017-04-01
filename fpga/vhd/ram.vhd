@@ -28,6 +28,7 @@ entity ram is
     output_a       : out std_logic_vector(width-1 downto 0);
     output_b       : out std_logic_vector(width-1 downto 0);
     output_hex     : out std_logic_vector(width-1 downto 0);
+    output_io      : out std_logic_vector(width-1 downto 0);
     write_enable_b : in  std_logic);
 
 end entity ram;
@@ -39,6 +40,7 @@ architecture behavioural of ram is
   signal next_output_a   : std_logic_vector(width-1 downto 0);
   signal next_output_b   : std_logic_vector(width-1 downto 0);
   signal next_output_hex : std_logic_vector(width-1 downto 0);
+  signal next_output_io  : std_logic_vector(width-1 downto 0);
 
   constant instructions : string := "/home/cavalcante/RISCV/phelmino/assembly/phelmino_rom.txt";
 
@@ -69,9 +71,11 @@ begin  -- architecture behavioural
       output_a   <= (others => '0');
       output_b   <= (others => '0');
       output_hex <= (others => '0');
+      output_io  <= (others => '0');
     elsif clk'event and clk = '1' then  -- rising clock edge
       output_a   <= next_output_a;
       output_hex <= next_output_hex;
+      output_io  <= next_output_io;
       case write_enable_b is
         when '0' =>
           output_b <= next_output_b;
@@ -105,7 +109,8 @@ begin  -- architecture behavioural
   begin  -- process combinational
     next_output_a   <= ram_data(to_integer(unsigned(address_a)));
     next_output_b   <= ram_data(to_integer(unsigned(address_b)));
-    next_output_hex <= ram_data(HEX_ADDR - RAM_BEGIN);
+    next_output_hex <= ram_data((HEX_ADDR - RAM_BEGIN)/4);
+    next_output_io  <= ram_data((IO_ADDR - RAM_BEGIN)/4);
   end process combinational;
 
 end architecture behavioural;
