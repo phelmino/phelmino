@@ -26,7 +26,6 @@ architecture structural of system is
       clk           : in  std_logic;
       rst_n         : in  std_logic;
       core_input    : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      core_output   : out std_logic_vector(WORD_WIDTH-1 downto 0);
       hex_display_0 : out std_logic_vector(6 downto 0);
       hex_display_1 : out std_logic_vector(6 downto 0);
       hex_display_2 : out std_logic_vector(6 downto 0);
@@ -55,7 +54,6 @@ begin  -- architecture structural
       clk           => CLOCK_50,
       rst_n         => RESET,
       core_input    => core_input,
-      core_output   => core_output,
       hex_display_0 => HEX0,
       hex_display_1 => HEX1,
       hex_display_2 => HEX2,

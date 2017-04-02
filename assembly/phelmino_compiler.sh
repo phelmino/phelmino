@@ -14,9 +14,7 @@ else
            "-c") riscv32-unknown-elf-gcc -fPIC -o riscv_raw_elf $2 -lm
    esac
 
-   #riscv32-unknown-elf-strip riscv_raw_elf 
-   riscv32-unknown-elf-objcopy -I elf32-littleriscv -O binary riscv_raw_elf riscv_section_elf
-   xxd -c 4 -e riscv_section_elf > riscv_hex_instructions.txt
-   ./generate_rom.pl
+   riscv32-unknown-elf-strip riscv_raw_elf 
+   elf2hex 4 65536 riscv_raw_elf > phelmino_rom.txt
 
 fi;

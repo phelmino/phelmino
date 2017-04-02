@@ -21,7 +21,6 @@ entity memory_controller is
 
     -- io ports
     core_input  : in  std_logic_vector(width-1 downto 0);
-    core_output : out std_logic_vector(width-1 downto 0);
 
     -- seven segments display
     hex_display_0 : out std_logic_vector(6 downto 0);
@@ -100,6 +99,9 @@ architecture behavioural of memory_controller is
   signal last_origin_output    : origin_output;
   signal current_origin_output : origin_output;
   signal next_origin_output    : origin_output;
+
+  signal next_output_hex         : std_logic_vector(width-1 downto 0);
+  signal next_write_in_interface : std_logic;
 begin  -- architecture behavioural
 
   ram_1 : entity lib_fpga.ram
@@ -115,8 +117,6 @@ begin  -- architecture behavioural
       input          => current_ram_input,
       output_a       => instr_reqdata,
       output_b       => current_ram_output,
-      output_hex     => current_hex,
-      output_io      => core_output,
       write_enable_b => current_write_enable);
 
   seven_segments_1 : seven_segments
@@ -158,6 +158,7 @@ begin  -- architecture behavioural
       current_origin_output <= output_NONE;
       last_origin_output    <= output_NONE;
 
+      current_hex   <= (others => '0');
     elsif clk'event and clk = '1' then  -- rising clock edge
       instr_grant    <= next_instr_grant;
       instr_reqvalid <= next_instr_reqvalid;
@@ -174,16 +175,22 @@ begin  -- architecture behavioural
       current_ram_address   <= next_ram_address(depth-1+2 downto 2);
       current_origin_output <= next_origin_output;
       last_origin_output    <= current_origin_output;
+
+      if (next_write_in_interface = '1') then
+        current_hex   <= next_output_hex;
+      end if;
     end if;
   end process sequential;
 
-  combinational : process (core_input, current_data_grant, current_instr_grant,
-                           current_ram_output, data_address, data_bit_enable,
-                           data_requisition, data_write_data,
-                           data_write_enable, instr_address, instr_requisition,
-                           last_origin_output) is
-    variable temp_addr : std_logic_vector(width-1 downto 0) := (others => '0');
+  combinational : process (core_input, current_data_grant, current_hex,
+                           current_instr_grant, current_ram_output,
+                           data_address, data_bit_enable, data_requisition,
+                           data_write_data, data_write_enable, instr_address,
+                           instr_requisition, last_origin_output) is
   begin  -- process combinational
+    next_output_hex         <= current_hex;
+    next_write_in_interface <= '0';
+
     case instr_requisition is
       when '0' =>
         next_instr_grant <= '0';
@@ -192,7 +199,7 @@ begin  -- architecture behavioural
         -- verify if it is in the good range
         if (current_instr_grant = '0') then
           next_instr_grant <= '1';
-          next_rom_address <= (std_logic_vector(unsigned(instr_address(width-1 downto 0)) - RAM_BEGIN));
+          next_rom_address <= instr_address;
         else
           next_instr_grant <= '0';
           next_rom_address <= (others => '0');
@@ -228,13 +235,8 @@ begin  -- architecture behavioural
         next_bit_enable    <= (others => '0');
 
         -- verify if it is in the good range
-        if (current_data_grant = '0') then
-          if (unsigned(data_address) < PAGE_LIMIT) then
-            next_ram_address <= (std_logic_vector(unsigned(data_address(width-1 downto 0)) - RAM_BEGIN));
-          else
-            temp_addr        := std_logic_vector(x"FFFFFFFF" - unsigned(data_address));
-            next_ram_address <= std_logic_vector(RAM_END - RAM_BEGIN - unsigned(temp_addr(width-1 downto 0)));
-          end if;
+        if (current_data_grant = '0' and unsigned(data_address) /= IO_ADDR) then
+          next_ram_address   <= data_address;
           next_data_grant    <= '1';
           next_write_enable  <= data_write_enable;
           next_ram_input     <= data_write_data;
@@ -243,7 +245,10 @@ begin  -- architecture behavioural
         end if;
 
         if (current_data_grant = '0' and unsigned(data_address) = IO_ADDR) then
-          next_origin_output <= output_IO;
+          next_data_grant         <= '1';
+          next_output_hex         <= data_write_data;
+          next_write_in_interface <= data_write_enable;
+          next_origin_output      <= output_IO;
         end if;
     end case;
 
