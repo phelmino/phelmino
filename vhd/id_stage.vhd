@@ -190,17 +190,6 @@ begin  -- architecture behavioural
       current_stall_state      <= next_stall_state;
       registers_waiting_memory <= next_registers_waiting_memory;
 
-      if ((ready = '1' and valid = '0') or branch_active = '1') then
-        alu_operand_a_ex        <= (others => '0');
-        alu_operand_b_ex        <= (others => '0');
-        alu_operator_ex         <= ALU_ADD;
-        is_requisition_ex       <= NO_REQ;
-        is_write_ex             <= '0';
-        is_write_data_ex        <= (others => '0');
-        is_branch_ex            <= '0';
-        destination_register_ex <= (others => '0');
-      end if;
-
       if (valid = '1' and branch_active = '0') then
         alu_operand_a_ex        <= alu_operand_a;
         alu_operand_b_ex        <= alu_operand_b;
@@ -225,6 +214,22 @@ begin  -- architecture behavioural
         is_write_data_ex        <= (others => '0');
         is_branch_ex            <= '0';
       end if;
+
+      if ((ready = '1' and valid = '0') or branch_active = '1') then
+        alu_operand_a_ex        <= (others => '0');
+        alu_operand_b_ex        <= (others => '0');
+        alu_operator_ex         <= ALU_ADD;
+        is_requisition_ex       <= NO_REQ;
+        is_write_ex             <= '0';
+        is_write_data_ex        <= (others => '0');
+        is_branch_ex            <= '0';
+        destination_register_ex <= (others => '0');
+      end if;
+
+      if (branch_active = '1') then
+        jump_active_if   <= '0';
+        jump_active_if_i <= '0';
+      end if;
     end if;
   end process sequentialprocess;
 
@@ -234,11 +239,12 @@ begin  -- architecture behavioural
                                   current_mux_controller_c,
                                   current_stall_state, destination_register,
                                   immediate_extension, is_requisition,
-                                  mux_controller_a, mux_controller_b, pc,
-                                  read_address_a, read_address_b, read_data_a,
-                                  read_data_b, registers_waiting_memory,
-                                  write_address_y, write_address_z,
-                                  write_data_y, write_enable_y, write_enable_z) is
+                                  jump_active_if_i, mux_controller_a,
+                                  mux_controller_b, pc, read_address_a,
+                                  read_address_b, read_data_a, read_data_b,
+                                  registers_waiting_memory, write_address_y,
+                                  write_address_z, write_data_y,
+                                  write_enable_y, write_enable_z) is
   begin  -- process combinationalprocess
     next_registers_waiting_memory <= registers_waiting_memory;
 
@@ -304,14 +310,14 @@ begin  -- architecture behavioural
 
     if (branch_active = '1' or jump_active_if_i = '1') then
       next_registers_waiting_memory <= (others => '0');
-    else
-      if (is_requisition /= NO_REQ and branch_active = '0' and unsigned(destination_register) /= 0) then
-        next_registers_waiting_memory(to_integer(unsigned(destination_register))) <= '1';
-      end if;
+    end if;
 
-      if (write_enable_y = '1' and branch_active = '0') then
-        next_registers_waiting_memory(to_integer(unsigned(write_address_y))) <= '0';
-      end if;
+    if (is_requisition /= NO_REQ and branch_active = '0' and unsigned(destination_register) /= 0 and jump_active_if_i = '0') then
+      next_registers_waiting_memory(to_integer(unsigned(destination_register))) <= '1';
+    end if;
+
+    if (write_enable_y = '1' and branch_active = '0' and jump_active_if_i = '0') then
+      next_registers_waiting_memory(to_integer(unsigned(write_address_y))) <= '0';
     end if;
 
     case current_stall_state is

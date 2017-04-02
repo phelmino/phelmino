@@ -9,9 +9,10 @@ package phelmino_definitions is
   type requisition_size is (NO_REQ, REQ_BYTE, REQ_BYTEU, REQ_HALFWORD, REQ_HALFWORDU, REQ_WORD);
 
   -- GPR
-  constant WORD_WIDTH          : natural := 32;
-  constant WORD_WIDTH_IN_BYTES : natural := WORD_WIDTH/8;
-  constant GPR_ADDRESS_WIDTH   : natural := 5;
+  constant WORD_WIDTH            : natural                                 := 32;
+  constant WORD_WIDTH_IN_BYTES   : natural                                 := WORD_WIDTH/8;
+  constant GPR_ADDRESS_WIDTH     : natural                                 := 5;
+  constant INITIAL_STACK_POINTER : std_logic_vector(WORD_WIDTH-1 downto 0) := x"0003FFFC";
 
   -- Prefetch Buffer
   constant PREFETCH_ADDRESS_WIDTH : natural := 2;
