@@ -1,8 +1,6 @@
-#define HEX_ADDR 0x3406c
-#define IO_ADDR  0x34070
+#define IO_ADDR 0x80000
 #define NUMBER_OF_HEX_DISPLAYS 4
 
-int *hex = (int*) HEX_ADDR;
 int *io  = (int*) IO_ADDR;
 
 void print(int n) {
@@ -16,7 +14,7 @@ void print(int n) {
         offset *= 16;
     }
     
-    *hex = result;
+    *io = result;
 }
 
 void put(int n) {
