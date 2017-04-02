@@ -112,6 +112,8 @@ begin  -- architecture behavioural
     if rst_n = '0' then                 -- asynchronous reset (active low)
       current_pc                 <= x"00010074";
       current_waiting_pc         <= x"00010074";
+      -- current_pc                 <= (others => '0');
+      -- current_waiting_pc         <= (others => '0');
       current_waiting_for_memory <= '0';
       instr_requisition_i        <= '0';
     elsif clk'event and clk = '1' then  -- rising clock edge

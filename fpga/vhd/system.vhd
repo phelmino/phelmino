@@ -13,7 +13,6 @@ entity system is
   port (
     CLOCK_50               : in  std_logic;
     RESET                  : in  std_logic;
-    core_output            : out std_logic_vector(WORD_WIDTH-1 downto 0);
     HEX0, HEX1, HEX2, HEX3 : out std_logic_vector(6 downto 0);
     SW                     : in  std_logic_vector (9 downto 0);
     LEDR                   : out std_logic_vector (9 downto 0));

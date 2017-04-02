@@ -3,18 +3,22 @@
 
 int *io  = (int*) IO_ADDR;
 
+void print(int n);
+void put(int n);
+int get(void);
+
 void print(int n) {
     int c = 0;
-    int result = 0;
     int offset = 1;
+    int h = 0;
     
     for (c = 0; c < NUMBER_OF_HEX_DISPLAYS; ++c) {
-        result += (n % 10) * offset;
+        h += (n % 10) * offset;
         n /= 10;
         offset *= 16;
     }
-    
-    *io = result;
+
+    *io = h;
 }
 
 void put(int n) {
