@@ -70,10 +70,11 @@ architecture behavioural of id_stage is
       write_address_z : in  std_logic_vector(n-1 downto 0);
       write_data_z    : in  std_logic_vector(w-1 downto 0));
   end component general_purpose_registers;
-  signal read_address_a : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-  signal read_data_a    : std_logic_vector(WORD_WIDTH-1 downto 0);
-  signal read_address_b : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-  signal read_data_b    : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal read_address_a   : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+  signal read_data_a      : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal read_address_b   : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
+  signal read_data_b      : std_logic_vector(WORD_WIDTH-1 downto 0);
+  signal jump_active_if_i : std_logic;
 
   component decoder is
     port (
@@ -181,6 +182,7 @@ begin  -- architecture behavioural
       is_write_data_ex         <= (others => '0');
       is_branch_ex             <= '0';
       jump_active_if           <= '0';
+      jump_active_if_i         <= '0';
       destination_register_ex  <= (others => '0');
       branch_destination_if    <= (others => '0');
       current_stall_state      <= normal_execution;
@@ -196,9 +198,7 @@ begin  -- architecture behavioural
         is_write_ex             <= '0';
         is_write_data_ex        <= (others => '0');
         is_branch_ex            <= '0';
-        jump_active_if          <= '0';
         destination_register_ex <= (others => '0');
-        branch_destination_if   <= (others => '0');
       end if;
 
       if (valid = '1' and branch_active = '0') then
@@ -212,6 +212,18 @@ begin  -- architecture behavioural
         branch_destination_if   <= next_branch_destination;
         is_branch_ex            <= is_branch;
         jump_active_if          <= is_jump;
+        jump_active_if_i        <= is_jump;
+      end if;
+
+      if (ready = '1' and jump_active_if_i = '1') then
+        alu_operand_a_ex        <= (others => '0');
+        alu_operand_b_ex        <= (others => '0');
+        alu_operator_ex         <= ALU_ADD;
+        destination_register_ex <= (others => '0');
+        is_requisition_ex       <= NO_REQ;
+        is_write_ex             <= '0';
+        is_write_data_ex        <= (others => '0');
+        is_branch_ex            <= '0';
       end if;
     end if;
   end process sequentialprocess;
@@ -222,8 +234,7 @@ begin  -- architecture behavioural
                                   current_mux_controller_c,
                                   current_stall_state, destination_register,
                                   immediate_extension, is_requisition,
-                                  is_write, mux_controller_a, mux_controller_b,
-                                  next_registers_waiting_memory, pc,
+                                  mux_controller_a, mux_controller_b, pc,
                                   read_address_a, read_address_b, read_data_a,
                                   read_data_b, registers_waiting_memory,
                                   write_address_y, write_address_z,
@@ -291,16 +302,16 @@ begin  -- architecture behavioural
       current_mux_controller_c <= ALU_SOURCE_FROM_WB_STAGE;
     end if;
 
-    if (branch_active = '1') then
+    if (branch_active = '1' or jump_active_if_i = '1') then
       next_registers_waiting_memory <= (others => '0');
-    end if;
+    else
+      if (is_requisition /= NO_REQ and branch_active = '0' and unsigned(destination_register) /= 0) then
+        next_registers_waiting_memory(to_integer(unsigned(destination_register))) <= '1';
+      end if;
 
-    if (((is_requisition /= NO_REQ) and ((not is_write) = '1')) and branch_active = '0') then
-      next_registers_waiting_memory(to_integer(unsigned(destination_register))) <= '1';
-    end if;
-
-    if (write_enable_y = '1' and branch_active = '0') then
-      next_registers_waiting_memory(to_integer(unsigned(write_address_y))) <= '0';
+      if (write_enable_y = '1' and branch_active = '0') then
+        next_registers_waiting_memory(to_integer(unsigned(write_address_y))) <= '0';
+      end if;
     end if;
 
     case current_stall_state is
@@ -318,7 +329,7 @@ begin  -- architecture behavioural
       when stalling =>
         stall            <= '1';
         next_stall_state <= stalling;
-        if (next_registers_waiting_memory(to_integer(unsigned(read_address_a))) = '0' and (next_registers_waiting_memory(to_integer(unsigned(read_address_b)))) = '0') then
+        if (registers_waiting_memory(to_integer(unsigned(read_address_a))) = '0' and (registers_waiting_memory(to_integer(unsigned(read_address_b)))) = '0') then
           next_stall_state <= normal_execution;
           stall            <= '0';
         end if;

@@ -10,11 +10,9 @@ if [[ $# -lt 2 ]]; then
    echo "  -c   when input file is of extension .c (C code)";
 else
    case $1 in
-           "-s") riscv32-unknown-elf-as -o riscv_raw_elf $2 ;;
+           "-s") riscv32-unknown-elf-as -fPIC -o riscv_raw_elf $2 ;;
            "-c") riscv32-unknown-elf-gcc -fPIC -o riscv_raw_elf $2 -lm
    esac
 
-   riscv32-unknown-elf-strip riscv_raw_elf 
    elf2hex 4 65536 riscv_raw_elf > phelmino_rom.txt
-
 fi;

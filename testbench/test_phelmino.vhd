@@ -22,14 +22,12 @@ architecture behavioural of test_phelmino is
     port (
       CLOCK_50               : in  std_logic;
       RESET                  : in  std_logic;
-      core_output            : out std_logic_vector(WORD_WIDTH-1 downto 0);
       HEX0, HEX1, HEX2, HEX3 : out std_logic_vector(6 downto 0);
       SW                     : in  std_logic_vector (9 downto 0);
       LEDR                   : out std_logic_vector (9 downto 0));
   end component system;
   signal CLOCK_50               : std_logic := '0';
   signal RESET                  : std_logic := '0';
-  signal core_output            : std_logic_vector(31 downto 0);
   signal HEX0, HEX1, HEX2, HEX3 : std_logic_vector(6 downto 0);
   signal SW                     : std_logic_vector (9 downto 0);
   signal LEDR                   : std_logic_vector (9 downto 0);
@@ -41,14 +39,13 @@ begin  -- architecture behavioural
 
   dut : system
     port map (
-      CLOCK_50    => CLOCK_50,
-      RESET       => RESET,
-      core_output => core_output,
-      HEX0        => HEX0,
-      HEX1        => HEX1,
-      HEX2        => HEX2,
-      HEX3        => HEX3,
-      SW          => SW,
-      LEDR        => LEDR);
+      CLOCK_50 => CLOCK_50,
+      RESET    => RESET,
+      HEX0     => HEX0,
+      HEX1     => HEX1,
+      HEX2     => HEX2,
+      HEX3     => HEX3,
+      SW       => SW,
+      LEDR     => LEDR);
 
 end architecture behavioural;
