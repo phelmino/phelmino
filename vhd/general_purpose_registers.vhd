@@ -50,7 +50,8 @@ begin  -- architecture behavioural
 
     if rst_n = '0' then                 -- asynchronous reset (active low)
       -- clears register bank
-      gpr <= (others => (others => '0'));
+      gpr    <= (others => (others => '0'));
+      gpr(2) <= INITIAL_STACK_POINTER;
 
     elsif clk'event and clk = '1' then  -- rising clock edge
       -- rewrites specific address in register bank

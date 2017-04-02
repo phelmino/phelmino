@@ -191,7 +191,7 @@ begin  -- architecture behavioural
             next_instr_requisition <= '1';
 
             -- received a grant, starts new requisition after a cycle
-            if (full = '0' and instr_grant = '1' and instr_requisition_i = '1') then
+            if (instr_grant = '1' and instr_requisition_i = '1') then
               next_pc                 <= std_logic_vector(unsigned(current_pc) + WORD_WIDTH_IN_BYTES);
               next_waiting_for_memory <= '1';
             -- still no grant, maintains request
