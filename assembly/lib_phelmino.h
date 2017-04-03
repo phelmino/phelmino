@@ -3,11 +3,12 @@
 
 int *io  = (int*) IO_ADDR;
 
+int convert_to_hex(int);
+int get(void);
 void print(int n);
 void put(int n);
-int get(void);
 
-void print(int n) {
+int convert_to_hex(int n) {
     int c = 0;
     int offset = 1;
     int h = 0;
@@ -18,13 +19,17 @@ void print(int n) {
         offset *= 16;
     }
 
-    *io = h;
-}
-
-void put(int n) {
-    *io = n;
+    return h;
 }
 
 int get(void) {
     return *io;
+}
+
+void print(int n) {
+    *io = convert_to_hex(n);
+}
+
+void put(int n) {
+    *io = n;
 }

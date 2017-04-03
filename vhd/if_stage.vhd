@@ -88,7 +88,7 @@ begin  -- architecture behavioural
   fifo_input        <= current_waiting_pc & instr_reqdata;
   fifo_pc           <= fifo_output(2*WORD_WIDTH-1 downto WORD_WIDTH);
   fifo_instruction  <= fifo_output(WORD_WIDTH-1 downto 0);
-  clear             <= ready and (branch_active or jump_active);
+  clear             <= branch_active or jump_active;
 
   -- instance "prefetch_buffer"
   prefetch_buffer : entity lib_vhdl.fifo
@@ -133,7 +133,7 @@ begin  -- architecture behavioural
       current_origin_instruction <= bubble;
     elsif clk'event and clk = '1' then  -- rising clock edge
       if (ready = '1') then
-        case jump_active is
+        case jump_active or branch_active is
           when '0' =>
             pc_id          <= next_pc_id;
             instruction_id <= next_instruction_id;
