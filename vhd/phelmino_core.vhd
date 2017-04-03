@@ -248,12 +248,13 @@ begin  -- architecture behavioural
   -- psl default clock is (clk'event and clk = '1');
 
   -- psl property instruction_requisition_triggers_grant is
-  --    always (rst_n = '1' and instr_requisition_i = '1' -> (eventually! instr_grant = '1'))
-  --    abort (instr_requisition_i = '0' or rst_n = '0');
+  --    always(rst_n = '1' and instr_requisition_i = '1' -> (eventually! instr_grant = '1')
+  --    abort (instr_requisition_i = '0' or rst_n = '0'));
   -- psl assert instruction_requisition_triggers_grant;
 
   -- psl property instruction_requisition_grant_before_valid is
-  --    always (rst_n = '1' and instr_requisition_i = '1' -> {[*1 to inf]; instr_grant = '1'; [*0 to inf]; instr_reqvalid = '1'})
+  --    always (rst_n = '1' and instr_requisition_i = '1' ->
+  --    {[*1 to inf]; instr_grant = '1' and instr_reqvalid = '0'; [*0 to inf]; instr_grant = '0' and instr_reqvalid = '1'})
   --    abort (instr_requisition_i = '0' or rst_n = '0');
   -- psl assert instruction_requisition_grant_before_valid;
 
@@ -263,7 +264,8 @@ begin  -- architecture behavioural
   -- psl assert data_requisition_triggers_grant;
 
   -- psl property data_requisition_grant_before_valid is
-  --    always (rst_n = '1' and data_requisition_i = '1' -> {[*1 to inf]; data_grant = '1'; [*0 to inf]; data_read_data_valid = '1'})
+  --    always (rst_n = '1' and data_requisition_i = '1' ->
+  --    {[*1 to inf]; data_grant = '1' and data_read_data_valid = '0'; [*0 to inf]; data_grant = '0' and data_read_data_valid = '1'})
   --    abort (data_requisition_i = '0' or rst_n = '0');
   -- psl assert data_requisition_grant_before_valid;
 
