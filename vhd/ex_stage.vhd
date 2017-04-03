@@ -132,9 +132,6 @@ begin  -- architecture behavioural
         -- destination register
         destination_register_wb <= (others => '0');
 
-        -- branch
-        branch_active <= '0';
-
         -- interface with wb stage
         is_requisition_wb <= NO_REQ;
         bit_mask_wb       <= (others => '0');
