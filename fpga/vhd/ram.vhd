@@ -38,7 +38,7 @@ architecture behavioural of ram is
   signal next_output_a : std_logic_vector(width-1 downto 0);
   signal next_output_b : std_logic_vector(width-1 downto 0);
 
-  constant instructions : string := "/home/cavalcante/RISCV/phelmino/assembly/phelmino_rom.txt";
+  constant instructions : string := "/tp/xph2sei/xph2sei401/MiniProjet/assembly/phelmino_rom.txt";
 
   impure function init_ram_from_file (ram_file_name : in string) return ram_data_type is
     file ram_file       : text open read_mode is ram_file_name;

@@ -176,18 +176,19 @@ begin  -- architecture behavioural
   -- psl assert decrementation_status_counter_when_just_reading;
 
   -- psl property steady_status_counter_while_doing_nothing is
-  --    always (rst_n = '1' and (read_enable = '0' or enable = '0') and write_enable = '0') ->
-  --    next {prev(status_counter) = status_counter};
+  --    always ((rst_n = '1' and (read_enable = '0' or enable = '0') and write_enable = '0') ->
+  --    {[*2]; stable(status_counter)}
+  --    abort ((rst_n = '0') or (read_enable = '1' and enable = '1') or (write_enable = '1')));
   -- psl assert steady_status_counter_while_doing_nothing;
 
   -- psl property steady_status_counter_while_reading_and_writing is
   --    always (rst_n = '1' and read_enable = '1' and enable = '1' and write_enable = '1') ->
-  --    next {prev(status_counter) = status_counter};
+  --    next stable(status_counter);
   -- psl assert steady_status_counter_while_reading_and_writing;
 
   -- psl property enable_steady_output is
   --    always (rst_n = '1' and enable = '0' ->
-  --    next ({prev(data_output_i) = data_output_i}) until enable = '1' or rst_n = '0');
+  --    next (stable(data_output_i) until enable = '1' or rst_n = '0'));
   -- psl assert enable_steady_output;
 
 end architecture behavioural;
