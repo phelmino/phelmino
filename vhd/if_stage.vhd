@@ -88,7 +88,7 @@ begin  -- architecture behavioural
   fifo_input        <= current_waiting_pc & instr_reqdata;
   fifo_pc           <= fifo_output(2*WORD_WIDTH-1 downto WORD_WIDTH);
   fifo_instruction  <= fifo_output(WORD_WIDTH-1 downto 0);
-  clear             <= branch_active or jump_active;
+  clear             <= ready and (branch_active or jump_active);
 
   -- instance "prefetch_buffer"
   prefetch_buffer : entity lib_vhdl.fifo

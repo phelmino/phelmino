@@ -115,7 +115,7 @@ architecture behavioural of id_stage is
   signal current_mux_controller_c : alu_source;
 
   -- stall detection
-  type stall_state is (stalling, normal_execution);
+  type   stall_state is (stalling, normal_execution);
   signal current_stall_state           : stall_state;
   signal next_stall_state              : stall_state;
   signal valid                         : std_logic;
@@ -190,18 +190,7 @@ begin  -- architecture behavioural
       current_stall_state      <= next_stall_state;
       registers_waiting_memory <= next_registers_waiting_memory;
 
-      if (ready = '1' and jump_active_if_i = '1') then
-        alu_operand_a_ex        <= (others => '0');
-        alu_operand_b_ex        <= (others => '0');
-        alu_operator_ex         <= ALU_ADD;
-        destination_register_ex <= (others => '0');
-        is_requisition_ex       <= NO_REQ;
-        is_write_ex             <= '0';
-        is_write_data_ex        <= (others => '0');
-        is_branch_ex            <= '0';
-      end if;
-
-      if ((ready = '1' and valid = '0') or branch_active = '1') then
+      if branch_active = '1' then
         alu_operand_a_ex        <= (others => '0');
         alu_operand_b_ex        <= (others => '0');
         alu_operator_ex         <= ALU_ADD;
@@ -210,25 +199,35 @@ begin  -- architecture behavioural
         is_write_data_ex        <= (others => '0');
         is_branch_ex            <= '0';
         destination_register_ex <= (others => '0');
-      end if;
+        jump_active_if          <= '0';
+        jump_active_if_i        <= '0';
+      else
 
-      if (valid = '1' and branch_active = '0') then
-        alu_operand_a_ex        <= alu_operand_a;
-        alu_operand_b_ex        <= alu_operand_b;
-        alu_operator_ex         <= alu_operator;
-        is_requisition_ex       <= is_requisition;
-        is_write_ex             <= is_write;
-        is_write_data_ex        <= next_is_write_data_ex;
-        destination_register_ex <= destination_register;
-        branch_destination_if   <= next_branch_destination;
-        is_branch_ex            <= is_branch;
-        jump_active_if          <= is_jump;
-        jump_active_if_i        <= is_jump;
-      end if;
+        if valid = '1' then
+          alu_operand_a_ex        <= alu_operand_a;
+          alu_operand_b_ex        <= alu_operand_b;
+          alu_operator_ex         <= alu_operator;
+          is_requisition_ex       <= is_requisition;
+          is_write_ex             <= is_write;
+          is_write_data_ex        <= next_is_write_data_ex;
+          destination_register_ex <= destination_register;
+          branch_destination_if   <= next_branch_destination;
+          is_branch_ex            <= is_branch;
+          jump_active_if          <= is_jump;
+          jump_active_if_i        <= is_jump;
+        end if;
 
-      if (branch_active = '1') then
-        jump_active_if   <= '0';
-        jump_active_if_i <= '0';
+        if (ready = '1' and valid = '0') or jump_active_if_i = '1' then
+          alu_operand_a_ex        <= (others => '0');
+          alu_operand_b_ex        <= (others => '0');
+          alu_operator_ex         <= ALU_ADD;
+          is_requisition_ex       <= NO_REQ;
+          is_write_ex             <= '0';
+          is_write_data_ex        <= (others => '0');
+          is_branch_ex            <= '0';
+          destination_register_ex <= (others => '0');
+        end if;
+        
       end if;
     end if;
   end process sequentialprocess;
