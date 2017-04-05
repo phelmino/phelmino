@@ -4,8 +4,8 @@ has_error=0
 
 vlib ${fpga_path}/libs/altera_mf
 vmap altera_mf ${fpga_path}/libs/altera_mf
-vcom -work altera_mf -2002 -explicit /softslin/altera11_1/quartus/eda/sim_lib/altera_mf_components.vhd
-vcom -work altera_mf -2002 -explicit /softslin/altera11_1/quartus/eda/sim_lib/altera_mf.vhd
+vcom -work altera_mf -2002 -explicit /opt/intelfpga_lite/16.1/quartus/eda/sim_lib/altera_mf_components.vhd
+vcom -work altera_mf -2002 -explicit /opt/intelfpga_lite/16.1/quartus/eda/sim_lib/altera_mf.vhd
 
 function compile {
     if [ $has_error = 0 ]; then
