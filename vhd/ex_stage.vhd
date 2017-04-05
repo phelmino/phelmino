@@ -161,11 +161,23 @@ begin  -- architecture behavioural
       next_destination_register_wb <= destination_register;
       next_bytemask_wb             <= alu_result(1 downto 0);
       case is_requisition is
-        when REQ_BYTE | REQ_BYTEU         => next_data_byte_enable <= "01" & alu_result(1 downto 0);
-        when REQ_HALFWORD | REQ_HALFWORDU => next_data_byte_enable <= "10" & alu_result(1 downto 0);
-        when others                       => next_data_byte_enable <= (others => '0');
+        when REQ_BYTE | REQ_BYTEU =>
+          case alu_result(1 downto 0) is
+            when "00"   => next_data_byte_enable <= "0001";
+            when "01"   => next_data_byte_enable <= "0010";
+            when "10"   => next_data_byte_enable <= "0100";
+            when others => next_data_byte_enable <= "1000";
+          end case;
+
+        when REQ_HALFWORD | REQ_HALFWORDU =>
+          case alu_result(1 downto 0) is
+            when "00"   => next_data_byte_enable <= "0011";
+            when others => next_data_byte_enable <= "1100";
+          end case;
+
+        when others => next_data_byte_enable <= (others => '1');
       end case;
-      -- just a logical operation
+    -- just a logical operation
     else
       waiting_for_memory           <= '0';
       next_is_requisition_wb       <= NO_REQ;
