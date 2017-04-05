@@ -49,6 +49,7 @@ end entity memory_controller;
 
 architecture behavioural of memory_controller is
 
+  signal current_instr_grant : std_logic;
   signal next_instr_grant    : std_logic;
   signal next_instr_reqvalid : std_logic;
   signal next_rom_address    : std_logic_vector(width-1 downto 0);
@@ -58,8 +59,8 @@ architecture behavioural of memory_controller is
   signal next_data_read_data_valid : std_logic;
   signal next_ram_address          : std_logic_vector(width-1 downto 0);
 
-  signal current_rom_address : std_logic_vector(depth-3 downto 0);
-  signal current_ram_address : std_logic_vector(depth-3 downto 0);
+  signal current_rom_address : std_logic_vector(depth-1 downto 0);
+  signal current_ram_address : std_logic_vector(depth-1 downto 0);
 
   signal next_ram_input       : std_logic_vector(width-1 downto 0);
   signal current_ram_input    : std_logic_vector(width-1 downto 0);
@@ -70,17 +71,21 @@ architecture behavioural of memory_controller is
   signal current_byte_enable  : std_logic_vector(3 downto 0);
 
   component ram is
+    generic (
+      depth        : natural;
+      width        : natural;
+      instructions : string);
     port (
-      address_a : in  std_logic_vector (11 downto 0);
-      address_b : in  std_logic_vector (11 downto 0);
-      byteena_a : in  std_logic_vector (3 downto 0);
-      clock     : in  std_logic;
-      data_a    : in  std_logic_vector (31 downto 0);
-      data_b    : in  std_logic_vector (31 downto 0);
-      wren_a    : in  std_logic;
-      wren_b    : in  std_logic;
-      q_a       : out std_logic_vector (31 downto 0);
-      q_b       : out std_logic_vector (31 downto 0));
+      clk            : in  std_logic;
+      rst_n          : in  std_logic;
+      address_a      : in  std_logic_vector(depth-1 downto 0);
+      address_b      : in  std_logic_vector(depth-1 downto 0);
+      input_a        : in  std_logic_vector(width-1 downto 0);
+      input_b        : in  std_logic_vector(width-1 downto 0);
+      output_a       : out std_logic_vector(width-1 downto 0);
+      output_b       : out std_logic_vector(width-1 downto 0);
+      write_enable_a : in  std_logic;
+      write_enable_b : in  std_logic);
   end component ram;
 
   component seven_segments is
@@ -99,27 +104,78 @@ architecture behavioural of memory_controller is
   signal next_output_hex         : std_logic_vector(width-1 downto 0);
   signal next_write_in_interface : std_logic;
 
-  signal q_a : std_logic_vector(width-1 downto 0);
-  signal q_b : std_logic_vector(width-1 downto 0);
+  signal we : std_logic_vector(3 downto 0);
 
-  signal instr_counter_grant      : natural;
-  signal next_instr_counter_grant : natural;
-  signal data_counter_grant       : natural;
-  signal next_data_counter_grant  : natural;
 begin  -- architecture behavioural
+  we <= current_byte_enable and (current_write_enable & current_write_enable & current_write_enable & current_write_enable);
 
-  ram_1 : ram
+  ram_a : entity lib_fpga.ram
+    generic map (
+      depth        => RAM_DEPTH,
+      width        => MEMORY_WIDTH/4,
+      instructions => "/home/cavalcante/RISCV/phelmino/assembly/phelmino_ram_A.txt")
     port map (
-      address_a => current_ram_address,
-      address_b => current_rom_address,
-      byteena_a => current_byte_enable,
-      clock     => clk,
-      data_a    => current_ram_input,
-      data_b    => (others => '0'),
-      wren_a    => current_write_enable,
-      wren_b    => '0',
-      q_a       => q_a,
-      q_b       => q_b);
+      clk            => clk,
+      rst_n          => rst_n,
+      address_a      => current_rom_address,
+      address_b      => current_ram_address,
+      input_a        => (others => '0'),
+      input_b        => current_ram_input(7 downto 0),
+      output_a       => instr_reqdata(7 downto 0),
+      output_b       => current_ram_output(7 downto 0),
+      write_enable_a => '0',
+      write_enable_b => we(0));
+
+  ram_b : entity lib_fpga.ram
+    generic map (
+      depth        => RAM_DEPTH,
+      width        => MEMORY_WIDTH/4,
+      instructions => "/home/cavalcante/RISCV/phelmino/assembly/phelmino_ram_B.txt")
+    port map (
+      clk            => clk,
+      rst_n          => rst_n,
+      address_a      => current_rom_address,
+      address_b      => current_ram_address,
+      input_a        => (others => '0'),
+      input_b        => current_ram_input(15 downto 8),
+      output_a       => instr_reqdata(15 downto 8),
+      output_b       => current_ram_output(15 downto 8),
+      write_enable_a => '0',
+      write_enable_b => we(1));
+
+  ram_c : entity lib_fpga.ram
+    generic map (
+      depth        => RAM_DEPTH,
+      width        => MEMORY_WIDTH/4,
+      instructions => "/home/cavalcante/RISCV/phelmino/assembly/phelmino_ram_C.txt")
+    port map (
+      clk            => clk,
+      rst_n          => rst_n,
+      address_a      => current_rom_address,
+      address_b      => current_ram_address,
+      input_a        => (others => '0'),
+      input_b        => current_ram_input(23 downto 16),
+      output_a       => instr_reqdata(23 downto 16),
+      output_b       => current_ram_output(23 downto 16),
+      write_enable_a => '0',
+      write_enable_b => we(2));
+
+  ram_d : entity lib_fpga.ram
+    generic map (
+      depth        => RAM_DEPTH,
+      width        => MEMORY_WIDTH/4,
+      instructions => "/home/cavalcante/RISCV/phelmino/assembly/phelmino_ram_D.txt")
+    port map (
+      clk            => clk,
+      rst_n          => rst_n,
+      address_a      => current_rom_address,
+      address_b      => current_ram_address,
+      input_a        => (others => '0'),
+      input_b        => current_ram_input(31 downto 24),
+      output_a       => instr_reqdata(31 downto 24),
+      output_b       => current_ram_output(31 downto 24),
+      write_enable_a => '0',
+      write_enable_b => we(3));
 
   seven_segments_1 : seven_segments
     port map (
@@ -150,22 +206,17 @@ begin  -- architecture behavioural
       data_grant           <= '0';
       data_read_data_valid <= '0';
 
+      current_instr_grant   <= '0';
       current_data_grant    <= '0';
       current_write_enable  <= '0';
       current_ram_input     <= (others => '0');
       current_rom_address   <= (others => '0');
       current_ram_address   <= (others => '0');
-      current_byte_enable   <= (others => '0');
       current_origin_output <= output_NONE;
+      current_byte_enable   <= (others => '0');
       last_origin_output    <= output_NONE;
 
       current_hex <= (others => '0');
-
-      current_ram_output <= (others => '0');
-      instr_reqdata      <= (others => '0');
-
-      instr_counter_grant <= 3;
-      data_counter_grant  <= 3;
     elsif clk'event and clk = '1' then  -- rising clock edge
       instr_grant    <= next_instr_grant;
       instr_reqvalid <= next_instr_reqvalid;
@@ -173,61 +224,49 @@ begin  -- architecture behavioural
       data_grant           <= next_data_grant;
       data_read_data_valid <= next_data_read_data_valid;
 
+      current_instr_grant   <= next_instr_grant;
       current_data_grant    <= next_data_grant;
       current_write_enable  <= next_write_enable;
-      current_byte_enable   <= next_byte_enable;
       current_ram_input     <= next_ram_input;
-      current_rom_address   <= next_rom_address(depth-1 downto 2);
-      current_ram_address   <= next_ram_address(depth-1 downto 2);
+      current_byte_enable   <= next_byte_enable;
+      current_rom_address   <= next_rom_address(depth-1+2 downto 2);
+      current_ram_address   <= next_ram_address(depth-1+2 downto 2);
       current_origin_output <= next_origin_output;
       last_origin_output    <= current_origin_output;
-
-      current_ram_output <= q_a;
-      instr_reqdata      <= q_b;
 
       if (next_write_in_interface = '1') then
         current_hex <= next_output_hex;
       end if;
-
-      instr_counter_grant <= next_instr_counter_grant;
-      data_counter_grant  <= next_data_counter_grant;
     end if;
   end process sequential;
 
   combinational : process (core_input, current_data_grant, current_hex,
-                           current_ram_output, data_address, data_byte_enable,
-                           data_counter_grant, data_requisition,
+                           current_instr_grant, current_ram_output,
+                           data_address, data_byte_enable, data_requisition,
                            data_write_data, data_write_enable, instr_address,
-                           instr_counter_grant, instr_requisition,
-                           last_origin_output) is
+                           instr_requisition, last_origin_output) is
   begin  -- process combinational
     next_output_hex         <= current_hex;
     next_write_in_interface <= '0';
 
     case instr_requisition is
       when '0' =>
-        next_instr_grant         <= '0';
-        next_rom_address         <= (others => '0');
-        next_instr_counter_grant <= 3;
+        next_instr_grant <= '0';
+        next_rom_address <= (others => '0');
       when others =>
-        if (instr_counter_grant = 3) then
-          next_instr_grant         <= '1';
-          next_rom_address         <= instr_address;
-          next_instr_counter_grant <= 2;
+        -- verify if it is in the good range
+        if (current_instr_grant = '0') then
+          next_instr_grant <= '1';
+          next_rom_address <= std_logic_vector(unsigned(instr_address) - RAM_START);
         else
-          next_instr_grant         <= '0';
-          next_rom_address         <= (others => '0');
-          next_instr_counter_grant <= 3;
+          next_instr_grant <= '0';
+          next_rom_address <= (others => '0');
         end if;
     end case;
 
-    if (instr_counter_grant <= 2 and instr_counter_grant /= 0) then
-      next_instr_counter_grant <= instr_counter_grant - 1;
-    end if;
-
-    case instr_counter_grant is
-      when 0      => next_instr_reqvalid <= '1';
-      when others => next_instr_reqvalid <= '0';
+    case current_instr_grant is
+      when '0'    => next_instr_reqvalid <= '0';
+      when others => next_instr_reqvalid <= '1';
     end case;
 
     case last_origin_output is
@@ -238,32 +277,29 @@ begin  -- architecture behavioural
 
     case data_requisition is
       when '0' =>
-        next_data_grant         <= '0';
-        next_ram_address        <= (others => '0');
-        next_write_enable       <= '0';
-        next_data_grant         <= '0';
-        next_ram_input          <= (others => '0');
-        next_origin_output      <= output_NONE;
-        next_byte_enable        <= (others => '0');
-        next_data_counter_grant <= 3;
+        next_data_grant    <= '0';
+        next_ram_address   <= (others => '0');
+        next_write_enable  <= '0';
+        next_data_grant    <= '0';
+        next_ram_input     <= (others => '0');
+        next_origin_output <= output_NONE;
+        next_byte_enable   <= (others => '0');
       when others =>
-        next_data_grant         <= '0';
-        next_write_enable       <= '0';
-        next_ram_input          <= (others => '0');
-        next_ram_address        <= (others => '0');
-        next_origin_output      <= output_NONE;
-        next_byte_enable        <= (others => '0');
-        next_data_counter_grant <= 3;
+        next_data_grant    <= '0';
+        next_write_enable  <= '0';
+        next_ram_input     <= (others => '0');
+        next_ram_address   <= (others => '0');
+        next_origin_output <= output_NONE;
+        next_byte_enable   <= (others => '0');
 
         -- verify if it is in the good range
         if (current_data_grant = '0' and unsigned(data_address) /= IO_ADDR) then
-          next_ram_address        <= data_address;
-          next_data_grant         <= '1';
-          next_write_enable       <= data_write_enable;
-          next_ram_input          <= data_write_data;
-          next_origin_output      <= output_MEM;
-          next_byte_enable        <= data_byte_enable;
-          next_data_counter_grant <= 2;
+          next_ram_address   <= std_logic_vector(unsigned(data_address) - RAM_START);
+          next_data_grant    <= '1';
+          next_write_enable  <= data_write_enable;
+          next_ram_input     <= data_write_data;
+          next_origin_output <= output_MEM;
+          next_byte_enable   <= data_byte_enable;
         end if;
 
         if (current_data_grant = '0' and unsigned(data_address) = IO_ADDR) then
@@ -271,17 +307,12 @@ begin  -- architecture behavioural
           next_output_hex         <= data_write_data;
           next_write_in_interface <= data_write_enable;
           next_origin_output      <= output_IO;
-          next_data_counter_grant <= 1;
         end if;
     end case;
 
-    if (data_counter_grant <= 2 and data_counter_grant /= 0) then
-      next_data_counter_grant <= data_counter_grant - 1;
-    end if;
-
-    case data_counter_grant is
-      when 0      => next_data_read_data_valid <= '1';
-      when others => next_data_read_data_valid <= '0';
+    case current_data_grant is
+      when '0'    => next_data_read_data_valid <= '0';
+      when others => next_data_read_data_valid <= '1';
     end case;
 
   end process combinational;

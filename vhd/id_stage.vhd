@@ -336,7 +336,7 @@ begin  -- architecture behavioural
         next_stall_state <= stalling;
         if (registers_waiting_memory(to_integer(unsigned(read_address_a))) = '0' and (registers_waiting_memory(to_integer(unsigned(read_address_b)))) = '0') then
           next_stall_state <= normal_execution;
-          stall            <= '0';
+          stall           <= '0';
         end if;
     end case;
 

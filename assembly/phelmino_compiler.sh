@@ -1,8 +1,11 @@
 #!/bin/bash
 
-depth=4096
+depth=65536
 
-> phelmino_rom.mif
+> phelmino_ram_A.txt 
+> phelmino_ram_B.txt 
+> phelmino_ram_C.txt 
+> phelmino_ram_D.txt 
 
 if [[ $# -lt 2 ]]; then
    echo "Usage: phelmino_compiler.sh [option] [file]";
@@ -13,29 +16,14 @@ if [[ $# -lt 2 ]]; then
 else
    case $1 in
            "-s") riscv32-unknown-elf-as -fPIC -o riscv_raw_elf $2 ;;
-           "-c") riscv32-unknown-elf-gcc -fPIC -o riscv_raw_elf $2 -lm
+           "-c") riscv32-unknown-elf-gcc -Wl,-Map=mapping -fPIC -o riscv_raw_elf $2 -lm
    esac
 
-   riscv32-unknown-elf-strip riscv_raw_elf
-   riscv32-unknown-elf-objcopy -I elf32-littleriscv -O binary riscv_raw_elf riscv_elf
-   xxd -c 4 -e riscv_elf | cut -d' ' -f 2 > riscv_hex
-   nlines=`wc -l riscv_hex | cut -d' ' -f 1`
+   elf2hex 1 262144 riscv_raw_elf > riscv_hex 
 
-   if (( "$depth" > "$nlines" )); then
-       echo "DEPTH = ${depth};" >> phelmino_rom.mif
-       echo "WIDTH = 32;" >> phelmino_rom.mif
-       echo "ADDRESS_RADIX = UNS;" >> phelmino_rom.mif 
-       echo "DATA_RADIX = HEX;" >> phelmino_rom.mif
-       echo "CONTENT" >> phelmino_rom.mif
-       echo "BEGIN" >> phelmino_rom.mif
+   sed -n '1~4p' riscv_hex | head -n 20480 | tail -n 4096 >> phelmino_ram_A.txt 
+   sed -n '2~4p' riscv_hex | head -n 20480 | tail -n 4096 >> phelmino_ram_B.txt 
+   sed -n '3~4p' riscv_hex | head -n 20480 | tail -n 4096 >> phelmino_ram_C.txt 
+   sed -n '4~4p' riscv_hex | head -n 20480 | tail -n 4096 >> phelmino_ram_D.txt 
 
-       for nl in `seq 1 $nlines`; do
-           echo "$(( nl - 1)) : `sed "${nl}q;d" riscv_hex`;" >> phelmino_rom.mif 
-       done
-       for nl in `seq $(( nlines + 2 )) $depth`; do
-           echo "$(( nl - 1 )) : 00000000;" >> phelmino_rom.mif 
-       done
-       
-       echo "END;" >> phelmino_rom.mif 
-   fi;
 fi;
