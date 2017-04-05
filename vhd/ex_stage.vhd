@@ -34,13 +34,13 @@ entity ex_stage is
     is_requisition_wb : out requisition_size;
     is_write          : in  std_logic;
     is_write_data     : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-    bit_mask_wb       : out std_logic_vector(1 downto 0);
+    byte_mask_wb      : out std_logic_vector(1 downto 0);
     data_requisition  : out std_logic;
     data_address      : out std_logic_vector(WORD_WIDTH-1 downto 0);
     data_write_enable : out std_logic;
     data_write_data   : out std_logic_vector(WORD_WIDTH-1 downto 0);
     data_grant        : in  std_logic;
-    data_bit_enable   : out std_logic_vector(3 downto 0);
+    data_byte_enable  : out std_logic_vector(3 downto 0);
 
     -- destination register
     destination_register    : in  std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
@@ -65,10 +65,10 @@ architecture behavioural of ex_stage is
   signal branch_active                : std_logic;
   signal next_branch_active           : std_logic;
   signal next_destination_register_wb : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-  signal next_bitmask_wb              : std_logic_vector(1 downto 0);
+  signal next_bytemask_wb             : std_logic_vector(1 downto 0);
 
-  signal data_requisition_i   : std_logic;
-  signal next_data_bit_enable : std_logic_vector(3 downto 0);
+  signal data_requisition_i    : std_logic;
+  signal next_data_byte_enable : std_logic_vector(3 downto 0);
 
   signal waiting_for_memory     : std_logic;
   signal next_is_requisition_wb : requisition_size;
@@ -94,7 +94,7 @@ begin  -- architecture behavioural
   data_requisition_i <= '1' when (is_requisition /= NO_REQ) else '0';
   data_write_enable  <= is_write;
   data_write_data    <= is_write_data;
-  data_bit_enable    <= next_data_bit_enable;
+  data_byte_enable   <= next_data_byte_enable;
 
   alu_1 : entity lib_vhdl.alu
     port map (
@@ -114,7 +114,7 @@ begin  -- architecture behavioural
 
       -- interface with wb stage
       is_requisition_wb <= NO_REQ;
-      bit_mask_wb       <= (others => '0');
+      byte_mask_wb      <= (others => '0');
     elsif clk'event and clk = '1' then  -- rising clock edge
       if (valid = '1') then
         -- destination register
@@ -125,7 +125,7 @@ begin  -- architecture behavioural
 
         -- interface with wb stage
         is_requisition_wb <= next_is_requisition_wb;
-        bit_mask_wb       <= next_bitmask_wb;
+        byte_mask_wb      <= next_bytemask_wb;
       end if;
 
       if (ready = '1' and valid = '0') then
@@ -134,7 +134,7 @@ begin  -- architecture behavioural
 
         -- interface with wb stage
         is_requisition_wb <= NO_REQ;
-        bit_mask_wb       <= (others => '0');
+        byte_mask_wb      <= (others => '0');
       end if;
     end if;
   end process interface_wb;
@@ -159,19 +159,19 @@ begin  -- architecture behavioural
         when others => next_is_requisition_wb <= NO_REQ;
       end case;
       next_destination_register_wb <= destination_register;
-      next_bitmask_wb              <= alu_result(1 downto 0);
+      next_bytemask_wb             <= alu_result(1 downto 0);
       case is_requisition is
-        when REQ_BYTE | REQ_BYTEU         => next_data_bit_enable <= "01" & alu_result(1 downto 0);
-        when REQ_HALFWORD | REQ_HALFWORDU => next_data_bit_enable <= "10" & alu_result(1 downto 0);
-        when others                       => next_data_bit_enable <= (others => '0');
+        when REQ_BYTE | REQ_BYTEU         => next_data_byte_enable <= "01" & alu_result(1 downto 0);
+        when REQ_HALFWORD | REQ_HALFWORDU => next_data_byte_enable <= "10" & alu_result(1 downto 0);
+        when others                       => next_data_byte_enable <= (others => '0');
       end case;
-    -- just a logical operation
+      -- just a logical operation
     else
       waiting_for_memory           <= '0';
       next_is_requisition_wb       <= NO_REQ;
       next_destination_register_wb <= (others => '0');
-      next_bitmask_wb              <= (others => '0');
-      next_data_bit_enable         <= (others => '0');
+      next_bytemask_wb             <= (others => '0');
+      next_data_byte_enable        <= (others => '0');
     end if;
   end process combinational;
 

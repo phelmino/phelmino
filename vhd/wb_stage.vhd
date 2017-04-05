@@ -18,7 +18,7 @@ entity wb_stage is
     is_requisition       : in requisition_size;
     data_read_data       : in std_logic_vector(WORD_WIDTH-1 downto 0);
     data_read_data_valid : in std_logic;
-    bit_mask             : in std_logic_vector(1 downto 0);
+    byte_mask            : in std_logic_vector(1 downto 0);
 
     -- gpr interface
     write_enable_y_id  : out std_logic;
@@ -54,7 +54,7 @@ begin  -- architecture behavioural
     end if;
   end process sequential_process;
 
-  combinational_process : process (bit_mask, data_read_data,
+  combinational_process : process (byte_mask, data_read_data,
                                    data_read_data_valid, destination_register,
                                    is_requisition, next_data_y) is
     constant zero_padding : std_logic_vector(7 downto 0) := (others => '0');
@@ -81,7 +81,7 @@ begin  -- architecture behavioural
         when REQ_HALFWORDU =>
           next_write_enable_y  <= '1';
           next_write_address_y <= destination_register;
-          case bit_mask is
+          case byte_mask is
             when "00"   => next_data_y <= zero_padding & zero_padding & data_read_data(15 downto 0);
             when "01"   => next_data_y <= zero_padding & zero_padding & data_read_data(23 downto 8);
             when others => next_data_y <= zero_padding & zero_padding & data_read_data(31 downto 16);
@@ -90,7 +90,7 @@ begin  -- architecture behavioural
         when REQ_BYTEU =>
           next_write_enable_y  <= '1';
           next_write_address_y <= destination_register;
-          case bit_mask is
+          case byte_mask is
             when "00"   => next_data_y <= zero_padding & zero_padding & zero_padding & data_read_data(7 downto 0);
             when "01"   => next_data_y <= zero_padding & zero_padding & zero_padding & data_read_data(15 downto 8);
             when "10"   => next_data_y <= zero_padding & zero_padding & zero_padding & data_read_data(23 downto 16);
@@ -100,7 +100,7 @@ begin  -- architecture behavioural
         when REQ_HALFWORD =>
           next_write_enable_y  <= '1';
           next_write_address_y <= destination_register;
-          case bit_mask is
+          case byte_mask is
             when "00" =>
               next_data_y <= zero_padding & zero_padding & data_read_data(15 downto 0);
               if next_data_y(15) = '1' then
@@ -123,7 +123,7 @@ begin  -- architecture behavioural
         when REQ_BYTE =>
           next_write_enable_y  <= '1';
           next_write_address_y <= destination_register;
-          case bit_mask is
+          case byte_mask is
             when "00" =>
               next_data_y <= zero_padding & zero_padding & zero_padding & data_read_data(7 downto 0);
               if next_data_y(7) = '1' then

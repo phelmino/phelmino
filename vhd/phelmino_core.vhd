@@ -24,7 +24,7 @@ entity phelmino_core is
     data_address         : out std_logic_vector(WORD_WIDTH-1 downto 0);
     data_write_enable    : out std_logic;
     data_write_data      : out std_logic_vector(WORD_WIDTH-1 downto 0);
-    data_bit_enable      : out std_logic_vector(3 downto 0);
+    data_byte_enable     : out std_logic_vector(3 downto 0);
     data_read_data       : in  std_logic_vector(WORD_WIDTH-1 downto 0);
     data_grant           : in  std_logic;
     data_read_data_valid : in  std_logic);
@@ -111,7 +111,7 @@ architecture behavioural of phelmino_core is
       is_requisition_wb       : out requisition_size;
       is_write                : in  std_logic;
       is_write_data           : in  std_logic_vector(WORD_WIDTH-1 downto 0);
-      bit_mask_wb             : out std_logic_vector(1 downto 0);
+      byte_mask_wb            : out std_logic_vector(1 downto 0);
       data_requisition        : out std_logic;
       data_address            : out std_logic_vector(WORD_WIDTH-1 downto 0);
       data_write_enable       : out std_logic;
@@ -129,7 +129,7 @@ architecture behavioural of phelmino_core is
   signal write_address_z_id      : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
   signal write_data_z_id         : std_logic_vector(WORD_WIDTH-1 downto 0);
   signal destination_register_wb : std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
-  signal bit_mask_wb             : std_logic_vector(1 downto 0);
+  signal byte_mask_wb            : std_logic_vector(1 downto 0);
   signal ready_id                : std_logic;
   signal is_requisition_wb       : requisition_size;
 
@@ -141,7 +141,7 @@ architecture behavioural of phelmino_core is
       is_requisition       : in  requisition_size;
       data_read_data       : in  std_logic_vector(WORD_WIDTH-1 downto 0);
       data_read_data_valid : in  std_logic;
-      bit_mask             : in  std_logic_vector(1 downto 0);
+      byte_mask            : in  std_logic_vector(1 downto 0);
       write_enable_y_id    : out std_logic;
       write_address_y_id   : out std_logic_vector(GPR_ADDRESS_WIDTH-1 downto 0);
       write_data_y_id      : out std_logic_vector(WORD_WIDTH-1 downto 0);
@@ -222,11 +222,11 @@ begin  -- architecture behavioural
       data_address            => data_address,
       data_write_enable       => data_write_enable,
       data_write_data         => data_write_data,
-      data_bit_enable         => data_bit_enable,
+      data_byte_enable        => data_byte_enable,
       data_grant              => data_grant,
       destination_register    => destination_register_ex,
       destination_register_wb => destination_register_wb,
-      bit_mask_wb             => bit_mask_wb,
+      byte_mask_wb            => byte_mask_wb,
       ready_id                => ready_id,
       ready                   => ready_ex);
 
@@ -241,7 +241,7 @@ begin  -- architecture behavioural
       write_enable_y_id    => write_enable_y_id,
       write_address_y_id   => write_address_y_id,
       write_data_y_id      => write_data_y_id,
-      bit_mask             => bit_mask_wb,
+      byte_mask            => byte_mask_wb,
       ready_ex             => ready_ex);
 
   -- verification
