@@ -42,14 +42,14 @@ use altera_mf.all;
 entity ram is
   port
     (
-      address_a : in  std_logic_vector (13 downto 0);
-      address_b : in  std_logic_vector (13 downto 0);
-      byteena_a : in  std_logic_vector (3 downto 0) := (others => '1');
-      clock     : in  std_logic                     := '1';
+      address_a : in  std_logic_vector (11 downto 0);
+      address_b : in  std_logic_vector (11 downto 0);
+      byteena_a : in  std_logic_vector (3 downto 0);
+      clock     : in  std_logic;
       data_a    : in  std_logic_vector (31 downto 0);
       data_b    : in  std_logic_vector (31 downto 0);
-      wren_a    : in  std_logic                     := '0';
-      wren_b    : in  std_logic                     := '0';
+      wren_a    : in  std_logic;
+      wren_b    : in  std_logic;
       q_a       : out std_logic_vector (31 downto 0);
       q_b       : out std_logic_vector (31 downto 0)
       );
@@ -96,11 +96,11 @@ architecture SYN of ram is
       byteena_a : in  std_logic_vector (3 downto 0);
       clock0    : in  std_logic;
       wren_a    : in  std_logic;
-      address_b : in  std_logic_vector (13 downto 0);
+      address_b : in  std_logic_vector (11 downto 0);
       data_b    : in  std_logic_vector (31 downto 0);
       q_a       : out std_logic_vector (31 downto 0);
       wren_b    : in  std_logic;
-      address_a : in  std_logic_vector (13 downto 0);
+      address_a : in  std_logic_vector (11 downto 0);
       data_a    : in  std_logic_vector (31 downto 0);
       q_b       : out std_logic_vector (31 downto 0)
       );
@@ -119,11 +119,11 @@ begin
       clock_enable_output_a              => "BYPASS",
       clock_enable_output_b              => "BYPASS",
       indata_reg_b                       => "CLOCK0",
-      init_file                          => "../../phelmino/assembly/phelmino_rom.txt",
+      init_file                          => "/home/cavalcante/RISCV/phelmino/assembly/phelmino_rom.mif",
       intended_device_family             => "Cyclone V",
       lpm_type                           => "altsyncram",
-      numwords_a                         => 16384,
-      numwords_b                         => 16384,
+      numwords_a                         => 4096,
+      numwords_b                         => 4096,
       operation_mode                     => "BIDIR_DUAL_PORT",
       outdata_aclr_a                     => "NONE",
       outdata_aclr_b                     => "NONE",
@@ -133,8 +133,8 @@ begin
       read_during_write_mode_mixed_ports => "DONT_CARE",
       read_during_write_mode_port_a      => "NEW_DATA_NO_NBE_READ",
       read_during_write_mode_port_b      => "NEW_DATA_NO_NBE_READ",
-      widthad_a                          => 14,
-      widthad_b                          => 14,
+      widthad_a                          => 12,
+      widthad_b                          => 12,
       width_a                            => 32,
       width_b                            => 32,
       width_byteena_a                    => 4,
@@ -244,15 +244,15 @@ end SYN;
 -- Retrieval info: CONSTANT: READ_DURING_WRITE_MODE_MIXED_PORTS STRING "DONT_CARE"
 -- Retrieval info: CONSTANT: READ_DURING_WRITE_MODE_PORT_A STRING "NEW_DATA_NO_NBE_READ"
 -- Retrieval info: CONSTANT: READ_DURING_WRITE_MODE_PORT_B STRING "NEW_DATA_NO_NBE_READ"
--- Retrieval info: CONSTANT: WIDTHAD_A NUMERIC "14"
--- Retrieval info: CONSTANT: WIDTHAD_B NUMERIC "14"
+-- Retrieval info: CONSTANT: WIDTHAD_A NUMERIC "10"
+-- Retrieval info: CONSTANT: WIDTHAD_B NUMERIC "10"
 -- Retrieval info: CONSTANT: WIDTH_A NUMERIC "32"
 -- Retrieval info: CONSTANT: WIDTH_B NUMERIC "32"
 -- Retrieval info: CONSTANT: WIDTH_BYTEENA_A NUMERIC "4"
 -- Retrieval info: CONSTANT: WIDTH_BYTEENA_B NUMERIC "1"
 -- Retrieval info: CONSTANT: WRCONTROL_WRADDRESS_REG_B STRING "CLOCK0"
--- Retrieval info: USED_PORT: address_a 0 0 14 0 INPUT NODEFVAL "address_a[13..0]"
--- Retrieval info: USED_PORT: address_b 0 0 14 0 INPUT NODEFVAL "address_b[13..0]"
+-- Retrieval info: USED_PORT: address_a 0 0 10 0 INPUT NODEFVAL "address_a[9..0]"
+-- Retrieval info: USED_PORT: address_b 0 0 10 0 INPUT NODEFVAL "address_b[9..0]"
 -- Retrieval info: USED_PORT: byteena_a 0 0 4 0 INPUT VCC "byteena_a[3..0]"
 -- Retrieval info: USED_PORT: clock 0 0 0 0 INPUT VCC "clock"
 -- Retrieval info: USED_PORT: data_a 0 0 32 0 INPUT NODEFVAL "data_a[31..0]"
@@ -261,8 +261,8 @@ end SYN;
 -- Retrieval info: USED_PORT: q_b 0 0 32 0 OUTPUT NODEFVAL "q_b[31..0]"
 -- Retrieval info: USED_PORT: wren_a 0 0 0 0 INPUT GND "wren_a"
 -- Retrieval info: USED_PORT: wren_b 0 0 0 0 INPUT GND "wren_b"
--- Retrieval info: CONNECT: @address_a 0 0 14 0 address_a 0 0 14 0
--- Retrieval info: CONNECT: @address_b 0 0 14 0 address_b 0 0 14 0
+-- Retrieval info: CONNECT: @address_a 0 0 10 0 address_a 0 0 10 0
+-- Retrieval info: CONNECT: @address_b 0 0 10 0 address_b 0 0 10 0
 -- Retrieval info: CONNECT: @byteena_a 0 0 4 0 byteena_a 0 0 4 0
 -- Retrieval info: CONNECT: @clock0 0 0 0 0 clock 0 0 0 0
 -- Retrieval info: CONNECT: @data_a 0 0 32 0 data_a 0 0 32 0
