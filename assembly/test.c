@@ -12,6 +12,8 @@ int main(void) {
     print(a - b);
     print(a % b);
     print(b % a);
+
+    print(pow(a, b));
         
     return 0;
 }
