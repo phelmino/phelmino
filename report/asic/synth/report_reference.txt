@@ -1,0 +1,137 @@
+Warning: Design 'phelmino' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+ 
+****************************************
+Report : reference
+Design : phelmino
+Version: J-2014.09-SP2
+Date   : Fri Apr  7 10:17:27 2017
+****************************************
+
+Attributes:
+    b - black box (unknown)
+   bo - allows boundary optimization
+    d - dont_touch
+   mo - map_only
+    h - hierarchical
+    n - noncombinational
+    r - removable
+    s - synthetic operator
+    u - contains unmapped logic
+
+Reference          Library       Unit Area   Count    Total Area   Attributes
+-----------------------------------------------------------------------------
+ADD22              c35_CORELIB_TYP
+                                145.600006       5    728.000031  r
+ADD32              c35_CORELIB_TYP
+                                273.000000     120  32760.000000  r
+AOI210             c35_CORELIB_TYP
+                                 72.800003       2    145.600006  
+AOI211             c35_CORELIB_TYP
+                                 72.800003     118   8590.400360  
+AOI220             c35_CORELIB_TYP
+                                 91.000000      12   1092.000000  
+AOI221             c35_CORELIB_TYP
+                                 91.000000    1747  158977.000000 
+AOI311             c35_CORELIB_TYP
+                                 91.000000      21   1911.000000  
+AOI2111            c35_CORELIB_TYP
+                                 91.000000     122  11102.000000  
+BUF2               c35_CORELIB_TYP
+                                 54.599998     561  30630.599144  
+BUF6               c35_CORELIB_TYP
+                                 72.800003       1     72.800003  
+CLKIN0             c35_CORELIB_TYP
+                                 36.400002       2     72.800003  
+CLKIN1             c35_CORELIB_TYP
+                                 36.400002       3    109.200005  
+CLKIN2             c35_CORELIB_TYP
+                                 36.400002       3    109.200005  
+CLKIN3             c35_CORELIB_TYP
+                                 36.400002       4    145.600006  
+DFC3               c35_CORELIB_TYP
+                                309.399994    1531  473691.390656 n
+DFEC1              c35_CORELIB_TYP
+                                345.799988     157  54290.598083  n
+DFEC3              c35_CORELIB_TYP
+                                364.000000       1    364.000000  n
+DFEP1              c35_CORELIB_TYP
+                                345.799988       5   1728.999939  n
+DFP3               c35_CORELIB_TYP
+                                309.399994      13   4022.199921  n
+IMUX20             c35_CORELIB_TYP
+                                 91.000000       1     91.000000  
+IMUX21             c35_CORELIB_TYP
+                                 91.000000       1     91.000000  
+IMUX40             c35_CORELIB_TYP
+                                218.399994      18   3931.199890  
+INV0               c35_CORELIB_TYP
+                                 36.400002       4    145.600006  
+INV2               c35_CORELIB_TYP
+                                 36.400002       2     72.800003  
+INV3               c35_CORELIB_TYP
+                                 36.400002    1016  36982.401550  
+INV6               c35_CORELIB_TYP
+                                 54.599998       2    109.199997  
+LOGIC0             c35_CORELIB_TYP
+                                 36.400002       1     36.400002  
+MUX21              c35_CORELIB_TYP
+                                109.199997       1    109.199997  
+MUX22              c35_CORELIB_TYP
+                                109.199997       1    109.199997  
+NAND20             c35_CORELIB_TYP
+                                 54.599998       4    218.399994  
+NAND21             c35_CORELIB_TYP
+                                 54.599998       7    382.199989  
+NAND22             c35_CORELIB_TYP
+                                 54.599998     464  25334.399292  
+NAND30             c35_CORELIB_TYP
+                                 72.800003       2    145.600006  
+NAND31             c35_CORELIB_TYP
+                                 72.800003      44   3203.200134  
+NAND41             c35_CORELIB_TYP
+                                 91.000000      99   9009.000000  
+NOR20              c35_CORELIB_TYP
+                                 54.599998      13    709.799980  
+NOR21              c35_CORELIB_TYP
+                                 54.599998     369  20147.399437  
+NOR22              c35_CORELIB_TYP
+                                 72.800003       1     72.800003  
+NOR30              c35_CORELIB_TYP
+                                 72.800003       1     72.800003  
+NOR31              c35_CORELIB_TYP
+                                 72.800003      75   5460.000229  
+NOR40              c35_CORELIB_TYP
+                                 72.800003     208  15142.400635  
+NOR41              c35_CORELIB_TYP
+                                 91.000000       1     91.000000  
+OAI212             c35_CORELIB_TYP
+                                 72.800003    1198  87214.403656  
+OAI220             c35_CORELIB_TYP
+                                 91.000000     270  24570.000000  
+OAI221             c35_CORELIB_TYP
+                                 91.000000       1     91.000000  
+OAI222             c35_CORELIB_TYP
+                                 91.000000     972  88452.000000  
+OAI310             c35_CORELIB_TYP
+                                 91.000000       2    182.000000  
+OAI311             c35_CORELIB_TYP
+                                 91.000000      14   1274.000000  
+OAI2110            c35_CORELIB_TYP
+                                 91.000000       4    364.000000  
+OAI2111            c35_CORELIB_TYP
+                                 91.000000     173  15743.000000  
+XNR20              c35_CORELIB_TYP
+                                109.199997       3    327.599991  
+XNR21              c35_CORELIB_TYP
+                                109.199997      13   1419.599960  
+XNR31              c35_CORELIB_TYP
+                                200.199997       1    200.199997  
+XOR20              c35_CORELIB_TYP
+                                127.400002       1    127.400002  
+XOR21              c35_CORELIB_TYP
+                                127.400002      32   4076.800049  
+XOR31              c35_CORELIB_TYP
+                                200.199997       3    600.599991  
+memory_controller                 0.000000       1      0.000000  b
+-----------------------------------------------------------------------------
+Total 57 references                                 1126852.992950

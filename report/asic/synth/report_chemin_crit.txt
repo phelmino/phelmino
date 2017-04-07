@@ -1,0 +1,111 @@
+Warning: Design 'phelmino' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+ 
+****************************************
+Report : timing
+        -path full
+        -delay max
+        -max_paths 1
+        -sort_by group
+Design : phelmino
+Version: J-2014.09-SP2
+Date   : Fri Apr 28 10:40:01 2017
+****************************************
+
+ # A fanout number of 1000 was used for high fanout net computations.
+
+Operating Conditions: nom_pvt   Library: c35_CORELIB_TYP
+Wire Load Model Mode: enclosed
+
+  Startpoint: core_phelmino/stage_if/instruction_id_reg[0]
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: core_phelmino/stage_id/branch_destination_if_reg[15]
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  phelmino           10k                   c35_CORELIB_TYP
+  phelmino_core      10k                   c35_CORELIB_TYP
+  decoder            10k                   c35_CORELIB_TYP
+  id_stage           10k                   c35_CORELIB_TYP
+  general_purpose_registers_w32_n5
+                     10k                   c35_CORELIB_TYP
+  id_stage_DW01_add_0
+                     10k                   c35_CORELIB_TYP
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock clk (rise edge)                                   0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  core_phelmino/stage_if/instruction_id_reg[0]/C (DFEP3)
+                                                          0.00 #     0.00 r
+  core_phelmino/stage_if/instruction_id_reg[0]/Q (DFEP3)
+                                                          0.66       0.66 f
+  core_phelmino/stage_if/instruction_id[0] (if_stage)     0.00       0.66 f
+  core_phelmino/stage_id/instruction[0] (id_stage)        0.00       0.66 f
+  core_phelmino/stage_id/decoderblock/instruction[0] (decoder)
+                                                          0.00       0.66 f
+  core_phelmino/stage_id/decoderblock/U94/Q (NAND24)      0.16       0.81 r
+  core_phelmino/stage_id/decoderblock/U93/Q (INV6)        0.08       0.89 f
+  core_phelmino/stage_id/decoderblock/U58/Q (NAND28)      0.12       1.01 r
+  core_phelmino/stage_id/decoderblock/U85/Q (NOR33)       0.14       1.15 f
+  core_phelmino/stage_id/decoderblock/U95/Q (OAI212)      0.31       1.46 r
+  core_phelmino/stage_id/decoderblock/U6/Q (NOR22)        0.22       1.68 f
+  core_phelmino/stage_id/decoderblock/read_address_a[2] (decoder)
+                                                          0.00       1.68 f
+  core_phelmino/stage_id/U20/Q (CLKIN6)                   0.13       1.81 r
+  core_phelmino/stage_id/U66/Q (INV12)                    0.12       1.94 f
+  core_phelmino/stage_id/gpr/read_address_a[2] (general_purpose_registers_w32_n5)
+                                                          0.00       1.94 f
+  core_phelmino/stage_id/gpr/U447/Q (INV10)               0.10       2.04 r
+  core_phelmino/stage_id/gpr/U1369/Q (NOR24)              0.10       2.14 f
+  core_phelmino/stage_id/gpr/U523/Q (INV10)               0.10       2.24 r
+  core_phelmino/stage_id/gpr/U525/Q (INV15)               0.08       2.33 f
+  core_phelmino/stage_id/gpr/U741/Q (NAND24)              0.21       2.54 r
+  core_phelmino/stage_id/gpr/U1312/Q (CLKIN12)            0.13       2.66 f
+  core_phelmino/stage_id/gpr/U1328/Q (INV15)              0.22       2.88 r
+  core_phelmino/stage_id/gpr/U639/Q (NOR24)               0.18       3.06 f
+  core_phelmino/stage_id/gpr/U444/Q (INV15)               0.27       3.34 r
+  core_phelmino/stage_id/gpr/U743/Q (OAI222)              0.13       3.46 f
+  core_phelmino/stage_id/gpr/U1545/Q (AOI2112)            0.20       3.66 r
+  core_phelmino/stage_id/gpr/U3509/Q (NAND43)             0.12       3.78 f
+  core_phelmino/stage_id/gpr/read_data_a[3] (general_purpose_registers_w32_n5)
+                                                          0.00       3.78 f
+  core_phelmino/stage_id/add_132_2/A[3] (id_stage_DW01_add_0)
+                                                          0.00       3.78 f
+  core_phelmino/stage_id/add_132_2/U189/Q (NOR24)         0.24       4.02 r
+  core_phelmino/stage_id/add_132_2/U125/Q (NOR24)         0.12       4.14 f
+  core_phelmino/stage_id/add_132_2/U456/Q (AOI212)        0.32       4.46 r
+  core_phelmino/stage_id/add_132_2/U287/Q (NAND28)        0.08       4.54 f
+  core_phelmino/stage_id/add_132_2/U70/Q (INV3)           0.11       4.65 r
+  core_phelmino/stage_id/add_132_2/U71/Q (INV3)           0.09       4.74 f
+  core_phelmino/stage_id/add_132_2/U183/Q (NAND22)        0.21       4.95 r
+  core_phelmino/stage_id/add_132_2/U265/Q (NAND24)        0.05       5.01 f
+  core_phelmino/stage_id/add_132_2/U195/Q (NAND23)        0.12       5.13 r
+  core_phelmino/stage_id/add_132_2/U37/Q (NAND24)         0.06       5.19 f
+  core_phelmino/stage_id/add_132_2/U261/Q (AOI212)        0.26       5.45 r
+  core_phelmino/stage_id/add_132_2/U416/Q (NAND22)        0.09       5.53 f
+  core_phelmino/stage_id/add_132_2/U56/Q (NAND23)         0.17       5.70 r
+  core_phelmino/stage_id/add_132_2/SUM[15] (id_stage_DW01_add_0)
+                                                          0.00       5.70 r
+  core_phelmino/stage_id/U187/Q (AOI222)                  0.08       5.79 f
+  core_phelmino/stage_id/U427/Q (OAI212)                  0.20       5.99 r
+  core_phelmino/stage_id/branch_destination_if_reg[15]/D (DFC3)
+                                                          0.00       5.99 r
+  data arrival time                                                  5.99
+
+  clock clk (rise edge)                                   6.00       6.00
+  clock network delay (ideal)                             0.00       6.00
+  core_phelmino/stage_id/branch_destination_if_reg[15]/C (DFC3)
+                                                          0.00       6.00 r
+  library setup time                                     -0.01       5.99
+  data required time                                                 5.99
+  --------------------------------------------------------------------------
+  data required time                                                 5.99
+  data arrival time                                                 -5.99
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.00
+
+
+1

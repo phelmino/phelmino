@@ -1,0 +1,76 @@
+Loading db file '/softslin/AMS_410_CDS/synopsys/c35_3.3V/c35_CORELIB_TYP.db'
+Information: Propagating switching activity (low effort zero delay simulation). (PWR-6)
+Warning: Design has unannotated primary inputs. (PWR-414)
+Warning: Design has unannotated sequential cell outputs. (PWR-415)
+Warning: Design has unannotated black box outputs. (PWR-428)
+ 
+****************************************
+Report : power
+        -analysis_effort low
+Design : phelmino
+Version: J-2014.09-SP2
+Date   : Fri Apr 28 10:38:07 2017
+****************************************
+
+
+Library(s) Used:
+
+    c35_CORELIB_TYP (File: /softslin/AMS_410_CDS/synopsys/c35_3.3V/c35_CORELIB_TYP.db)
+
+
+Operating Conditions: nom_pvt   Library: c35_CORELIB_TYP
+Wire Load Model Mode: enclosed
+
+Design        Wire Load Model            Library
+------------------------------------------------
+phelmino               10k               c35_CORELIB_TYP
+phelmino_core          10k               c35_CORELIB_TYP
+if_stage               10k               c35_CORELIB_TYP
+id_stage               10k               c35_CORELIB_TYP
+ex_stage               10k               c35_CORELIB_TYP
+wb_stage               10k               c35_CORELIB_TYP
+fifo_addr_width2_data_width64
+                       10k               c35_CORELIB_TYP
+if_stage_DW01_add_1    10k               c35_CORELIB_TYP
+general_purpose_registers_w32_n5
+                       10k               c35_CORELIB_TYP
+decoder                10k               c35_CORELIB_TYP
+id_stage_DW01_add_2    10k               c35_CORELIB_TYP
+id_stage_DW01_add_0    10k               c35_CORELIB_TYP
+alu                    10k               c35_CORELIB_TYP
+alu_DW01_cmp2_1        10k               c35_CORELIB_TYP
+alu_DW01_cmp6_0        10k               c35_CORELIB_TYP
+alu_DW01_add_0         10k               c35_CORELIB_TYP
+alu_DW01_sub_0         10k               c35_CORELIB_TYP
+
+
+Global Operating Voltage = 3.3  
+Power-specific unit information :
+    Voltage Units = 1V
+    Capacitance Units = 1.000000pf
+    Time Units = 1ns
+    Dynamic Power Units = 1mW    (derived from V,C,T units)
+    Leakage Power Units = 1pW
+
+
+  Cell Internal Power  = 101.1805 mW   (94%)
+  Net Switching Power  =   6.6962 mW    (6%)
+                         ---------
+Total Dynamic Power    = 107.8767 mW  (100%)
+
+Cell Leakage Power     =  10.3118 nW
+
+
+                 Internal         Switching           Leakage            Total
+Power Group      Power            Power               Power              Power   (   %    )  Attrs
+--------------------------------------------------------------------------------------------------
+io_pad             0.0000            0.0000            0.0000            0.0000  (   0.00%)
+memory             0.0000            0.0000            0.0000            0.0000  (   0.00%)
+black_box          0.0000            0.0000            0.0000            0.0000  (   0.00%)
+clock_network      1.0298            2.4660          857.6995            3.4958  (   3.24%)
+register          99.0858            0.4356        4.8287e+03           99.5213  (  92.25%)
+sequential         0.0000            0.0000            0.0000            0.0000  (   0.00%)
+combinational      1.0648            3.7946        4.6254e+03            4.8594  (   4.50%)
+--------------------------------------------------------------------------------------------------
+Total            101.1804 mW         6.6961 mW     1.0312e+04 pW       107.8765 mW
+1

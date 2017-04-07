@@ -1,0 +1,284 @@
+Warning: Design 'phelmino' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+ 
+****************************************
+Report : net
+Design : phelmino
+Version: J-2014.09-SP2
+Date   : Fri Apr 28 10:37:23 2017
+****************************************
+
+
+Operating Conditions: nom_pvt   Library: c35_CORELIB_TYP
+Wire Load Model Mode: enclosed
+
+Design        Wire Load Model            Library
+------------------------------------------------
+phelmino               10k               c35_CORELIB_TYP
+phelmino_core          10k               c35_CORELIB_TYP
+if_stage               10k               c35_CORELIB_TYP
+id_stage               10k               c35_CORELIB_TYP
+ex_stage               10k               c35_CORELIB_TYP
+wb_stage               10k               c35_CORELIB_TYP
+fifo_addr_width2_data_width64
+                       10k               c35_CORELIB_TYP
+if_stage_DW01_add_1    10k               c35_CORELIB_TYP
+general_purpose_registers_w32_n5
+                       10k               c35_CORELIB_TYP
+decoder                10k               c35_CORELIB_TYP
+id_stage_DW01_add_2    10k               c35_CORELIB_TYP
+id_stage_DW01_add_0    10k               c35_CORELIB_TYP
+alu                    10k               c35_CORELIB_TYP
+alu_DW01_cmp2_1        10k               c35_CORELIB_TYP
+alu_DW01_cmp6_0        10k               c35_CORELIB_TYP
+alu_DW01_add_0         10k               c35_CORELIB_TYP
+alu_DW01_sub_0         10k               c35_CORELIB_TYP
+
+
+Attributes:
+   dr - drc disabled
+    h - high fanout
+
+Net                 Fanout     Fanin      Load   Resistance    Pins   Attributes
+--------------------------------------------------------------------------------
+clk                   1708         1   1009.16         7.00    1709   dr, h
+core_input[0]            1         1      0.01         0.01       2   
+core_input[1]            1         1      0.01         0.01       2   
+core_input[2]            1         1      0.01         0.01       2   
+core_input[3]            1         1      0.01         0.01       2   
+core_input[4]            1         1      0.01         0.01       2   
+core_input[5]            1         1      0.01         0.01       2   
+core_input[6]            1         1      0.01         0.01       2   
+core_input[7]            1         1      0.01         0.01       2   
+core_input[8]            1         1      0.01         0.01       2   
+core_input[9]            1         1      0.01         0.01       2   
+core_input[10]           1         1      0.01         0.01       2   
+core_input[11]           1         1      0.01         0.01       2   
+core_input[12]           1         1      0.01         0.01       2   
+core_input[13]           1         1      0.01         0.01       2   
+core_input[14]           1         1      0.01         0.01       2   
+core_input[15]           1         1      0.01         0.01       2   
+core_input[16]           1         1      0.01         0.01       2   
+core_input[17]           1         1      0.01         0.01       2   
+core_input[18]           1         1      0.01         0.01       2   
+core_input[19]           1         1      0.01         0.01       2   
+core_input[20]           1         1      0.01         0.01       2   
+core_input[21]           1         1      0.01         0.01       2   
+core_input[22]           1         1      0.01         0.01       2   
+core_input[23]           1         1      0.01         0.01       2   
+core_input[24]           1         1      0.01         0.01       2   
+core_input[25]           1         1      0.01         0.01       2   
+core_input[26]           1         1      0.01         0.01       2   
+core_input[27]           1         1      0.01         0.01       2   
+core_input[28]           1         1      0.01         0.01       2   
+core_input[29]           1         1      0.01         0.01       2   
+core_input[30]           1         1      0.01         0.01       2   
+core_input[31]           1         1      0.01         0.01       2   
+core_output[0]           1         1      0.01         0.01       2   
+core_output[1]           1         1      0.01         0.01       2   
+core_output[2]           1         1      0.01         0.01       2   
+core_output[3]           1         1      0.01         0.01       2   
+core_output[4]           1         1      0.01         0.01       2   
+core_output[5]           1         1      0.01         0.01       2   
+core_output[6]           1         1      0.01         0.01       2   
+core_output[7]           1         1      0.01         0.01       2   
+core_output[8]           1         1      0.01         0.01       2   
+core_output[9]           1         1      0.01         0.01       2   
+core_output[10]          1         1      0.01         0.01       2   
+core_output[11]          1         1      0.01         0.01       2   
+core_output[12]          1         1      0.01         0.01       2   
+core_output[13]          1         1      0.01         0.01       2   
+core_output[14]          1         1      0.01         0.01       2   
+core_output[15]          1         1      0.01         0.01       2   
+core_output[16]          1         1      0.01         0.01       2   
+core_output[17]          1         1      0.01         0.01       2   
+core_output[18]          1         1      0.01         0.01       2   
+core_output[19]          1         1      0.01         0.01       2   
+core_output[20]          1         1      0.01         0.01       2   
+core_output[21]          1         1      0.01         0.01       2   
+core_output[22]          1         1      0.01         0.01       2   
+core_output[23]          1         1      0.01         0.01       2   
+core_output[24]          1         1      0.01         0.01       2   
+core_output[25]          1         1      0.01         0.01       2   
+core_output[26]          1         1      0.01         0.01       2   
+core_output[27]          1         1      0.01         0.01       2   
+core_output[28]          1         1      0.01         0.01       2   
+core_output[29]          1         1      0.01         0.01       2   
+core_output[30]          1         1      0.01         0.01       2   
+core_output[31]          1         1      0.01         0.01       2   
+data_address[2]          9         1      0.14         0.06      10   
+data_address[3]         21         1      0.40         0.15      22   
+data_address[4]          7         1      0.09         0.05       8   
+data_address[5]          7         1      0.09         0.05       8   
+data_address[6]          5         1      0.06         0.04       6   
+data_address[7]          5         1      0.06         0.04       6   
+data_address[8]          5         1      0.06         0.04       6   
+data_address[9]          4         1      0.06         0.03       5   
+data_address[10]         7         1      0.11         0.05       8   
+data_address[11]         4         1      0.06         0.03       5   
+data_address[12]         7         1      0.09         0.05       8   
+data_address[13]         5         1      0.06         0.04       6   
+data_address[14]         5         1      0.06         0.04       6   
+data_address[15]         8         1      0.13         0.06       9   
+data_address[16]         8         1      0.12         0.06       9   
+data_address[17]        18         1      0.33         0.13      19   
+data_address[18]         5         1      0.07         0.04       6   
+data_address[19]         7         1      0.10         0.05       8   
+data_address[20]        18         1      0.33         0.13      19   
+data_address[21]         7         1      0.09         0.05       8   
+data_address[22]         5         1      0.07         0.04       6   
+data_address[23]         6         1      0.10         0.04       7   
+data_address[24]         7         1      0.10         0.05       8   
+data_address[25]         7         1      0.10         0.05       8   
+data_address[26]         7         1      0.10         0.05       8   
+data_address[27]         7         1      0.10         0.05       8   
+data_address[28]         7         1      0.09         0.05       8   
+data_address[29]         5         1      0.06         0.04       6   
+data_address[30]         7         1      0.09         0.05       8   
+data_address[31]         5         1      0.07         0.04       6   
+data_byte_enable[0]      1         1      0.01         0.01       2   
+data_byte_enable[1]      1         1      0.01         0.01       2   
+data_byte_enable[2]      1         1      0.01         0.01       2   
+data_byte_enable[3]      1         1      0.01         0.01       2   
+data_grant               2         1      0.04         0.01       3   
+data_read_data[0]        1         1      0.02         0.01       2   
+data_read_data[1]        1         1      0.02         0.01       2   
+data_read_data[2]        1         1      0.02         0.01       2   
+data_read_data[3]        1         1      0.02         0.01       2   
+data_read_data[4]        1         1      0.02         0.01       2   
+data_read_data[5]        1         1      0.02         0.01       2   
+data_read_data[6]        1         1      0.02         0.01       2   
+data_read_data[7]        2         1      0.04         0.01       3   
+data_read_data[8]        1         1      0.02         0.01       2   
+data_read_data[9]        1         1      0.02         0.01       2   
+data_read_data[10]       1         1      0.02         0.01       2   
+data_read_data[11]       1         1      0.02         0.01       2   
+data_read_data[12]       1         1      0.02         0.01       2   
+data_read_data[13]       1         1      0.02         0.01       2   
+data_read_data[14]       1         1      0.02         0.01       2   
+data_read_data[15]       2         1      0.04         0.01       3   
+data_read_data[16]       2         1      0.03         0.01       3   
+data_read_data[17]       2         1      0.03         0.01       3   
+data_read_data[18]       2         1      0.03         0.01       3   
+data_read_data[19]       2         1      0.03         0.01       3   
+data_read_data[20]       2         1      0.03         0.01       3   
+data_read_data[21]       2         1      0.03         0.01       3   
+data_read_data[22]       2         1      0.03         0.01       3   
+data_read_data[23]       3         1      0.05         0.02       4   
+data_read_data[24]       3         1      0.05         0.02       4   
+data_read_data[25]       3         1      0.05         0.02       4   
+data_read_data[26]       3         1      0.05         0.02       4   
+data_read_data[27]       3         1      0.05         0.02       4   
+data_read_data[28]       3         1      0.05         0.02       4   
+data_read_data[29]       3         1      0.05         0.02       4   
+data_read_data[30]       3         1      0.05         0.02       4   
+data_read_data[31]       4         1      0.08         0.03       5   
+data_read_data_valid
+                         1         1      0.02         0.01       2   
+data_requisition         2         1      0.03         0.01       3   
+data_write_data[0]       1         1      0.01         0.01       2   
+data_write_data[1]       1         1      0.01         0.01       2   
+data_write_data[2]       1         1      0.01         0.01       2   
+data_write_data[3]       1         1      0.01         0.01       2   
+data_write_data[4]       1         1      0.01         0.01       2   
+data_write_data[5]       1         1      0.01         0.01       2   
+data_write_data[6]       1         1      0.01         0.01       2   
+data_write_data[7]       1         1      0.01         0.01       2   
+data_write_data[8]       1         1      0.01         0.01       2   
+data_write_data[9]       1         1      0.01         0.01       2   
+data_write_data[10]      1         1      0.01         0.01       2   
+data_write_data[11]      1         1      0.01         0.01       2   
+data_write_data[12]      1         1      0.01         0.01       2   
+data_write_data[13]      1         1      0.01         0.01       2   
+data_write_data[14]      1         1      0.01         0.01       2   
+data_write_data[15]      1         1      0.01         0.01       2   
+data_write_data[16]      1         1      0.01         0.01       2   
+data_write_data[17]      1         1      0.01         0.01       2   
+data_write_data[18]      1         1      0.01         0.01       2   
+data_write_data[19]      1         1      0.01         0.01       2   
+data_write_data[20]      1         1      0.01         0.01       2   
+data_write_data[21]      1         1      0.01         0.01       2   
+data_write_data[22]      1         1      0.01         0.01       2   
+data_write_data[23]      1         1      0.01         0.01       2   
+data_write_data[24]      1         1      0.01         0.01       2   
+data_write_data[25]      1         1      0.01         0.01       2   
+data_write_data[26]      1         1      0.01         0.01       2   
+data_write_data[27]      1         1      0.01         0.01       2   
+data_write_data[28]      1         1      0.01         0.01       2   
+data_write_data[29]      1         1      0.01         0.01       2   
+data_write_data[30]      1         1      0.01         0.01       2   
+data_write_data[31]      1         1      0.01         0.01       2   
+data_write_enable        1         1      0.01         0.01       2   
+instr_address[0]         4         1      0.07         0.03       5   
+instr_address[1]         4         1      0.07         0.03       5   
+instr_address[2]         5         1      0.10         0.04       6   
+instr_address[3]         5         1      0.09         0.04       6   
+instr_address[4]         5         1      0.09         0.04       6   
+instr_address[5]         6         1      0.12         0.04       7   
+instr_address[6]         6         1      0.12         0.04       7   
+instr_address[7]         4         1      0.07         0.03       5   
+instr_address[8]         5         1      0.09         0.04       6   
+instr_address[9]         5         1      0.10         0.04       6   
+instr_address[10]        6         1      0.12         0.04       7   
+instr_address[11]        4         1      0.07         0.03       5   
+instr_address[12]        5         1      0.09         0.04       6   
+instr_address[13]        6         1      0.12         0.04       7   
+instr_address[14]        6         1      0.12         0.04       7   
+instr_address[15]        4         1      0.07         0.03       5   
+instr_address[16]        6         1      0.11         0.04       7   
+instr_address[17]        6         1      0.12         0.04       7   
+instr_address[18]        6         1      0.12         0.04       7   
+instr_address[19]        5         1      0.09         0.04       6   
+instr_address[20]        6         1      0.11         0.04       7   
+instr_address[21]        6         1      0.12         0.04       7   
+instr_address[22]        6         1      0.12         0.04       7   
+instr_address[23]        5         1      0.09         0.04       6   
+instr_address[24]        6         1      0.11         0.04       7   
+instr_address[25]        6         1      0.12         0.04       7   
+instr_address[26]        6         1      0.12         0.04       7   
+instr_address[27]        5         1      0.09         0.04       6   
+instr_address[28]        4         1      0.07         0.03       5   
+instr_address[29]        4         1      0.07         0.03       5   
+instr_address[30]        5         1      0.09         0.04       6   
+instr_address[31]        4         1      0.07         0.03       5   
+instr_grant              1         1      0.02         0.01       2   
+instr_reqdata[0]         1         1      0.02         0.01       2   
+instr_reqdata[1]         1         1      0.02         0.01       2   
+instr_reqdata[2]         1         1      0.02         0.01       2   
+instr_reqdata[3]         1         1      0.02         0.01       2   
+instr_reqdata[4]         1         1      0.02         0.01       2   
+instr_reqdata[5]         1         1      0.02         0.01       2   
+instr_reqdata[6]         1         1      0.02         0.01       2   
+instr_reqdata[7]         1         1      0.02         0.01       2   
+instr_reqdata[8]         1         1      0.02         0.01       2   
+instr_reqdata[9]         1         1      0.02         0.01       2   
+instr_reqdata[10]        1         1      0.02         0.01       2   
+instr_reqdata[11]        1         1      0.02         0.01       2   
+instr_reqdata[12]        1         1      0.02         0.01       2   
+instr_reqdata[13]        1         1      0.02         0.01       2   
+instr_reqdata[14]        1         1      0.02         0.01       2   
+instr_reqdata[15]        1         1      0.02         0.01       2   
+instr_reqdata[16]        1         1      0.02         0.01       2   
+instr_reqdata[17]        1         1      0.02         0.01       2   
+instr_reqdata[18]        1         1      0.02         0.01       2   
+instr_reqdata[19]        1         1      0.02         0.01       2   
+instr_reqdata[20]        1         1      0.02         0.01       2   
+instr_reqdata[21]        1         1      0.02         0.01       2   
+instr_reqdata[22]        1         1      0.02         0.01       2   
+instr_reqdata[23]        1         1      0.02         0.01       2   
+instr_reqdata[24]        1         1      0.02         0.01       2   
+instr_reqdata[25]        1         1      0.02         0.01       2   
+instr_reqdata[26]        1         1      0.02         0.01       2   
+instr_reqdata[27]        1         1      0.02         0.01       2   
+instr_reqdata[28]        1         1      0.02         0.01       2   
+instr_reqdata[29]        1         1      0.02         0.01       2   
+instr_reqdata[30]        1         1      0.02         0.01       2   
+instr_reqdata[31]        1         1      0.02         0.01       2   
+instr_requisition        2         1      0.03         0.01       3   
+instr_reqvalid           1         1      0.02         0.01       2   
+n11                      2         1      0.02         0.01       3   dr
+rst_n                  313         1      6.70         2.19     314   
+--------------------------------------------------------------------------------
+Total 236 nets        2616       236   1025.22        13.36    2852
+Maximum               1708         1   1009.16         7.00    1709
+Average              11.08      1.00      4.34         0.06   12.08
+1
