@@ -3,7 +3,7 @@
 
 #define SCALE 10000  
 #define ARRINIT 2000  
-#define DIGITS  10
+#define DIGITS  15
 
 int main(int argc, char** argv) {  
     int carry = 0;  
