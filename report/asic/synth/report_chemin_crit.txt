@@ -1,0 +1,101 @@
+Warning: Design 'phelmino' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+ 
+****************************************
+Report : timing
+        -path full
+        -delay max
+        -max_paths 1
+        -sort_by group
+Design : phelmino
+Version: J-2014.09-SP2
+Date   : Fri Apr  7 10:30:33 2017
+****************************************
+
+ # A fanout number of 1000 was used for high fanout net computations.
+
+Operating Conditions: nom_pvt   Library: c35_CORELIB_TYP
+Wire Load Model Mode: enclosed
+
+  Startpoint: core_phelmino/stage_if/instruction_id_reg[3]
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: core_phelmino/stage_id/branch_destination_if_reg[31]
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+  Des/Clust/Port     Wire Load Model       Library
+  ------------------------------------------------
+  phelmino           10k                   c35_CORELIB_TYP
+
+  Point                                                   Incr       Path
+  --------------------------------------------------------------------------
+  clock clk (rise edge)                                   0.00       0.00
+  clock network delay (ideal)                             0.00       0.00
+  core_phelmino/stage_if/instruction_id_reg[3]/C (DFEC3)
+                                                          0.00 #     0.00 r
+  core_phelmino/stage_if/instruction_id_reg[3]/Q (DFEC3)
+                                                          0.73       0.73 f
+  core_phelmino/stage_id/decoderblock/U47/Q (CLKIN0)      0.58       1.31 r
+  core_phelmino/stage_id/decoderblock/U23/Q (NAND31)      0.23       1.54 f
+  core_phelmino/stage_id/decoderblock/U44/Q (NOR30)       0.81       2.35 r
+  core_phelmino/stage_id/decoderblock/U8/Q (AOI2111)      0.31       2.66 f
+  core_phelmino/stage_id/decoderblock/U86/Q (NAND22)      0.37       3.03 r
+  core_phelmino/stage_id/decoderblock/U6/Q (NOR22)        0.27       3.30 f
+  core_phelmino/stage_id/decoderblock/U15/Q (NOR20)       0.90       4.20 r
+  core_phelmino/stage_id/gpr/U11/Q (BUF2)                 0.85       5.05 r
+  core_phelmino/stage_id/gpr/U46/Q (INV3)                 0.56       5.61 f
+  core_phelmino/stage_id/gpr/U108/Q (NAND21)              1.59       7.20 r
+  core_phelmino/stage_id/gpr/U921/Q (OAI222)              0.18       7.38 f
+  core_phelmino/stage_id/gpr/U2118/Q (AOI2111)            0.25       7.63 r
+  core_phelmino/stage_id/gpr/U27/Q (NAND31)               0.12       7.76 f
+  core_phelmino/stage_id/gpr/U40/Q (INV3)                 0.12       7.87 r
+  core_phelmino/stage_id/gpr/U32/Q (NAND22)               0.13       8.00 f
+  core_phelmino/stage_id/add_132_2/U1_2/CO (ADD32)        0.42       8.42 f
+  core_phelmino/stage_id/add_132_2/U1_3/CO (ADD32)        0.38       8.80 f
+  core_phelmino/stage_id/add_132_2/U1_4/CO (ADD32)        0.38       9.18 f
+  core_phelmino/stage_id/add_132_2/U1_5/CO (ADD32)        0.38       9.57 f
+  core_phelmino/stage_id/add_132_2/U1_6/CO (ADD32)        0.38       9.95 f
+  core_phelmino/stage_id/add_132_2/U1_7/CO (ADD32)        0.38      10.33 f
+  core_phelmino/stage_id/add_132_2/U1_8/CO (ADD32)        0.38      10.72 f
+  core_phelmino/stage_id/add_132_2/U1_9/CO (ADD32)        0.38      11.10 f
+  core_phelmino/stage_id/add_132_2/U1_10/CO (ADD32)       0.38      11.48 f
+  core_phelmino/stage_id/add_132_2/U1_11/CO (ADD32)       0.38      11.87 f
+  core_phelmino/stage_id/add_132_2/U1_12/CO (ADD32)       0.38      12.25 f
+  core_phelmino/stage_id/add_132_2/U1_13/CO (ADD32)       0.38      12.63 f
+  core_phelmino/stage_id/add_132_2/U1_14/CO (ADD32)       0.38      13.02 f
+  core_phelmino/stage_id/add_132_2/U1_15/CO (ADD32)       0.38      13.40 f
+  core_phelmino/stage_id/add_132_2/U1_16/CO (ADD32)       0.38      13.78 f
+  core_phelmino/stage_id/add_132_2/U1_17/CO (ADD32)       0.38      14.16 f
+  core_phelmino/stage_id/add_132_2/U1_18/CO (ADD32)       0.38      14.55 f
+  core_phelmino/stage_id/add_132_2/U1_19/CO (ADD32)       0.38      14.93 f
+  core_phelmino/stage_id/add_132_2/U1_20/CO (ADD32)       0.38      15.31 f
+  core_phelmino/stage_id/add_132_2/U1_21/CO (ADD32)       0.38      15.69 f
+  core_phelmino/stage_id/add_132_2/U1_22/CO (ADD32)       0.38      16.08 f
+  core_phelmino/stage_id/add_132_2/U1_23/CO (ADD32)       0.38      16.46 f
+  core_phelmino/stage_id/add_132_2/U1_24/CO (ADD32)       0.38      16.84 f
+  core_phelmino/stage_id/add_132_2/U1_25/CO (ADD32)       0.38      17.23 f
+  core_phelmino/stage_id/add_132_2/U1_26/CO (ADD32)       0.38      17.61 f
+  core_phelmino/stage_id/add_132_2/U1_27/CO (ADD32)       0.38      17.99 f
+  core_phelmino/stage_id/add_132_2/U1_28/CO (ADD32)       0.38      18.38 f
+  core_phelmino/stage_id/add_132_2/U1_29/CO (ADD32)       0.38      18.76 f
+  core_phelmino/stage_id/add_132_2/U1_30/CO (ADD32)       0.34      19.10 f
+  core_phelmino/stage_id/add_132_2/U1_31/Q (XOR31)        0.27      19.38 r
+  core_phelmino/stage_id/U159/Q (AOI221)                  0.14      19.51 f
+  core_phelmino/stage_id/U437/Q (OAI212)                  0.21      19.72 r
+  core_phelmino/stage_id/branch_destination_if_reg[31]/D (DFC3)
+                                                          0.00      19.72 r
+  data arrival time                                                 19.72
+
+  clock clk (rise edge)                                  20.00      20.00
+  clock network delay (ideal)                             0.00      20.00
+  core_phelmino/stage_id/branch_destination_if_reg[31]/C (DFC3)
+                                                          0.00      20.00 r
+  library setup time                                     -0.01      19.99
+  data required time                                                19.99
+  --------------------------------------------------------------------------
+  data required time                                                19.99
+  data arrival time                                                -19.72
+  --------------------------------------------------------------------------
+  slack (MET)                                                        0.27
+
+

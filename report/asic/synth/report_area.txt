@@ -1,0 +1,32 @@
+Warning: Design 'phelmino' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+ 
+****************************************
+Report : area
+Design : phelmino
+Version: J-2014.09-SP2
+Date   : Fri Apr  7 10:22:48 2017
+****************************************
+
+Library(s) Used:
+
+    c35_CORELIB_TYP (File: /softslin/AMS_410_CDS/synopsys/c35_3.3V/c35_CORELIB_TYP.db)
+
+Number of ports:                           66
+Number of nets:                         10952
+Number of cells:                         9451
+Number of combinational cells:           7743
+Number of sequential cells:              1708
+Number of macros/black boxes:               0
+Number of buf/inv:                       1598
+Number of references:                      57
+
+Combinational area:             592755.804352
+Buf/Inv area:                    68450.200722
+Noncombinational area:          534097.188599
+Macro/Black Box area:                0.000000
+Net Interconnect area:          254439.000000
+
+Total cell area:               1126852.992950
+Total area:                    1381291.992950
+
+Information: This design contains black box (unknown) components. (RPT-8)

@@ -1,0 +1,52 @@
+ 
+****************************************
+Report : power
+        -analysis_effort high
+Design : phelmino
+Version: J-2014.09-SP2
+Date   : Fri Apr  7 10:23:06 2017
+****************************************
+
+
+Library(s) Used:
+
+    c35_CORELIB_TYP (File: /softslin/AMS_410_CDS/synopsys/c35_3.3V/c35_CORELIB_TYP.db)
+
+
+Operating Conditions: nom_pvt   Library: c35_CORELIB_TYP
+Wire Load Model Mode: enclosed
+
+Design        Wire Load Model            Library
+------------------------------------------------
+phelmino               10k               c35_CORELIB_TYP
+
+
+Global Operating Voltage = 3.3  
+Power-specific unit information :
+    Voltage Units = 1V
+    Capacitance Units = 1.000000pf
+    Time Units = 1ns
+    Dynamic Power Units = 1mW    (derived from V,C,T units)
+    Leakage Power Units = 1pW
+
+
+  Cell Internal Power  =  30.3182 mW   (94%)
+  Net Switching Power  =   1.9236 mW    (6%)
+                         ---------
+Total Dynamic Power    =  32.2419 mW  (100%)
+
+Cell Leakage Power     =   9.3427 nW
+
+
+                 Internal         Switching           Leakage            Total
+Power Group      Power            Power               Power              Power   (   %    )  Attrs
+--------------------------------------------------------------------------------------------------
+io_pad             0.0000            0.0000            0.0000            0.0000  (   0.00%)
+memory             0.0000            0.0000            0.0000            0.0000  (   0.00%)
+black_box          0.0000            0.0000            0.0000            0.0000  (   0.00%)
+clock_network      0.3078            0.7354          785.4797            1.0432  (   3.24%)
+register          29.7280            0.1269        4.8267e+03           29.8549  (  92.60%)
+sequential         0.0000            0.0000            0.0000            0.0000  (   0.00%)
+combinational      0.2824            1.0614        3.7305e+03            1.3438  (   4.17%)
+--------------------------------------------------------------------------------------------------
+Total             30.3182 mW         1.9236 mW     9.3427e+03 pW        32.2419 mW
