@@ -16,7 +16,7 @@ if [[ $# -lt 2 ]]; then
 else
    case $1 in
            "-s") riscv32-unknown-elf-as -fPIC -o riscv_raw_elf $2 ;;
-           "-c") riscv32-unknown-elf-gcc -Wl,-Map=mapping -fPIC -o riscv_raw_elf $2 -lm
+           "-c") riscv32-unknown-elf-gcc -fPIC -o riscv_raw_elf $2 -lm
    esac
 
    elf2hex 1 262144 riscv_raw_elf > riscv_hex 
