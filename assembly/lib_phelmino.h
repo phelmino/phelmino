@@ -1,5 +1,5 @@
 #define IO_ADDR 0x80000
-#define NUMBER_OF_HEX_DISPLAYS 4
+#define NUMBER_OF_HEX_DISPLAYS 8
 
 int *io  = (int*) IO_ADDR;
 
