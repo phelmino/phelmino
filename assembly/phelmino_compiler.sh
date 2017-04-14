@@ -21,9 +21,9 @@ else
 
    elf2hex 1 262144 riscv_raw_elf > riscv_hex 
 
-   sed -n '1~4p' riscv_hex | head -n 20480 | tail -n 16384 >> phelmino_ram_A.txt 
-   sed -n '2~4p' riscv_hex | head -n 20480 | tail -n 16384 >> phelmino_ram_B.txt 
-   sed -n '3~4p' riscv_hex | head -n 20480 | tail -n 16384 >> phelmino_ram_C.txt 
-   sed -n '4~4p' riscv_hex | head -n 20480 | tail -n 16384 >> phelmino_ram_D.txt 
+   sed -n '1~4p' riscv_hex | head -n 32768 | tail -n 16384 >> phelmino_ram_A.txt 
+   sed -n '2~4p' riscv_hex | head -n 32768 | tail -n 16384 >> phelmino_ram_B.txt 
+   sed -n '3~4p' riscv_hex | head -n 32768 | tail -n 16384 >> phelmino_ram_C.txt 
+   sed -n '4~4p' riscv_hex | head -n 32768 | tail -n 16384 >> phelmino_ram_D.txt 
 
 fi;
