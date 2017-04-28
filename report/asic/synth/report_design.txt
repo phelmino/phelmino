@@ -1,10 +1,12 @@
 Warning: Design 'phelmino' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+Information: Updating design information... (UID-85)
+Warning: Design 'phelmino' contains 1 high-fanout nets. A fanout number of 1000 will be used for delay calculations involving these nets. (TIM-134)
  
 ****************************************
 Report : design
 Design : phelmino
 Version: J-2014.09-SP2
-Date   : Fri Apr  7 10:16:04 2017
+Date   : Fri Apr 28 10:36:32 2017
 ****************************************
 
 Design allows ideal nets on clock nets.
