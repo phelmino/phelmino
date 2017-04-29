@@ -2,8 +2,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library lib_fpga;
-use lib_fpga.memory_definitions.all;
+library work;
+use work.memory_definitions.all;
 
 library lib_vhdl;
 use lib_vhdl.phelmino_definitions.all;

@@ -2,8 +2,8 @@ library ieee;
 use ieee.numeric_std.all;
 use ieee.std_logic_1164.all;
 
-library lib_fpga;
-use lib_fpga.memory_definitions.all;
+library work;
+use work.memory_definitions.all;
 
 library lib_vhdl;
 use lib_vhdl.phelmino_definitions.all;
@@ -109,7 +109,7 @@ architecture behavioural of memory_controller is
 begin  -- architecture behavioural
   we <= current_byte_enable and (current_write_enable & current_write_enable & current_write_enable & current_write_enable);
 
-  ram_a : entity lib_fpga.ram
+  ram_a : entity work.ram
     generic map (
       depth        => RAM_DEPTH,
       width        => MEMORY_WIDTH/4,
@@ -126,7 +126,7 @@ begin  -- architecture behavioural
       write_enable_a => '0',
       write_enable_b => we(0));
 
-  ram_b : entity lib_fpga.ram
+  ram_b : entity work.ram
     generic map (
       depth        => RAM_DEPTH,
       width        => MEMORY_WIDTH/4,
@@ -143,7 +143,7 @@ begin  -- architecture behavioural
       write_enable_a => '0',
       write_enable_b => we(1));
 
-  ram_c : entity lib_fpga.ram
+  ram_c : entity work.ram
     generic map (
       depth        => RAM_DEPTH,
       width        => MEMORY_WIDTH/4,
@@ -160,7 +160,7 @@ begin  -- architecture behavioural
       write_enable_a => '0',
       write_enable_b => we(2));
 
-  ram_d : entity lib_fpga.ram
+  ram_d : entity work.ram
     generic map (
       depth        => RAM_DEPTH,
       width        => MEMORY_WIDTH/4,

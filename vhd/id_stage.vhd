@@ -2,9 +2,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library lib_vhdl;
-use lib_vhdl.all;
-use lib_vhdl.phelmino_definitions.all;
+library work;
+use work.all;
+use work.phelmino_definitions.all;
 
 entity id_stage is
 
@@ -135,7 +135,7 @@ begin  -- architecture behavioural
   -- assertion
   assert (rst_n = '0' or instruction_valid = '1') report "Invalid instruction in decoding stage." severity failure;
 
-  gpr : entity lib_vhdl.general_purpose_registers
+  gpr : entity work.general_purpose_registers
     generic map (
       w => WORD_WIDTH,
       n => GPR_ADDRESS_WIDTH)
@@ -153,7 +153,7 @@ begin  -- architecture behavioural
       write_address_z => write_address_z,
       write_data_z    => write_data_z);
 
-  decoderblock : entity lib_vhdl.decoder
+  decoderblock : entity work.decoder
     port map (
       instruction          => instruction,
       instruction_valid    => instruction_valid,

@@ -1,8 +1,8 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-library lib_vhdl;
-use lib_vhdl.phelmino_definitions.all;
+library work;
+use work.phelmino_definitions.all;
 
 entity ex_stage is
 
@@ -96,7 +96,7 @@ begin  -- architecture behavioural
   data_write_data    <= is_write_data;
   data_byte_enable   <= next_data_byte_enable;
 
-  alu_1 : entity lib_vhdl.alu
+  alu_1 : entity work.alu
     port map (
       alu_operand_a => alu_operand_a,
       alu_operand_b => alu_operand_b,

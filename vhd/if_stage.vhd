@@ -2,8 +2,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library lib_vhdl;
-use lib_vhdl.phelmino_definitions.all;
+library work;
+use work.phelmino_definitions.all;
 
 entity if_stage is
 
@@ -91,7 +91,7 @@ begin  -- architecture behavioural
   clear             <= ready and (branch_active or jump_active);
 
   -- instance "prefetch_buffer"
-  prefetch_buffer : entity lib_vhdl.fifo
+  prefetch_buffer : entity work.fifo
     generic map (
       addr_width => PREFETCH_ADDRESS_WIDTH,
       data_width => 2 * WORD_WIDTH)

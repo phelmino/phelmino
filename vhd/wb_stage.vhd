@@ -1,8 +1,8 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-library lib_vhdl;
-use lib_vhdl.phelmino_definitions.all;
+library work;
+use work.phelmino_definitions.all;
 
 entity wb_stage is
 

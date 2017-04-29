@@ -5,8 +5,8 @@ use ieee.numeric_std.all;
 library lib_vhdl;
 use lib_vhdl.phelmino_definitions.all;
 
-library lib_fpga;
-use lib_fpga.memory_definitions.all;
+library work;
+use work.memory_definitions.all;
 
 entity system is
 
@@ -48,7 +48,7 @@ begin  -- architecture structural
   -- data of the switches copied into leds
   LEDR <= SW;
 
-  phelmino_1 : entity lib_fpga.phelmino
+  phelmino_1 : entity work.phelmino
     port map (
       clk           => CLOCK_50,
       rst_n         => RESET,

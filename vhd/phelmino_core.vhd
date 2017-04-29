@@ -1,9 +1,9 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-library lib_vhdl;
-use lib_vhdl.all;
-use lib_vhdl.phelmino_definitions.all;
+library work;
+use work.all;
+use work.phelmino_definitions.all;
 
 entity phelmino_core is
 
@@ -157,7 +157,7 @@ begin  -- architecture behavioural
   instr_requisition <= instr_requisition_i;
   data_requisition  <= data_requisition_i;
 
-  stage_if : entity lib_vhdl.if_stage
+  stage_if : entity work.if_stage
     port map (
       clk                => clk,
       rst_n              => rst_n,
@@ -173,7 +173,7 @@ begin  -- architecture behavioural
       branch_destination => branch_destination_if,
       ready              => ready_if);
 
-  stage_id : entity lib_vhdl.id_stage
+  stage_id : entity work.id_stage
     port map (
       clk                     => clk,
       rst_n                   => rst_n,
@@ -200,7 +200,7 @@ begin  -- architecture behavioural
       ready_if                => ready_if,
       ready                   => ready_id);
 
-  stage_ex : entity lib_vhdl.ex_stage
+  stage_ex : entity work.ex_stage
     port map (
       clk                     => clk,
       rst_n                   => rst_n,
@@ -230,7 +230,7 @@ begin  -- architecture behavioural
       ready_id                => ready_id,
       ready                   => ready_ex);
 
-  stage_wb : entity lib_vhdl.wb_stage
+  stage_wb : entity work.wb_stage
     port map (
       clk                  => clk,
       rst_n                => rst_n,
