@@ -7,9 +7,9 @@ use lib_vhdl.phelmino_definitions.all;
 package memory_definitions is
 
   constant MEMORY_WIDTH : natural := WORD_WIDTH;
-  constant MEMORY_DEPTH : natural := 12;
-  constant RAM_DEPTH    : natural := 12;
-  constant RAM_START    : natural := 16#10000#;
+  constant MEMORY_DEPTH : natural := 13;
+  constant RAM_DEPTH    : natural := 13;
+  constant RAM_START    : natural := 16#00000#;
   constant IO_ADDR      : natural := 16#80000#;
 
 end package memory_definitions;

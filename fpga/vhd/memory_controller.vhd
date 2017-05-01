@@ -113,7 +113,7 @@ begin  -- architecture behavioural
     generic map (
       depth        => RAM_DEPTH,
       width        => MEMORY_WIDTH/4,
-      instructions => "/home/cavalcante/RISCV/phelmino/assembly/phelmino_ram_A.txt")
+      instructions => "/home/cavalcante/Documents/RISCV/phelmino/assembly/phelmino_ram_A.txt")
     port map (
       clk            => clk,
       rst_n          => rst_n,
@@ -130,7 +130,7 @@ begin  -- architecture behavioural
     generic map (
       depth        => RAM_DEPTH,
       width        => MEMORY_WIDTH/4,
-      instructions => "/home/cavalcante/RISCV/phelmino/assembly/phelmino_ram_B.txt")
+      instructions => "/home/cavalcante/Documents/RISCV/phelmino/assembly/phelmino_ram_B.txt")
     port map (
       clk            => clk,
       rst_n          => rst_n,
@@ -147,7 +147,7 @@ begin  -- architecture behavioural
     generic map (
       depth        => RAM_DEPTH,
       width        => MEMORY_WIDTH/4,
-      instructions => "/home/cavalcante/RISCV/phelmino/assembly/phelmino_ram_C.txt")
+      instructions => "/home/cavalcante/Documents/RISCV/phelmino/assembly/phelmino_ram_C.txt")
     port map (
       clk            => clk,
       rst_n          => rst_n,
@@ -164,7 +164,7 @@ begin  -- architecture behavioural
     generic map (
       depth        => RAM_DEPTH,
       width        => MEMORY_WIDTH/4,
-      instructions => "/home/cavalcante/RISCV/phelmino/assembly/phelmino_ram_D.txt")
+      instructions => "/home/cavalcante/Documents/RISCV/phelmino/assembly/phelmino_ram_D.txt")
     port map (
       clk            => clk,
       rst_n          => rst_n,

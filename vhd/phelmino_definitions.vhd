@@ -12,7 +12,7 @@ package phelmino_definitions is
   constant WORD_WIDTH            : natural                                 := 32;
   constant WORD_WIDTH_IN_BYTES   : natural                                 := WORD_WIDTH/8;
   constant GPR_ADDRESS_WIDTH     : natural                                 := 5;
-  constant INITIAL_STACK_POINTER : std_logic_vector(WORD_WIDTH-1 downto 0) := x"00014000";
+  constant INITIAL_STACK_POINTER : std_logic_vector(WORD_WIDTH-1 downto 0) := x"FFFFFFFF";
 
   -- Prefetch Buffer
   constant PREFETCH_ADDRESS_WIDTH : natural := 2;

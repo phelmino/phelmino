@@ -67,10 +67,11 @@ begin  -- architecture structural
     end if;
   end process sequential;
 
-  combinational : process (SW) is
+  combinational : process (core_input) is
     constant zero_padding : std_logic_vector(21 downto 0) := (others => '0');
   begin  -- process combinational
-    next_core_input <= zero_padding & SW;
+    -- next_core_input <= zero_padding & SW;
+    next_core_input <= std_logic_vector(unsigned(core_input) + 1);
   end process combinational;
 
 end architecture structural;

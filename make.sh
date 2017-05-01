@@ -16,10 +16,10 @@ function compile {
     fi
 }
 
-cd vhd/
+cd $ORIG/vhd/
 compile compil_phelmino.sh
-cd ../fpga/vhd/
+cd  $ORIG/fpga/vhd/
 compile compil_fpga.sh
-cd ../../testbench/
+cd  $ORIG/testbench/
 compile compil_bench.sh
 cd $ORIG

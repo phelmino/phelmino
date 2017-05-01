@@ -1,2 +1,2 @@
-export LD_LIBRARY_PATH="/home/cavalcante/RISCV/riscv/riscv32-unknown-elf/lib"
+export LD_LIBRARY_PATH="/home/cavalcante/Documents/RISCV/riscv/riscv32-unknown-elf/lib"
 export MODELSIM=`pwd`/modelsim.ini

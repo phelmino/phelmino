@@ -2,8 +2,8 @@
 #include "lib_phelmino.h"
 
 int main(void) {
-    int a = 3;
-    int b = 7;
+    int a = get();
+    int b = get();
 
     print(a + b);
     print(a * b);
